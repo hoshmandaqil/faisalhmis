@@ -440,6 +440,24 @@
                     </a>
                 </li>
             @endif
+            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ route('PO.index') }}">
+                        <i class="icon-attach_money nav-icon"></i>
+                        Payroll
+                    </a>
+                </li>
+            @endif
+            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
+            <li class="nav-item">
+                <a class="nav-link"
+                    href="{{ route('PO.index') }}">
+                    <i class="icon-attach_money nav-icon"></i>
+                    Expenses
+                </a>
+            </li>
+        @endif
 
             @if (in_array('attendance_menu', $user_permissions))
                 <li class="nav-item">
