@@ -15,9 +15,9 @@ class CreatePatientIPDSTable extends Migration
     {
         Schema::create('patient_ipds', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('patient_id');
-            $table->unsignedInteger('bed_id');
-            $table->unsignedInteger('created_by');
+            $table->unsignedBigInteger('patient_id');
+            $table->unsignedBigInteger('bed_id');
+            $table->unsignedBigInteger('created_by');
             $table->longText('remark')->nullable();
 
             $table->foreign('patient_id')

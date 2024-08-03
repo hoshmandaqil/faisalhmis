@@ -20,25 +20,34 @@ class DatabaseSeeder extends Seeder
         // \App\Models\User::factory(10)->create();
         $faker = Factory::create();
         $now = now();
-//        $faker->sentence
-//        $this->userSeed();
-//        $this->patientSeed($faker, $now);
-//        $this->medicineNameSeed($now, $faker);
-//        $this->pharmacySeed($now, $faker);
-//        $this->pharmacySeed($now, $faker);
-//        $this->patientMedicineSeed($now, $faker);
+        //        $faker->sentence
+        //        $this->userSeed();
+        //        $this->patientSeed($faker, $now);
+        //        $this->medicineNameSeed($now, $faker);
+        //        $this->pharmacySeed($now, $faker);
+        //        $this->pharmacySeed($now, $faker);
+        //        $this->patientMedicineSeed($now, $faker);
         $this->createPermissions($now);
 
+        User::create([
+            'id' => 1,
+            'name' => 'aqil',
+            'email' => 'aqil@email.com',
+            'password' => Hash::make('sajjad321'),
+            'type' => 1,
+            'phone' => '0791635343'
+        ]);
     }
 
-    function userSeed(){
+    function userSeed()
+    {
         $user = new User();
         $user->id = "1";
         $user->name = "Admin";
         $user->email = "admin@gmail.com";
         $user->password = Hash::make('sajjad321');
         $user->type = 1;
-        $user->phone= "0791635343";
+        $user->phone = "0791635343";
         $user->save();
 
         $user = new User();
@@ -47,7 +56,7 @@ class DatabaseSeeder extends Seeder
         $user->email = "doctor@doctor.com";
         $user->password = Hash::make('sajjad321');
         $user->type = 3;
-        $user->phone= "0791635343";
+        $user->phone = "0791635343";
         $user->save();
 
         $user = new User();
@@ -56,7 +65,7 @@ class DatabaseSeeder extends Seeder
         $user->email = "kh@doctor.com";
         $user->password = Hash::make('sajjad321');
         $user->type = 3;
-        $user->phone= "0791635343";
+        $user->phone = "0791635343";
         $user->save();
 
         $user = new User();
@@ -65,7 +74,7 @@ class DatabaseSeeder extends Seeder
         $user->email = "pharmacy@pharmacy.com";
         $user->password = Hash::make('sajjad321');
         $user->type = 2;
-        $user->phone= "0791635343";
+        $user->phone = "0791635343";
         $user->save();
 
         $user = new User();
@@ -74,7 +83,7 @@ class DatabaseSeeder extends Seeder
         $user->email = "reception@reception.com";
         $user->password = Hash::make('sajjad321');
         $user->type = 4;
-        $user->phone= "0791635343";
+        $user->phone = "0791635343";
         $user->save();
 
         $user = new User();
@@ -83,7 +92,7 @@ class DatabaseSeeder extends Seeder
         $user->email = "khreception@reception.com";
         $user->password = Hash::make('sajjad321');
         $user->type = 4;
-        $user->phone= "0791635343";
+        $user->phone = "0791635343";
         $user->save();
     }
 
@@ -174,28 +183,34 @@ class DatabaseSeeder extends Seeder
 
     // }
 
-    function createPermissions($now){
+    function createPermissions($now)
+    {
         $permissionArray = [
             'Suppliers' => ['supplier_list', 'add_supplier', 'edit_supplier', 'delete_supplier'],
             'Floors' => ['floor_list', 'add_floor', 'edit_floor', 'delete_floor'],
             'Laboratory' => ['lab_list', 'add_lab', 'edit_lab', 'delete_lab'],
             'Patients' => ['patient_list', 'add_patient', 'edit_patient', 'delete_patient'],
             'Doctor' => ['doctor_sale_medicine', 'doctor_sale_ipd', 'doctor_set_lab', 'doctor_request_medicine', 'doctor_edit_sale_medicine'],
-            'Pharmacy' => ['pharmacy_menu','pharmacy_sale_medicine', 'pharmacy_preview_medicine', 'pharmacy_edit_medicine', 'pharmacy_complete_medicine'],
-            'Reception' => ['reception_menu','reception_preview_medicine', 'reception_print_medicine'],
-            'Reports' => ['reports_view', 'datewise_procurement_report', 'datewise_sale_report', 'available_stock_report', 'pharmacy_percentage_report',
-                'short_pharmacy_report', 'expired_medicine_report', 'request_medicine_report', 'medication_report'],
-            'Other Setting' => ['setting_view', 'user_list',
-                'user_add', 'user_edit', 'user_delete', 'user_deactivate']
+            'Pharmacy' => ['pharmacy_menu', 'pharmacy_sale_medicine', 'pharmacy_preview_medicine', 'pharmacy_edit_medicine', 'pharmacy_complete_medicine'],
+            'Reception' => ['reception_menu', 'reception_preview_medicine', 'reception_print_medicine'],
+            'Reports' => [
+                'reports_view', 'datewise_procurement_report', 'datewise_sale_report', 'available_stock_report', 'pharmacy_percentage_report',
+                'short_pharmacy_report', 'expired_medicine_report', 'request_medicine_report', 'medication_report'
+            ],
+            'Other Setting' => [
+                'setting_view', 'user_list',
+                'user_add', 'user_edit', 'user_delete', 'user_deactivate'
+            ]
         ];
 
-        foreach ($permissionArray as $key => $permission){
-            foreach ($permission as $perm){
+        foreach ($permissionArray as $key => $permission) {
+            foreach ($permission as $perm) {
                 \DB::table('permissions')->insert([
                     array(
                         'permission_name' => $perm,
                         'permission_group' => $key,
-                        'created_at' => $now,'updated_at' => $now),
+                        'created_at' => $now, 'updated_at' => $now
+                    ),
                 ]);
             }
         }

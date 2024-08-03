@@ -15,9 +15,9 @@ class CreatePatientMedicinesTable extends Migration
     {
         Schema::create('patient_medicines', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('patient_id');
-            $table->unsignedInteger('medicine_id');
-            $table->unsignedInteger('created_by');
+            $table->unsignedBigInteger('patient_id');
+            $table->unsignedBigInteger('medicine_id');
+            $table->unsignedBigInteger('created_by');
             $table->integer('quantity');
             $table->tinyInteger('status')->default(0);
             $table->longText('remark')->nullable();

@@ -15,9 +15,9 @@ class CreatePatientLabsTable extends Migration
     {
         Schema::create('patient_labs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('patient_id');
-            $table->unsignedInteger('lab_id');
-            $table->unsignedInteger('created_by');
+            $table->unsignedBigInteger('patient_id');
+            $table->unsignedBigInteger('lab_id');
+            $table->unsignedBigInteger('created_by');
             $table->longText('remark');
 
             $table->foreign('patient_id')

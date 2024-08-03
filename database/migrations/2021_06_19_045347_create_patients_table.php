@@ -24,7 +24,7 @@ class CreatePatientsTable extends Migration
             $table->integer('age')->nullable();
             $table->string('blood_group')->nullable();
             $table->integer('advance_pay')->default(0);
-            $table->unsignedInteger('doctor_id');
+            $table->unsignedBigInteger('doctor_id'); // Updated data type
             $table->date('reg_date')->nullable();
             $table->integer('created_by')->nullable();
             $table->timestamps();
