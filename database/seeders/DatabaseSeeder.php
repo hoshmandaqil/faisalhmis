@@ -31,9 +31,9 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'id' => 1,
-            'name' => 'aqil',
-            'email' => 'aqil@email.com',
-            'password' => Hash::make('sajjad321'),
+            'name' => 'admin',
+            'email' => 'admin@email.com',
+            'password' => Hash::make('password'),
             'type' => 1,
             'phone' => '0791635343'
         ]);
@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
         $user->id = "1";
         $user->name = "Admin";
         $user->email = "admin@gmail.com";
-        $user->password = Hash::make('sajjad321');
+        $user->password = Hash::make('password');
         $user->type = 1;
         $user->phone = "0791635343";
         $user->save();
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
         $user->id = "2";
         $user->name = "Doctor";
         $user->email = "doctor@doctor.com";
-        $user->password = Hash::make('sajjad321');
+        $user->password = Hash::make('password');
         $user->type = 3;
         $user->phone = "0791635343";
         $user->save();
@@ -63,7 +63,7 @@ class DatabaseSeeder extends Seeder
         $user->id = "3";
         $user->name = "Kh user";
         $user->email = "kh@doctor.com";
-        $user->password = Hash::make('sajjad321');
+        $user->password = Hash::make('password');
         $user->type = 3;
         $user->phone = "0791635343";
         $user->save();
@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
         $user->id = "4";
         $user->name = "Pharmacy";
         $user->email = "pharmacy@pharmacy.com";
-        $user->password = Hash::make('sajjad321');
+        $user->password = Hash::make('password');
         $user->type = 2;
         $user->phone = "0791635343";
         $user->save();
@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
         $user->id = "5";
         $user->name = "Reception";
         $user->email = "reception@reception.com";
-        $user->password = Hash::make('sajjad321');
+        $user->password = Hash::make('password');
         $user->type = 4;
         $user->phone = "0791635343";
         $user->save();
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
         $user->id = "6";
         $user->name = "KH Reception";
         $user->email = "khreception@reception.com";
-        $user->password = Hash::make('sajjad321');
+        $user->password = Hash::make('password');
         $user->type = 4;
         $user->phone = "0791635343";
         $user->save();
