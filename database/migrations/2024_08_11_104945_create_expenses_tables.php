@@ -29,9 +29,12 @@ class CreateExpensesTables extends Migration
 
         Schema::create('expenses_slip', function (Blueprint $table) {
             $table->id();
+            $table->integer('slip_no');
             $table->string('paid_by');
             $table->string('paid_to');
+            $table->unsignedBigInteger('po_id')->nullable();
             $table->date('date');
+            $table->longText('file');
             $table->longText('remarks')->nullable();
             $table->unsignedBigInteger('category')->nullable();
             $table->unsignedBigInteger('cashier');
@@ -43,6 +46,9 @@ class CreateExpensesTables extends Migration
             $table->foreign('cashier')
                 ->references('id')
                 ->on('users');
+            $table->foreign('po_id')
+                ->references('id')
+                ->on('purchase_orders');
         });
 
         Schema::create('expenses_items', function (Blueprint $table) {

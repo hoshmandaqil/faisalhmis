@@ -73,41 +73,35 @@
                                 <td>{{ $expense->slip_no }}</td>
                                 <td>{{ $expense->paid_by }}</td>
                                 <td>{{ $expense->paid_to }}</td>
-                                <td>{{ toShamsi($expense->date) }}</td>
+                                <td>{{ $expense->date }}</td>
                                 <td>{{ $expense->expenseCategory->name ?? '' }}</td>
                                 <td class="font-parastoo">{{ $expense->remarks }}</td>
                                 <td>{{ number_format($expense->sum_paid) }} AF</td>
                                 <td>
                                     <span>
                                         @if ($expense->file)
-                                            <i class="bi bi-check2-circle badge badge-circle badge-success fs-4"></i>
+                                            <i class="icon-check-circle text-success"></i>
                                         @else
-                                            <i class="bi bi-x-lg badge badge-circle badge-danger fs-4"></i>
+                                            <i class="icon-x text-danger"></i>
                                         @endif
                                     </span>
                                 </td>
                                 <td>
-                                    {{-- <x-buttons.dropdown width="200" :delete="auth()->user()->hasPermissionTo('Delete Expense')
-                                        ? route('expenses.destroy', [$application->slug, $expense->id])
-                                        : false">
-                                        @php
-                                            $shamsiDate = toShamsi($expense->date);
-                                        @endphp
-                                        <a class="menu-link px-3" href="#"
-                                            x-on:click="$store.view.viewSlip({{ json_encode($expense) }},'{{ $shamsiDate }}')">
-                                            View
-                                        </a>
-                                        <a class="menu-link px-3" href="#"
-                                            x-on:click="$store.files.openModal({{ json_encode($expense) }} )">
-                                            Files/Attachements
-                                        </a>
-                                        @if (auth()->user()->hasPermissionTo('Edit Expense'))
-                                            <a class="menu-link px-3" href="#"
-                                                x-on:click="$store.form.editForm({{ json_encode($expense) }},'{{ $shamsiDate }}')">
-                                                Edit
-                                            </a>
-                                        @endif
-                                    </x-buttons.dropdown> --}}
+                                    @php
+                                        $shamsiDate = $expense->date;
+                                    @endphp
+                                    <a class="menu-link px-3" href="#"
+                                        x-on:click="$store.view.viewSlip({{ json_encode($expense) }},'{{ $shamsiDate }}')">
+                                        View
+                                    </a>
+                                    <a class="menu-link px-3" href="#"
+                                        x-on:click="$store.files.openModal({{ json_encode($expense) }} )">
+                                        Files/Attachements
+                                    </a>
+                                    <a class="menu-link px-3" href="#"
+                                        x-on:click="$store.form.editForm({{ json_encode($expense) }},'{{ $shamsiDate }}')">
+                                        Edit
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
@@ -119,7 +113,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Add Expense Modal -->
     <div class="modal fade" id="addExpenseModal" tabindex="-1" role="dialog" aria-labelledby="addExpenseModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
@@ -132,63 +126,147 @@
                 </div>
                 <div class="modal-body">
 
-                    <form id="poForm" action="{{ route('PO.store') }}" method="post" enctype="multipart/form-data">
-                        {!! csrf_field() !!}
-                        <input type="hidden" name="numberOfFilesPerEach" id="numberOfFilesPerEach">
-                        <div class="row">
-                            <div class="form-group col-2">
-                                <label>Paid By <span class="text-danger">*</span></label>
-                                <input class="form-control quantity" type="text" name="quantity[]" value="0"
-                                    required>
+                    <form class="p-3" method="post" action="{{ route('expenses.store') }}"
+                        enctype="multipart/form-data">
+                        @csrf
+
+                        {{-- Main Fields --}}
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">Expense Information</h5>
                             </div>
-                            <div class="form-group col-2">
-                                <label>Paid To <span class="text-danger">*</span></label>
-                                <input class="form-control price" type="text" name="price[]" value="0" required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Category</label>
-                                <div class="input-group ">
-                                    <select class="form-control col-md-8 offse-2 selectpicker labDepsName"
-                                        data-live-search="true">
-                                        <option value="general">General</option>
-                                        @foreach ($categories as $category)
-                                            <optgroup label="{{ $category->name }}">
-                                                @if ($category->subCategories->isEmpty())
-                                                    <option value="{{ $category->id }}">
-                                                        {{ $category->name }}
-                                                    </option>
-                                                @else
-                                                    @foreach ($category->subCategories as $subCategory)
-                                                        <option value="{{ $subCategory->id }}">
-                                                            {{ $subCategory->name }}
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-3">
+                                        <label>Paid By
+                                            *
+                                        </label>
+                                        <input class="form-control" type="text" name="paid_by" required>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label>Paid To
+                                            *
+                                        </label>
+                                        <input class="form-control" type="text" name="paid_to" required>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label>Category
+                                            *
+                                        </label>
+                                        <select class="form-control" name="category" required>
+                                            <option value=""></option>
+                                            @foreach ($categories as $category)
+                                                <optgroup label="{{ $category->name }}">
+                                                    @if ($category->subCategories->isEmpty())
+                                                        <option value="{{ $category->id }}"
+                                                            :selected="$store.form.form.category == $category - > id">
+                                                            {{ $category->name }}
                                                         </option>
-                                                    @endforeach
-                                                @endif
-                                            </optgroup>
-                                        @endforeach
-                                    </select>
+                                                    @else
+                                                        @foreach ($category->subCategories as $subCategory)
+                                                            <option value="{{ $subCategory->id }}"
+                                                                :selected="$store.form.form.category ==
+                                                                    $subCategory - > id">
+                                                                {{ $subCategory->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label>Date
+                                            *
+                                        </label>
+                                        <input class="form-control persianDate" type="text" name="date" readonly
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-3">
+                                        <label>Purchase Order</label>
+                                        <select class="form-control" name="po_id" required>
+                                            <option value="" disabled selected>Please select a PO</option>
+                                            @if ($pos->isEmpty())
+                                                <option value="0">Without PO</option>
+                                            @else
+                                                @foreach ($pos as $po)
+                                                    @if ($po->approved !== null)
+                                                        <option value="{{ $po->id }}">
+                                                            {{ $po->id }}: {{ $po->description }}
+                                                        </option>
+                                                    @endif
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group col-md-3">
+                                        <label>Supporting Document</label>
+                                        <input class="form-control-file" id="file" type="file"
+                                            name="file"="image/*,.pdf">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-12">
+                                        <label>Remarks (Describe the expense)
+                                            *
+                                        </label>
+                                        <textarea class="form-control" name="remarks" required></textarea>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-group col-2">
-                                <label>Total Price <span class="text-danger">*</span></label>
-                                <input class="form-control total-price" type="text" name="total_price[]" value="0"
-                                    readonly>
+                        </div>
+
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">Expense Items</h5>
                             </div>
-                            <div class="form-group col-2">
-                                <label>PO Date <span class="text-danger">*</span></label>
-                                <input class="form-control persianDate" autocomplete="off" autofill="off" type="text"
-                                    name="date[]" required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Files </label>
-                                <input type="file" name="files[]" accept='image/*' class="imagesUpload" multiple>
+                            <div class="card-body">
+                                <div id="expense-items-container">
+                                    <div class="row mb-4 expense-item-row">
+                                        <div class="col-md-1">
+                                            <a class="btn btn-icon btn-sm btn-primary mt-7 add-item" href="#">
+                                                +
+                                            </a>
+                                            <a class="btn btn-icon btn-sm btn-danger mt-7 remove-item" href="#">
+                                                -
+                                            </a>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label>Expense Description *</label>
+                                            <input class="form-control" type="text"
+                                                name="expenses[0][expense_description]" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>Amount *</label>
+                                            <input class="form-control" type="number" name="expenses[0][amount]"
+                                                placeholder="Amount" required>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label>Remarks</label>
+                                            <input class="form-control" type="text" placeholder="Remarks"
+                                                name="expenses[0][remarks]">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div id="addMore"></div>
-                        <div class="submit-section">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
-                            <button class="btn btn-primary submit-btn" onclick="submitForm()">Submit</button>
+                        <div class="card mb-5">
+                            <div class="card-body center text-center">
+                                <h3>Total: <span></span> AFN</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 text-end mt-3">
+                                <button class="btn btn-lg btn-primary mb-5" type="submit">
+                                    <span class="indicator-label">Save</span>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -196,7 +274,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Expense Categories Modal -->
     <div class="modal fade" id="expenseCategoriesModal" tabindex="-1" role="dialog"
         aria-labelledby="expenseCategoriesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
@@ -305,7 +383,7 @@
                                                             data-name="{{ $category->name }}"
                                                             data-name-fa="{{ $category->name_fa }}"
                                                             data-description="{{ $category->description }}"
-                                                            data-parent="{{ $category->parent_id }}"
+                                                            data-parent="{{ $category->parent }}"
                                                             data-tax="{{ $category->tax ? '1' : '0' }}">
                                                             Edit
                                                         </button>
@@ -336,7 +414,7 @@
                                                                 data-name="{{ $subCategory->name }}"
                                                                 data-name-fa="{{ $subCategory->name_fa }}"
                                                                 data-description="{{ $subCategory->description }}"
-                                                                data-parent="{{ $subCategory->parent_id }}"
+                                                                data-parent="{{ $subCategory->parent }}"
                                                                 data-tax="{{ $subCategory->tax ? '1' : '0' }}">
                                                                 Edit
                                                             </button>
@@ -360,6 +438,121 @@
                             </div>
                         </div>
                     </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Files -->
+    <div class="modal fade" id="expenseFiles" tabindex="-1" role="dialog" aria-labelledby="expenseFilesLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4">
+                    {{-- Main Fields --}}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" colspan="100%">
+                                            <h5>Slip No</h5>
+                                            <p class="mt-5" x-text="$store.files.form.slip_id"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Paid By</h5>
+                                            <p class="mt-5" x-text="$store.files.form.paid_by"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Paid By</h5>
+                                            <p class="mt-5" x-text="$store.files.form.paid_to"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Total Amount </h5>
+                                            <p class="mt-5" x-text="$store.files.form.sum_paid + ' AFN'"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Date </h5>
+                                            <p class="mt-5" x-text="$store.files.form.date"></p>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <form class="p-3" method="post" enctype="multipart/form-data"
+                                        @submit.prevent="$store.files.submitData()">
+                                        <tr>
+                                            <th class="text-center mw-25">
+                                                <input class="form-control" id="file" type="file"
+                                                    @change="$store.files.form.file = $event.target.files[0]"
+                                                    accept="image/*,.pdf">
+                                            </th>
+                                            <th class="text-center">
+                                                <input class="form-control" type="text"
+                                                    x-model="$store.files.form.remarks" x-ref="file"
+                                                    placeholder="Remarks">
+                                            </th>
+                                            <th class="text-center">
+                                                <button class="btn btn-primary" type="submit"
+                                                    :disabled="$store.files.loading">
+                                                    <span class="indicator-label" x-show="!$store.files.loading">Save
+                                                        File</span>
+                                                    <span x-show="$store.files.loading" x-cloak>Please wait...
+                                                        <span
+                                                            class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                    </span>
+                                                </button>
+                                            </th>
+                                        </tr>
+                                    </form>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mb-4 text-center align-items-center" x-show="$store.files.loading">
+                        <h3><span class="spinner-border spinner-border-sm align-middle me-2"></span> Loading Content...
+                        </h3>
+                    </div>
+                    <div class="row mb-4" x-show="!$store.files.loading">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <tr class="fw-bold fs-6 text-gray-800 border-bottom border-gray-200">
+                                        <th>No</th>
+                                        <th>File</th>
+                                        <th>Remarks</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, index) in $store.files.files" :key="`file-${index}`">
+                                        <tr>
+                                            <td x-text="index+1"></td>
+                                            <td>
+                                                <a x-bind:href="`/${$store.files.file_link}/${$store.files.files[index].file}`"
+                                                    target="_BLANK">View File</a>
+                                            </td>
+                                            <td x-text="$store.files.files[index].remarks"></td>
+                                            <td>
+                                                <a class="btn btn-danger btn-sm" href="#"
+                                                    @click="$store.files.deleteFile($store.files.form.slip_id)">Delete</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -509,6 +702,43 @@
                     // Open the modal
                     $('#expenseCategoriesModal').modal('show');
                 });
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            let itemIndex = 1;
+
+            // Function to add a new row
+            $(document).on('click', '.add-item', function(e) {
+                e.preventDefault();
+
+                // Clone the last row and reset values
+                let newItem = $('.expense-item-row:last').clone();
+                newItem.find('input').val('');
+
+                // Update the name attributes with the new index
+                newItem.find('input[name^="expenses"]').each(function() {
+                    let name = $(this).attr('name');
+                    $(this).attr('name', name.replace(/\[0\]/, '[' + itemIndex + ']'));
+                });
+
+                // Append the new item to the container
+                $('#expense-items-container').append(newItem);
+
+                itemIndex++;
+            });
+
+            // Function to remove a row
+            $(document).on('click', '.remove-item', function(e) {
+                e.preventDefault();
+
+                // Check if there are more than one rows, then remove the row
+                if ($('.expense-item-row').length > 1) {
+                    $(this).closest('.expense-item-row').remove();
+                } else {
+                    alert('At least one item is required.');
+                }
             });
         });
     </script>
