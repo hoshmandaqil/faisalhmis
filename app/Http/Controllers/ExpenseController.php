@@ -44,9 +44,9 @@ class ExpenseController extends Controller
      * @param Request $request
      * @return Renderable
      */
-    public function store(Request $request, $id = null)
+    public function store(Request $request)
     {
-        info($request->all());
+        $id = $request->id;
 
         $request->validate([
             'paid_by' => 'required',
@@ -138,5 +138,14 @@ class ExpenseController extends Controller
         });
 
         return back()->with('success', 'The expense successfully saved!');
+    }
+
+    /**
+     * Display a listing of the resource.
+     * @return Renderable
+     */
+    public function files($id)
+    {
+        return response()->json(ExpenseSlip::where('slip_no', $id)->orderByDesc('id')->get(), 200);
     }
 }

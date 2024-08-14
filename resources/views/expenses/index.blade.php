@@ -90,18 +90,21 @@
                                     @php
                                         $shamsiDate = $expense->date;
                                     @endphp
-                                    <a class="menu-link px-3" href="#"
-                                        x-on:click="$store.view.viewSlip({{ json_encode($expense) }},'{{ $shamsiDate }}')">
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#viewExpense" data-expense="{{ $expense }}"
+                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
                                         View
-                                    </a>
-                                    <a class="menu-link px-3" href="#"
-                                        x-on:click="$store.files.openModal({{ json_encode($expense) }} )">
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#expenseFiles" data-expense="{{ $expense }}"
+                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
                                         Files/Attachements
-                                    </a>
-                                    <a class="menu-link px-3" href="#"
-                                        x-on:click="$store.form.editForm({{ json_encode($expense) }},'{{ $shamsiDate }}')">
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#addExpenseModal" data-expense="{{ $expense }}"
+                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
                                         Edit
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -129,6 +132,9 @@
                     <form class="p-3" method="post" action="{{ route('expenses.store') }}"
                         enctype="multipart/form-data">
                         @csrf
+                        <input type="hidden" name="id" id="expense_id">
+                        <input type="hidden" name="slip_no" id="slip_no">
+                        <input type="hidden" name="cashier" id="cashier">
 
                         {{-- Main Fields --}}
                         <div class="card mb-5">
@@ -454,7 +460,7 @@
                     </button>
                 </div>
                 <div class="modal-body px-4">
-                    {{-- Main Fields --}}
+                    <!-- Main Fields -->
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
@@ -462,68 +468,62 @@
                                     <tr>
                                         <th class="text-center" colspan="100%">
                                             <h5>Slip No</h5>
-                                            <p class="mt-5" x-text="$store.files.form.slip_id"></p>
+                                            <p class="mt-5" id="slipId"></p>
                                         </th>
                                         <th class="text-center">
                                             <h5>Paid By</h5>
-                                            <p class="mt-5" x-text="$store.files.form.paid_by"></p>
+                                            <p class="mt-5" id="paidBy"></p>
                                         </th>
                                         <th class="text-center">
-                                            <h5>Paid By</h5>
-                                            <p class="mt-5" x-text="$store.files.form.paid_to"></p>
+                                            <h5>Paid To</h5>
+                                            <p class="mt-5" id="paidTo"></p>
                                         </th>
                                         <th class="text-center">
-                                            <h5>Total Amount </h5>
-                                            <p class="mt-5" x-text="$store.files.form.sum_paid + ' AFN'"></p>
+                                            <h5>Total Amount</h5>
+                                            <p class="mt-5" id="totalAmount"></p>
                                         </th>
                                         <th class="text-center">
-                                            <h5>Date </h5>
-                                            <p class="mt-5" x-text="$store.files.form.date"></p>
+                                            <h5>Date</h5>
+                                            <p class="mt-5" id="fileDate"></p>
                                         </th>
                                     </tr>
                                 </thead>
                             </table>
                         </div>
                     </div>
-                    <div class="row mb-4">
+
+                    <!-- File Upload Form -->
+                    {{-- <div class="row mb-4">
                         <div class="col-md-12">
-                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
-                                <thead>
-                                    <form class="p-3" method="post" enctype="multipart/form-data"
-                                        @submit.prevent="$store.files.submitData()">
+                            <form class="p-3" id="uploadFileForm" method="post" enctype="multipart/form-data">
+                                <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                    <thead>
                                         <tr>
                                             <th class="text-center mw-25">
-                                                <input class="form-control" id="file" type="file"
-                                                    @change="$store.files.form.file = $event.target.files[0]"
+                                                <input class="form-control" id="fileInput" type="file"
                                                     accept="image/*,.pdf">
                                             </th>
                                             <th class="text-center">
-                                                <input class="form-control" type="text"
-                                                    x-model="$store.files.form.remarks" x-ref="file"
+                                                <input class="form-control" type="text" id="fileRemarks"
                                                     placeholder="Remarks">
                                             </th>
                                             <th class="text-center">
-                                                <button class="btn btn-primary" type="submit"
-                                                    :disabled="$store.files.loading">
-                                                    <span class="indicator-label" x-show="!$store.files.loading">Save
-                                                        File</span>
-                                                    <span x-show="$store.files.loading" x-cloak>Please wait...
-                                                        <span
-                                                            class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                                    </span>
-                                                </button>
+                                                <button class="btn btn-primary" type="submit" id="saveFileBtn">Save
+                                                    File</button>
                                             </th>
                                         </tr>
-                                    </form>
-                                </thead>
-                            </table>
+                                    </thead>
+                                </table>
+                            </form>
                         </div>
+                    </div> --}}
+
+                    <!-- Files List -->
+                    <div class="row mb-4" id="filesLoading" style="display: none;">
+                        <h3 class="text-center"><span class="spinner-border spinner-border-sm align-middle me-2"></span>
+                            Loading Content...</h3>
                     </div>
-                    <div class="row mb-4 text-center align-items-center" x-show="$store.files.loading">
-                        <h3><span class="spinner-border spinner-border-sm align-middle me-2"></span> Loading Content...
-                        </h3>
-                    </div>
-                    <div class="row mb-4" x-show="!$store.files.loading">
+                    <div class="row mb-4" id="filesList">
                         <div class="col-md-12">
                             <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
                                 <thead>
@@ -534,21 +534,8 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <template x-for="(item, index) in $store.files.files" :key="`file-${index}`">
-                                        <tr>
-                                            <td x-text="index+1"></td>
-                                            <td>
-                                                <a x-bind:href="`/${$store.files.file_link}/${$store.files.files[index].file}`"
-                                                    target="_BLANK">View File</a>
-                                            </td>
-                                            <td x-text="$store.files.files[index].remarks"></td>
-                                            <td>
-                                                <a class="btn btn-danger btn-sm" href="#"
-                                                    @click="$store.files.deleteFile($store.files.form.slip_id)">Delete</a>
-                                            </td>
-                                        </tr>
-                                    </template>
+                                <tbody id="expenseFilesTable">
+                                    <!-- Files will be injected here by jQuery -->
                                 </tbody>
                             </table>
                         </div>
@@ -557,6 +544,105 @@
             </div>
         </div>
     </div>
+
+    <!-- View Expense -->
+    <div class="modal fade" id="viewExpense" tabindex="-1" role="dialog" aria-labelledby="viewExpenseLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4">
+                    <div class="d-print-block" id="paymentPrint">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-sm table-rounded border gs-7 gy-3">
+                                    <tr>
+                                        <td class="mx-auto text-start w-25" rowspan="100%">
+                                            <img class="h-50px" src="" alt="Logo" />
+                                        </td>
+                                        <td class="text-center fw-bold">
+                                            <h6>Expense Voucher</h6>
+                                        </td>
+                                        <td class="text-end w-25">
+                                            <ul>
+                                                <li class="list-unstyled"><strong>Voucher No: <span
+                                                            id="voucherNo"></span></strong></li>
+                                                <li class="list-unstyled"><strong>Date: <span
+                                                            id="expenseDate"></span></strong></li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                    <tr>
+                                        <td><strong>Paid By:</strong> <span id="paidBy"></span></td>
+                                        <td><strong>Paid To:</strong> <span id="paidTo"></span></td>
+                                        <td><strong>Expense Category:</strong> <span id="expenseCategory"></span></td>
+                                        <td><strong>Purchase Order:</strong> <span id="purchaseOrder"></span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <table
+                                    class="table table-sm table-rounded table-row-bordered table-striped border gs-7 gy-3">
+                                    <thead>
+                                        <tr class="fw-bold fs-6 border-bottom border-gray-200">
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expenseItems">
+                                        <!-- Expense items will be injected here by jQuery -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                    <tr>
+                                        <td colspan="100%"><strong>Remarks:</strong> <span id="remarks"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cashier:</strong> <span id="cashier"></span></td>
+                                        <td><strong>Total Paid:</strong> <span id="totalPaid"></span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table gs-7 gy-3">
+                                    <tr>
+                                        <td class="text-start fw-bold">Paid By</td>
+                                        <td class="text-center fw-bold">Received By</td>
+                                        <td class="text-end fw-bold">Checked By</td>
+                                        <td class="text-end fw-bold">Approved By</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('scripts')
@@ -566,114 +652,8 @@
         $('body').on('focus', ".persianDate", function() {
             $(this).persianDatepicker();
         });
-
-        function submitForm() {
-            var numberOfFiles = new Array();
-            $('.imagesUpload').each(function() {
-                var numFiles = $(this)[0].files.length;
-                numberOfFiles.push(numFiles);
-            });
-            $('#numberOfFilesPerEach').val(numberOfFiles);
-        }
-
-        $(document).on('input', '.quantity', function() {
-            var quantity = $(this).val();
-            var price = $(this).parents('div.row').find('.price').val();
-            $(this).parents('div.row').find('.total-price').val(quantity * price);
-        });
-
-        $(document).on('input', '.price', function() {
-            var price = $(this).val();
-            var quantity = $(this).parents('div.row').find('.quantity').val();
-            $(this).parents('div.row').find('.total-price').val(quantity * price);
-        });
-
-        function viewPoImages(id) {
-            if (id != '') {
-                $('#viewImagesBody').empty();
-                $('#viewImagesBody').load('{{ url('getPOImages/') }}' + '/' + id, function() {});
-            }
-        }
-
-
-        $('#actionsModal').on('show.bs.modal', function(event) {
-
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            // Extract info from data-* attributes
-            var po_id = button.data('po-id');
-            var modal = $(this)
-
-            modal.find('.modal-content #po_id').val(po_id);
-        })
-
-
-        $('#PoRejectModal').on('show.bs.modal', function(event) {
-
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            // Extract info from data-* attributes
-            var po_id = button.data('reject-po-id');
-            var modal = $(this)
-
-            modal.find('.modal-content #po_reject_id').val(po_id);
-        })
     </script>
-    <script>
-        var selectedOpds = [];
-        $('#approvePosButton').click(function() {
-            selectedOpds.length = 0;
-            if (confirm("Are you sure you want to Proceed?")) {
-
-                $('.selectedPos:checkbox:checked').each(function() {
-                    // var sThisVal = (this.checked ? $(this).val() : "");
-                    selectedOpds.indexOf($(this).val()) === -1 ? selectedOpds.push($(this).val()) : console
-                        .log("This item already exists");
-
-                    // selectedOpds.push($(this).val());
-
-                });
-                $.ajax({
-                    url: "/approveMultiplePos",
-                    type: "post",
-                    data: {
-                        'pos': selectedOpds,
-                        "_token": "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        if (response) {
-                            window.location.reload();
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        console.log(textStatus, errorThrown);
-                        alert("an error occured!");
-                    }
-                });
-            }
-        })
-    </script>
-    <script>
-        $('#poEditModal').on('show.bs.modal', function(event) {
-
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            // Extract info from data-* attributes
-            var po_id = button.data('id');
-            var description = button.data('description');
-            var quantity = button.data('quantity');
-            var price = button.data('price');
-            var total_price = button.data('total_price');
-            var date = button.data('date');
-            var modal = $(this)
-
-            // Set values in edit popup
-            $('#poFormEdit').attr('action', 'PO/' + po_id);
-            modal.find('.modal-content #po_id_edit').val(po_id);
-            modal.find('.modal-content #description_edit').val(description);
-            modal.find('.modal-content #quantity_edit').val(quantity);
-            modal.find('.modal-content #price_edit').val(price);
-            modal.find('.modal-content #total_price_edit').val(total_price);
-            modal.find('.modal-content #date_edit').val(date);
-        });
-    </script>
+    {{-- Edit Expense --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const editButtons = document.querySelectorAll('.edit-btn');
@@ -705,6 +685,7 @@
             });
         });
     </script>
+    {{-- Add expense item row --}}
     <script>
         $(document).ready(function() {
             let itemIndex = 1;
@@ -739,6 +720,197 @@
                 } else {
                     alert('At least one item is required.');
                 }
+            });
+        });
+    </script>
+    {{-- View Expense --}}
+    <script>
+        $(document).ready(function() {
+            $('#viewExpense').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var expense = button.data('expense');
+                var totalPaid = button.data('sum-paid');
+
+                console.log(expense);
+                // Populate modal fields
+                $('#voucherNo').text(expense.slip_no);
+                $('#expenseDate').text(expense.date);
+                $('#paidBy').text(expense.paid_by);
+                $('#paidTo').text(expense.paid_to);
+                $('#expenseCategory').text(expense.expense_category ? expense.expense_category.name : '');
+                $('#purchaseOrder').text(expense.po_id == null ? 'Without PO' : expense.po_id);
+                $('#remarks').text(expense.remarks);
+                $('#cashier').text(expense.cashier_user ? expense.cashier_user.name : '');
+                $('#totalPaid').text(totalPaid ? totalPaid + ' AFN' : '0 AFN');
+
+                // Clear previous expense items
+                $('#expenseItems').empty();
+
+                // Populate expense items
+                $.each(expense.expenses, function(i, item) {
+                    $('#expenseItems').append(`
+                        <tr>
+                            <td>${item.expense_description}</td>
+                            <td>${item.amount.toLocaleString()} AFN</td>
+                            <td>${item.remarks}</td>
+                        </tr>
+                    `);
+                });
+            });
+        });
+    </script>
+    {{-- View Expense Files --}}
+    <script>
+        $(document).ready(function() {
+            $('#expenseFiles').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var expense = button.data('expense');
+                var sumPaid = button.data('sum-paid');
+
+                // Populate modal fields
+                $('#slipId').text(expense.slip_no);
+                $('#paidBy').text(expense.paid_by);
+                $('#paidTo').text(expense.paid_to);
+                $('#totalAmount').text(sumPaid + ' AFN');
+                $('#fileDate').text(expense.date);
+                $('#fileRemarks').val(expense.remarks)
+
+                // Load files (simulated here, you would use AJAX to load actual files from the server)
+                loadFiles(expense.slip_no);
+
+                // // Handle file upload
+                // $('#uploadFileForm').off('submit').on('submit', function(e) {
+                //     e.preventDefault();
+
+                //     var fileData = new FormData();
+                //     fileData.append('file', $('#fileInput')[0].files[0]);
+                //     fileData.append('remarks', $('#fileRemarks').val());
+                //     fileData.append('slip_id', expense.slip_no);
+
+                //     // Simulate file upload (you would actually send this to the server)
+                //     console.log("File uploaded", fileData);
+                //     // After upload, refresh the file list
+                //     loadFiles(expense.slip_no);
+                // });
+            });
+
+            function loadFiles(expenseId) {
+                fetch(`/expenses/${expenseId}/files`)
+                    .then(response => response.json())
+                    .then(expenses => {
+                        // Clear existing table rows
+                        $('#expenseFilesTable').empty();
+
+                        // Populate the table with the fetched files
+                        expenses.forEach((expense, index) => {
+                            console.log(expense);
+                            $('#expenseFilesTable').append(`
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td><a href="/storage/expenses/${expense.file}" target="_BLANK">View File</a></td>
+                                        <td>${expense.remarks}</td>
+                                        <td></td>
+                                    </tr>
+                                `);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching files:', error);
+                    });
+            }
+        });
+    </script>
+    {{-- Edit Expense --}}
+    <script>
+        $(document).ready(function() {
+            $('#addExpenseModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget); // Button that triggered the modal
+                var expense = button.data('expense'); // Extract info from data-* attributes
+
+                // If editing, populate the form fields with the expense data
+                if (expense) {
+                    $('#expense_id').val(expense.id);
+                    $('input[name="paid_by"]').val(expense.paid_by);
+                    $('input[name="paid_to"]').val(expense.paid_to);
+                    $('select[name="category"]').val(expense.category);
+                    $('input[name="date"]').val(expense.date);
+                    $('textarea[name="remarks"]').val(expense.remarks);
+                    $('select[name="po_id"]').val(expense.po_id || 0);
+                    $('input[name="slip_no"]').val(expense.slip_no);
+                    $('input[name="cashier"]').val(expense.cashier);
+
+                    // Populate expense items
+                    $('#expense-items-container').empty();
+                    $.each(expense.expenses, function(index, item) {
+                        var expenseItemHtml = `
+                            <div class="row mb-4 expense-item-row">
+                                <div class="col-md-1">
+                                    <a class="btn btn-icon btn-sm btn-primary mt-7 add-item" href="#">
+                                        +
+                                    </a>
+                                    <a class="btn btn-icon btn-sm btn-danger mt-7 remove-item" href="#">
+                                        -
+                                    </a>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Expense Description *</label>
+                                    <input class="form-control" type="text" name="expenses[${index}][expense_description]" value="${item.expense_description}" required>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Amount *</label>
+                                    <input class="form-control" type="number" name="expenses[${index}][amount]" value="${item.amount}" placeholder="Amount" required>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Remarks</label>
+                                    <input class="form-control" type="text" name="expenses[${index}][remarks]" value="${item.remarks}">
+                                </div>
+                            </div>
+                        `;
+                        $('#expense-items-container').append(expenseItemHtml);
+                    });
+                } else {
+                    // Clear the form if adding a new expense
+                    $('#expenseForm')[0].reset();
+                    $('#expense_id').val('');
+                    $('#expense-items-container').empty();
+                }
+            });
+
+            // Add additional expense items
+            $(document).on('click', '.add-item', function(e) {
+                e.preventDefault();
+                var index = $('#expense-items-container .expense-item-row').length;
+                var newItemHtml = `
+                    <div class="row mb-4 expense-item-row">
+                        <div class="col-md-1">
+                            <a class="btn btn-icon btn-sm btn-primary mt-7 add-item" href="#">
+                                +
+                            </a>
+                            <a class="btn btn-icon btn-sm btn-danger mt-7 remove-item" href="#">
+                                -
+                            </a>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Expense Description *</label>
+                            <input class="form-control" type="text" name="expenses[${index}][expense_description]" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Amount *</label>
+                            <input class="form-control" type="number" name="expenses[${index}][amount]" placeholder="Amount" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Remarks</label>
+                            <input class="form-control" type="text" name="expenses[${index}][remarks]">
+                        </div>
+                    </div>
+                `;
+                $('#expense-items-container').append(newItemHtml);
+            });
+
+            // Remove expense items
+            $(document).on('click', '.remove-item', function(e) {
+                e.preventDefault();
+                $(this).closest('.expense-item-row').remove();
             });
         });
     </script>

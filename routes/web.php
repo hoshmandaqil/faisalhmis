@@ -143,7 +143,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('unapprovedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'unapprovedPOs']);
     Route::get('rejectedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'rejectedPOs'])->name('PO.rejectedList');
 
-    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class);
+    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
+    Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
 
     Route::prefix('expense-categories')->group(function () {
         Route::get('/', [ExpenseCategoryController::class, 'index'])->name('expense_categories.index');
