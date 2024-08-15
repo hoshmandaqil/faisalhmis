@@ -145,6 +145,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
+    Route::delete('expenses/files/{id}', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
 
     Route::prefix('expense-categories')->group(function () {
         Route::get('/', [ExpenseCategoryController::class, 'index'])->name('expense_categories.index');

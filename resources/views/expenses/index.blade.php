@@ -27,7 +27,7 @@
                     <form action="{{ url('searchPO') }}" method="post">
                         @csrf
                         <input type="text" name="search" class="search-query" value="{{ request('search') }}"
-                            placeholder="Search PO By Id, Description or Price...">
+                            placeholder="Search Expense ...">
                         <i class="icon-search1" onclick="$(this).closest('form').submit();"></i>
                     </form>
 
@@ -264,7 +264,7 @@
 
                         <div class="card mb-5">
                             <div class="card-body center text-center">
-                                <h3>Total: <span></span> AFN</h3>
+                                <h3>Total: <span id="total-amount"></span> AFN</h3>
                             </div>
                         </div>
                         <div class="row">
@@ -731,17 +731,17 @@
                 var expense = button.data('expense');
                 var totalPaid = button.data('sum-paid');
 
-                console.log(expense);
                 // Populate modal fields
-                $('#voucherNo').text(expense.slip_no);
-                $('#expenseDate').text(expense.date);
-                $('#paidBy').text(expense.paid_by);
-                $('#paidTo').text(expense.paid_to);
-                $('#expenseCategory').text(expense.expense_category ? expense.expense_category.name : '');
-                $('#purchaseOrder').text(expense.po_id == null ? 'Without PO' : expense.po_id);
-                $('#remarks').text(expense.remarks);
-                $('#cashier').text(expense.cashier_user ? expense.cashier_user.name : '');
-                $('#totalPaid').text(totalPaid ? totalPaid + ' AFN' : '0 AFN');
+                $('#viewExpense #voucherNo').text(expense.slip_no);
+                $('#viewExpense #expenseDate').text(expense.date);
+                $('#viewExpense #paidBy').text(expense.paid_by);
+                $('#viewExpense #paidTo').text(expense.paid_to);
+                $('#viewExpense #expenseCategory').text(expense.expense_category ? expense.expense_category
+                    .name : '');
+                $('#viewExpense #purchaseOrder').text(expense.po_id == null ? 'Without PO' : expense.po_id);
+                $('#viewExpense #remarks').text(expense.remarks);
+                $('#viewExpense #cashier').text(expense.cashier_user ? expense.cashier_user.name : '');
+                $('#viewExpense #totalPaid').text(totalPaid ? totalPaid + ' AFN' : '0 AFN');
 
                 // Clear previous expense items
                 $('#expenseItems').empty();
@@ -809,7 +809,17 @@
                                         <td>${index + 1}</td>
                                         <td><a href="/storage/expenses/${expense.file}" target="_BLANK">View File</a></td>
                                         <td>${expense.remarks}</td>
-                                        <td></td>
+                                        <td>
+                                            <form
+                                                action="{{ route('expense-files-delete', $expense->slip_no) }}"
+                                                method="post">
+                                                @method('DELETE')
+                                                @csrf
+                                                <button type="submit" class="btn btn-icon btn-danger btn-sm">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 `);
                         });
@@ -872,46 +882,37 @@
                     // Clear the form if adding a new expense
                     $('#expenseForm')[0].reset();
                     $('#expense_id').val('');
-                    $('#expense-items-container').empty();
+                    $(this).find('form').trigger('reset');
                 }
             });
 
-            // Add additional expense items
-            $(document).on('click', '.add-item', function(e) {
-                e.preventDefault();
-                var index = $('#expense-items-container .expense-item-row').length;
-                var newItemHtml = `
-                    <div class="row mb-4 expense-item-row">
-                        <div class="col-md-1">
-                            <a class="btn btn-icon btn-sm btn-primary mt-7 add-item" href="#">
-                                +
-                            </a>
-                            <a class="btn btn-icon btn-sm btn-danger mt-7 remove-item" href="#">
-                                -
-                            </a>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>Expense Description *</label>
-                            <input class="form-control" type="text" name="expenses[${index}][expense_description]" required>
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label>Amount *</label>
-                            <input class="form-control" type="number" name="expenses[${index}][amount]" placeholder="Amount" required>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>Remarks</label>
-                            <input class="form-control" type="text" name="expenses[${index}][remarks]">
-                        </div>
-                    </div>
-                `;
-                $('#expense-items-container').append(newItemHtml);
+        });
+    </script>
+    {{-- Update Total Amount --}}
+    <script>
+        $(document).ready(function() {
+            function updateTotalAmount() {
+                let totalAmount = 0;
+
+                // Iterate over each amount input field
+                $('#expense-items-container input[name*="[amount]"]').each(function() {
+                    let amount = parseFloat($(this).val());
+                    if (!isNaN(amount)) {
+                        totalAmount += amount;
+                    }
+                });
+
+                // Display the total amount
+                $('#total-amount').text(totalAmount.toFixed(2));
+            }
+
+            // Update total amount whenever an amount input field changes
+            $('#expense-items-container').on('input', 'input[name*="[amount]"]', function() {
+                updateTotalAmount();
             });
 
-            // Remove expense items
-            $(document).on('click', '.remove-item', function(e) {
-                e.preventDefault();
-                $(this).closest('.expense-item-row').remove();
-            });
+            // Initialize total amount on page load
+            updateTotalAmount();
         });
     </script>
 @endsection

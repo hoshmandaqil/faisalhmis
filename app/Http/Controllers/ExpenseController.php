@@ -91,7 +91,7 @@ class ExpenseController extends Controller
                 // If no file just name it as the current file, otherwise delete it.
                 if (!isset($data['file'])) {
                     $file_name = $exp->file;
-                } else {
+                } else if(!empty($exp->file)) {
                     $file_path = public_path('storage/expenses' . '/' . $exp->file);
 
                     if (file_exists($file_path)) {
@@ -146,6 +146,27 @@ class ExpenseController extends Controller
      */
     public function files($id)
     {
-        return response()->json(ExpenseSlip::where('slip_no', $id)->orderByDesc('id')->get(), 200);
+        return response()->json(ExpenseSlip::where('slip_no', $id)->whereNotNull('file')
+            ->where('file', '<>', '')->orderByDesc('id')->get(), 200);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param mixed $slug
+     * @param int $id
+     * @return Renderable
+     */
+    public function deleteFile($id)
+    {
+        $expensesFile = ExpenseSlip::where('slip_no', $id)->first();
+        $file_path = public_path('storage/expenses' . '/' . $expensesFile->file);
+
+        info($id);
+        if (file_exists($file_path)) {
+            info($file_path);
+            unlink($file_path);
+            $expensesFile->update(['file' => '']);
+        }
+        return back()->with('success',  'Successfully deleted!');
     }
 }
