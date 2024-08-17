@@ -803,7 +803,6 @@
 
                         // Populate the table with the fetched files
                         expenses.forEach((expense, index) => {
-                            console.log(expense);
                             $('#expenseFilesTable').append(`
                                     <tr>
                                         <td>${index + 1}</td>
@@ -811,10 +810,11 @@
                                         <td>${expense.remarks}</td>
                                         <td>
                                             <form
-                                                action="{{ route('expense-files-delete', $expense->slip_no) }}"
+                                                action="{{ route('expense-files-delete') }}"
                                                 method="post">
                                                 @method('DELETE')
                                                 @csrf
+                                                <input type="hidden" name="slip_no" value="${expense.slip_no}" />
                                                 <button type="submit" class="btn btn-icon btn-danger btn-sm">
                                                     Delete
                                                 </button>

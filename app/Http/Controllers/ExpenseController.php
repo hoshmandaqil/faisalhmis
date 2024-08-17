@@ -156,12 +156,12 @@ class ExpenseController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function deleteFile($id)
+    public function deleteFile(Request $request)
     {
-        $expensesFile = ExpenseSlip::where('slip_no', $id)->first();
+        $slip_no = $request->slip_no;
+        $expensesFile = ExpenseSlip::where('slip_no', $slip_no)->first();
         $file_path = public_path('storage/expenses' . '/' . $expensesFile->file);
 
-        info($id);
         if (file_exists($file_path)) {
             info($file_path);
             unlink($file_path);
