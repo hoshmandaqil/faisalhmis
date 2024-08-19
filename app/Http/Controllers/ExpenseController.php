@@ -56,6 +56,7 @@ class ExpenseController extends Controller
             'expenses' => 'required',
             'expenses.*.expense_description' => 'required',
             'expenses.*.amount' => 'required',
+            'expenses.*.quantity' => 'required',
             'po_id' => 'required'
         ]);
 

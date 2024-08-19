@@ -247,12 +247,17 @@
                                             <input class="form-control" type="text"
                                                 name="expenses[0][expense_description]" required>
                                         </div>
-                                        <div class="form-group col-md-3">
+                                        <div class="form-group col-md-2">
                                             <label>Amount *</label>
                                             <input class="form-control" type="number" name="expenses[0][amount]"
                                                 placeholder="Amount" required>
                                         </div>
-                                        <div class="form-group col-md-4">
+                                        <div class="form-group col-md-2">
+                                            <label>Quantity *</label>
+                                            <input class="form-control" type="number" name="expenses[0][quantity]"
+                                                placeholder="Quantity" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
                                             <label>Remarks</label>
                                             <input class="form-control" type="text" placeholder="Remarks"
                                                 name="expenses[0][remarks]">
@@ -268,8 +273,8 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-12 text-end mt-3">
-                                <button class="btn btn-lg btn-primary mb-5" type="submit">
+                            <div class="col-md-12 text-end d-flex justify-content-end">
+                                <button class="btn btn-lg btn-primary mb-2" type="submit">
                                     <span class="indicator-label">Save</span>
                                 </button>
                             </div>
@@ -601,6 +606,7 @@
                                         <tr class="fw-bold fs-6 border-bottom border-gray-200">
                                             <th>Description</th>
                                             <th>Amount</th>
+                                            <th>Quantity</th>
                                             <th>Remarks</th>
                                         </tr>
                                     </thead>
@@ -752,6 +758,7 @@
                         <tr>
                             <td>${item.expense_description}</td>
                             <td>${item.amount.toLocaleString()} AFN</td>
+                            <td>${item.quantity}</td>
                             <td>${item.remarks}</td>
                         </tr>
                     `);
@@ -849,6 +856,7 @@
                     $('input[name="slip_no"]').val(expense.slip_no);
                     $('input[name="cashier"]').val(expense.cashier);
 
+                    let totalPrice = 0
                     // Populate expense items
                     $('#expense-items-container').empty();
                     $.each(expense.expenses, function(index, item) {
@@ -866,18 +874,26 @@
                                     <label>Expense Description *</label>
                                     <input class="form-control" type="text" name="expenses[${index}][expense_description]" value="${item.expense_description}" required>
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-2">
                                     <label>Amount *</label>
                                     <input class="form-control" type="number" name="expenses[${index}][amount]" value="${item.amount}" placeholder="Amount" required>
                                 </div>
-                                <div class="form-group col-md-4">
+                                 <div class="form-group col-md-2">
+                                    <label>Quantity *</label>
+                                    <input class="form-control" type="number" name="expenses[${index}][quantity]" value="${item.quantity}" placeholder="Quantity" required>
+                                </div>
+                                <div class="form-group col-md-3">
                                     <label>Remarks</label>
                                     <input class="form-control" type="text" name="expenses[${index}][remarks]" value="${item.remarks}">
                                 </div>
                             </div>
                         `;
                         $('#expense-items-container').append(expenseItemHtml);
+
+                        totalPrice += Number(item.amount) * item.quantity
                     });
+
+                    $('#total-amount').text(totalPrice.toFixed(2));
                 } else {
                     // Clear the form if adding a new expense
                     $('#expenseForm')[0].reset();
@@ -894,11 +910,13 @@
             function updateTotalAmount() {
                 let totalAmount = 0;
 
-                // Iterate over each amount input field
-                $('#expense-items-container input[name*="[amount]"]').each(function() {
-                    let amount = parseFloat($(this).val());
-                    if (!isNaN(amount)) {
-                        totalAmount += amount;
+                // Iterate over each item row
+                $('#expense-items-container .expense-item-row').each(function() {
+                    let amount = parseFloat($(this).find('input[name*="[amount]"]').val());
+                    let quantity = parseFloat($(this).find('input[name*="[quantity]"]').val());
+
+                    if (!isNaN(amount) && !isNaN(quantity)) {
+                        totalAmount += amount * quantity;
                     }
                 });
 
@@ -906,10 +924,11 @@
                 $('#total-amount').text(totalAmount.toFixed(2));
             }
 
-            // Update total amount whenever an amount input field changes
-            $('#expense-items-container').on('input', 'input[name*="[amount]"]', function() {
-                updateTotalAmount();
-            });
+            // Update total amount whenever an amount or quantity input field changes
+            $('#expense-items-container').on('input', 'input[name*="[amount]"], input[name*="[quantity]"]',
+                function() {
+                    updateTotalAmount();
+                });
 
             // Initialize total amount on page load
             updateTotalAmount();

@@ -56,6 +56,7 @@ class CreateExpensesTables extends Migration
             $table->unsignedBigInteger('slip_id');
             $table->longText('expense_description');
             $table->double('amount');
+            $table->integer('quantity');
             $table->longText('remarks')->nullable();
             $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
