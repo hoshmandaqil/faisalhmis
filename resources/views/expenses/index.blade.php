@@ -644,6 +644,11 @@
                             </div>
                         </div>
                     </div>
+                    <div class="d-flex justify-content-end">
+                        <button onclick="printDiv('paymentPrint')" type="button" class="btn btn-icon btn-primary btn-sm">
+                            Print
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
