@@ -25,15 +25,6 @@ class DatabaseSeeder extends Seeder
         $this->call(UserPermissionSeeder::class);
 
         $this->call(MedicineDosageSeeder::class);
-
-        User::create([
-            'id' => 1,
-            'name' => 'admin',
-            'email' => 'admin@email.com',
-            'password' => Hash::make('password'),
-            'type' => 1,
-            'phone' => '0791635343'
-        ]);
     }
 
     function userSeed()
@@ -42,8 +33,8 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'name' => 'Admin',
-                'email' => 'admin@gmail.com',
-                'password' => Hash::make('sajjad321'),
+                'email' => 'admin@email.com',
+                'password' => Hash::make('password'),
                 'type' => 1,
                 'phone' => '0791635343',
             ],
@@ -51,7 +42,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Doctor',
                 'email' => 'doctor@doctor.com',
-                'password' => Hash::make('sajjad321'),
+                'password' => Hash::make('password'),
                 'type' => 3,
                 'phone' => '0791635343',
             ],
@@ -59,7 +50,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 3,
                 'name' => 'Kh user',
                 'email' => 'kh@doctor.com',
-                'password' => Hash::make('sajjad321'),
+                'password' => Hash::make('password'),
                 'type' => 3,
                 'phone' => '0791635343',
             ],
@@ -67,7 +58,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 4,
                 'name' => 'Pharmacy',
                 'email' => 'pharmacy@pharmacy.com',
-                'password' => Hash::make('sajjad321'),
+                'password' => Hash::make('password'),
                 'type' => 2,
                 'phone' => '0791635343',
             ],
@@ -75,7 +66,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 5,
                 'name' => 'Reception',
                 'email' => 'reception@reception.com',
-                'password' => Hash::make('sajjad321'),
+                'password' => Hash::make('password'),
                 'type' => 4,
                 'phone' => '0791635343',
             ],
@@ -83,7 +74,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 6,
                 'name' => 'KH Reception',
                 'email' => 'khreception@reception.com',
-                'password' => Hash::make('sajjad321'),
+                'password' => Hash::make('password'),
                 'type' => 4,
                 'phone' => '0791635343',
             ],
