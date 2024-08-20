@@ -18,8 +18,13 @@ class CreateLabDepartmentsTable extends Migration
             $table->string('dep_name');
             $table->integer('price');
             $table->integer('quantity');
-            $table->unsignedInteger('main_dep_id');
+            $table->unsignedBigInteger('main_dep_id');
+            $table->string('normal_range');
             $table->timestamps();
+
+            // Foreign key
+            $table->foreign('main_dep_id')->references('id')->on('main_lab_departments')->onDelete('cascade');
+
         });
     }
 
