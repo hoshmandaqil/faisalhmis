@@ -133,7 +133,7 @@ class DoctorController extends Controller
 
         $selectLab = LabDepartment::latest()->select('id', 'dep_name', 'price', 'normal_range', 'main_dep_id')->with('mainDepartment')->get();
         $mainLabDepartments = MainLabDepartment::latest()->select('id', 'dep_name', 'discount')->get();
-        $medicine_dosage = DB::table('medicine_dosage')->get();
+        $medicine_dosage = DB::table('medicine_dosages')->get();
 
         return view(
             'patient.my_patients',
