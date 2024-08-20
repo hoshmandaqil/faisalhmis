@@ -21,9 +21,15 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->integer('type')->nullable();
             $table->string('phone')->nullable();
+            $table->integer('OPD_fee');
+            $table->time('check_in')->nullable();
+            $table->time('check_out')->nullable();
+            $table->unsignedBigInteger('attendance_id')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->rememberToken();
             $table->timestamps();
+
+
         });
     }
 
