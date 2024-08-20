@@ -25,6 +25,15 @@ class DatabaseSeeder extends Seeder
         $this->call(UserPermissionSeeder::class);
 
         $this->call(MedicineDosageSeeder::class);
+
+        User::create([
+            'id' => 1,
+            'name' => 'admin',
+            'email' => 'admin@email.com',
+            'password' => Hash::make('password'),
+            'type' => 1,
+            'phone' => '0791635343'
+        ]);
     }
 
     function userSeed()

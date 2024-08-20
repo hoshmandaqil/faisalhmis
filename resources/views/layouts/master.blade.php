@@ -58,6 +58,9 @@
 
     @yield('styles')
 
+    <script src="{{ asset('assets/js/printThis.js') }}" type="text/javascript"></script>
+
+
 </head>
 
 <body>

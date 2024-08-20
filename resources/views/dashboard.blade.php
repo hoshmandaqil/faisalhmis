@@ -1,16 +1,15 @@
 @extends('layouts.master')
 
 @section('styles')
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 @endsection
 @section('page_title')
-Welcome back, {{ Auth::user()->name }}
+    Welcome back, {{ Auth::user()->name }}
 @endsection
 
 @section('content')
-
     <!-- Row start -->
-    @if(session()->has('alert'))
+    @if (session()->has('alert'))
         <div class="row gutters">
             <div class="alert {{ session()->get('alert-type') }}" role="alert">
                 {{ session()->get('alert') }}
@@ -19,27 +18,30 @@ Welcome back, {{ Auth::user()->name }}
     @endif
 
     <div class="row gutters justify-content-center">
-          <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
+        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
 
-             <div class="daily-sales">
+            <div class="daily-sales">
                 <h6>Yesterday Patients</h6><br>
-                <?php $yesterday = date('Y-m-d',strtotime("-1 days"));     $today = date('Y-m-d');          ?>
-                <h1><a href="{{ url('registered_patient_report').'?from='.$yesterday.'&to='.$yesterday.'&doctor_id=0' }}" target="_blank">{{ $yesterdayPatient }}</a></h1>
+                <?php $yesterday = date('Y-m-d', strtotime('-1 days'));
+                $today = date('Y-m-d'); ?>
+                <h1><a href="{{ url('registered_patient_report') . '?from=' . $yesterday . '&to=' . $yesterday . '&doctor_id=0' }}"
+                        target="_blank">{{ $yesterdayPatient }}</a></h1>
                 <div id="apexLineChartGradient3" class="pink-graph"></div>
             </div>
 
         </div>
-        
+
         <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
 
-             <div class="daily-sales">
+            <div class="daily-sales">
                 <h6>Today Patients</h6><br>
-                <h1><a href="{{ url('registered_patient_report').'?from='.$today.'&to='.$today.'&doctor_id=0' }}" target="_blank">{{ $todayPatient }}</a></h1>
+                <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                        target="_blank">{{ $todayPatient }}</a></h1>
                 <div id="apexLineChartGradient" class="blue-graph"></div>
             </div>
 
         </div>
-          
+
         <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
 
             <div class="daily-sales">
@@ -58,7 +60,7 @@ Welcome back, {{ Auth::user()->name }}
             </div>
 
         </div>
-    
+
 
         <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
 
@@ -136,132 +138,183 @@ Welcome back, {{ Auth::user()->name }}
             </div>
         </div>
     </div>
-
-
-
 @endsection
 @section('scripts')
-<script>
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const todayDate = new Date();
-    $.ajax({
-        type: 'get',
-        url:'get_daily_patient_count',
-        success: function (response) {
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(drawVisualization);
+    <script>
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const todayDate = new Date();
+        $.ajax({
+            type: 'get',
+            url: 'get_daily_patient_count',
+            success: function(response) {
+                google.charts.load('current', {
+                    'packages': ['corechart']
+                });
+                google.charts.setOnLoadCallback(drawVisualization);
 
-            function drawVisualization() {
+                function drawVisualization() {
 
-              var data = google.visualization.arrayToDataTable(response);
-              var options = {
-                title : 'Daily Patient Statistics',
-                vAxis: {title: 'Statistics', gridlines: { count: 15 }},
-                hAxis: {title: ''+ monthNames[todayDate.getMonth()] +''},
-                seriesType: 'bars',
-                series: {5: {type: 'line'}},
-              };
-              var chart = new google.visualization.ComboChart(document.getElementById('daily_patient_count_chart'));
-              chart.draw(data, options);
-            }
+                    var data = google.visualization.arrayToDataTable(response);
+                    var options = {
+                        title: 'Daily Patient Statistics',
+                        vAxis: {
+                            title: 'Statistics',
+                            gridlines: {
+                                count: 15
+                            }
+                        },
+                        hAxis: {
+                            title: '' + monthNames[todayDate.getMonth()] + ''
+                        },
+                        seriesType: 'bars',
+                        series: {
+                            5: {
+                                type: 'line'
+                            }
+                        },
+                    };
+                    var chart = new google.visualization.ComboChart(document.getElementById(
+                        'daily_patient_count_chart'));
+                    chart.draw(data, options);
+                }
 
 
-        },
-        error: function (e) {
-            alert("Chart Not loaded!");
-        }
-    });
-
-    $.ajax({
-        type: 'get',
-        url:'get_monthly_patient_count',
-        success: function (response) {
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(drawVisualization);
-
-            function drawVisualization() {
-
-              var data = google.visualization.arrayToDataTable(response);
-              var options = {
-                title : 'Monthly Patient Statistics',
-                vAxis: {title: 'Statistics', gridlines: { count: 15 }},
-                hAxis: {title: ''+ ''+''},
-                seriesType: 'bars',
-                series: {5: {type: 'line'},
-                0: { color: '#C414F0' },
             },
-
-              };
-              var chart = new google.visualization.ComboChart(document.getElementById('monthly_patient_count_chart'));
-              chart.draw(data, options);
+            error: function(e) {
+                console.log("Chart Not loaded!");
             }
+        });
+
+        $.ajax({
+            type: 'get',
+            url: 'get_monthly_patient_count',
+            success: function(response) {
+                google.charts.load('current', {
+                    'packages': ['corechart']
+                });
+                google.charts.setOnLoadCallback(drawVisualization);
+
+                function drawVisualization() {
+
+                    var data = google.visualization.arrayToDataTable(response);
+                    var options = {
+                        title: 'Monthly Patient Statistics',
+                        vAxis: {
+                            title: 'Statistics',
+                            gridlines: {
+                                count: 15
+                            }
+                        },
+                        hAxis: {
+                            title: '' + '' + ''
+                        },
+                        seriesType: 'bars',
+                        series: {
+                            5: {
+                                type: 'line'
+                            },
+                            0: {
+                                color: '#C414F0'
+                            },
+                        },
+
+                    };
+                    var chart = new google.visualization.ComboChart(document.getElementById(
+                        'monthly_patient_count_chart'));
+                    chart.draw(data, options);
+                }
 
 
-        },
-        error: function (e) {
-            alert("Chart Not loaded!");
-        }
-    });
-
-    $.ajax({
-        type: 'get',
-        url:'get_daily_based_income_data',
-        success: function (response) {
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(drawVisualization);
-
-            function drawVisualization() {
-
-              var data = google.visualization.arrayToDataTable(response);
-              var options = {
-                title : 'Daily Income Statistics',
-                vAxis: {title: 'Statistics', gridlines: { count: 15 }},
-                hAxis: {title: ''+ monthNames[todayDate.getMonth()] +''},
-                seriesType: 'bars',
-                series: {5: {type: 'line'}},
-              };
-              var chart = new google.visualization.ComboChart(document.getElementById('daily_income_chart'));
-              chart.draw(data, options);
+            },
+            error: function(e) {
+                console.log("Chart Not loaded!");
             }
+        });
+
+        $.ajax({
+            type: 'get',
+            url: 'get_daily_based_income_data',
+            success: function(response) {
+                google.charts.load('current', {
+                    'packages': ['corechart']
+                });
+                google.charts.setOnLoadCallback(drawVisualization);
+
+                function drawVisualization() {
+
+                    var data = google.visualization.arrayToDataTable(response);
+                    var options = {
+                        title: 'Daily Income Statistics',
+                        vAxis: {
+                            title: 'Statistics',
+                            gridlines: {
+                                count: 15
+                            }
+                        },
+                        hAxis: {
+                            title: '' + monthNames[todayDate.getMonth()] + ''
+                        },
+                        seriesType: 'bars',
+                        series: {
+                            5: {
+                                type: 'line'
+                            }
+                        },
+                    };
+                    var chart = new google.visualization.ComboChart(document.getElementById(
+                        'daily_income_chart'));
+                    chart.draw(data, options);
+                }
 
 
-        },
-        error: function (e) {
-            alert("Chart Not loaded!");
-        }
-    });
-
-    $.ajax({
-        type: 'get',
-        url:'get_monthly_based_income_data',
-        success: function (response) {
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(drawVisualization);
-
-            function drawVisualization() {
-
-              var data = google.visualization.arrayToDataTable(response);
-              var options = {
-                title : 'Daily Income Statistics',
-                vAxis: {title: 'Statistics', gridlines: { count: 15 }},
-                hAxis: {title: ''+ '' +''},
-                seriesType: 'bars',
-                series: {5: {type: 'line'}},
-              };
-              var chart = new google.visualization.ComboChart(document.getElementById('monthly_based_income_data'));
-              chart.draw(data, options);
+            },
+            error: function(e) {
+                console.log("Chart Not loaded!");
             }
+        });
+
+        $.ajax({
+            type: 'get',
+            url: 'get_monthly_based_income_data',
+            success: function(response) {
+                google.charts.load('current', {
+                    'packages': ['corechart']
+                });
+                google.charts.setOnLoadCallback(drawVisualization);
+
+                function drawVisualization() {
+
+                    var data = google.visualization.arrayToDataTable(response);
+                    var options = {
+                        title: 'Daily Income Statistics',
+                        vAxis: {
+                            title: 'Statistics',
+                            gridlines: {
+                                count: 15
+                            }
+                        },
+                        hAxis: {
+                            title: '' + '' + ''
+                        },
+                        seriesType: 'bars',
+                        series: {
+                            5: {
+                                type: 'line'
+                            }
+                        },
+                    };
+                    var chart = new google.visualization.ComboChart(document.getElementById(
+                        'monthly_based_income_data'));
+                    chart.draw(data, options);
+                }
 
 
-        },
-        error: function (e) {
-            alert("Chart Not loaded!");
-        }
-    });
-
-
-
-</script>
+            },
+            error: function(e) {
+                console.log("Chart Not loaded!");
+            }
+        });
+    </script>
 @endsection

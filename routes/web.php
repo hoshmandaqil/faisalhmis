@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExpenseCategoryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -142,6 +143,15 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('unapprovedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'unapprovedPOs']);
     Route::get('rejectedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'rejectedPOs'])->name('PO.rejectedList');
 
+    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
+    Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
+    Route::delete('expenses/files', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
+
+    Route::prefix('expense-categories')->group(function () {
+        Route::get('/', [ExpenseCategoryController::class, 'index'])->name('expense_categories.index');
+        Route::post('{id?}', [ExpenseCategoryController::class, 'store'])->name('expense_categories.store');
+        Route::delete('{id}', [ExpenseCategoryController::class, 'destroy'])->name('expense_categories.destroy');
+    });    
 
     // Old POs
     Route::resource('/Old_PO', \App\Http\Controllers\OldPurchaseOrderController::class);
