@@ -188,7 +188,7 @@ class PatientController extends Controller
         $selectLab = LabDepartment::latest()->select('id', 'dep_name', 'price', 'normal_range', 'main_dep_id')->get();
         $mainLabDepartments = MainLabDepartment::latest()->select('id', 'dep_name')->get();
 
-        $medicine_dosage = DB::table('medicine_dosage')->get();
+        $medicine_dosage = DB::table('medicine_dosages')->get();
 
         return view(
             'patient.my_patients',
@@ -231,7 +231,7 @@ class PatientController extends Controller
                 return $pharmacy;
             })->lazy();
 
-        $medicine_dosage = DB::table('medicine_dosage')->get();
+        $medicine_dosage = DB::table('medicine_dosages')->get();
 
         return view(
             'patient.my_patients_medicines',
