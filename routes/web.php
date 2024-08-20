@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\PayrollController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -151,7 +152,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/', [ExpenseCategoryController::class, 'index'])->name('expense_categories.index');
         Route::post('{id?}', [ExpenseCategoryController::class, 'store'])->name('expense_categories.store');
         Route::delete('{id}', [ExpenseCategoryController::class, 'destroy'])->name('expense_categories.destroy');
-    });    
+    });
 
     // Old POs
     Route::resource('/Old_PO', \App\Http\Controllers\OldPurchaseOrderController::class);
@@ -208,6 +209,27 @@ Route::group(['middleware' => ['auth']], function () {
         $exitCode = Artisan::call('view:cache');
         return '<h1>View caches!</h1>';
     });
+
+    // Route to list all payrolls
+    Route::get('/payrolls', [PayrollController::class, 'index'])->name('payrolls.index');
+
+    // Route to show the form to create a new payroll
+    Route::get('/payrolls/create', [PayrollController::class, 'create'])->name('payrolls.create');
+
+    // Route to store the newly created payroll and payroll items
+    Route::post('/payrolls', [PayrollController::class, 'store'])->name('payrolls.store');
+
+    // Route to show the details of a specific payroll
+    Route::get('/payrolls/{payroll}', [PayrollController::class, 'show'])->name('payrolls.show');
+
+    // Route to show the form to edit an existing payroll (if needed)
+    Route::get('/payrolls/{payroll}/edit', [PayrollController::class, 'edit'])->name('payrolls.edit');
+
+    // Route to update the existing payroll
+    Route::put('/payrolls/{payroll}', [PayrollController::class, 'update'])->name('payrolls.update');
+
+    // Route to delete a payroll
+    Route::delete('/payrolls/{payroll}', [PayrollController::class, 'destroy'])->name('payrolls.destroy');
 });
 
 Auth::routes(['register' => true]);
