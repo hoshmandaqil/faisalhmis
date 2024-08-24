@@ -118,21 +118,21 @@
                 </li>
             @endif
 
-            <li class="nav-item dropdown ">
-                <a class="nav-link dropdown-toggle" id="appsDropdown" data-toggle="dropdown" href="#"
-                    role="button" aria-haspopup="true" aria-expanded="false">
-                    <i class="icon-user-plus nav-icon"></i>
-                    HR
-                </a>
-                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="appsDropdown">
+            @if (in_array('hr_menu', $user_permissions))
+                <li class="nav-item dropdown ">
+                    <a class="nav-link dropdown-toggle" id="appsDropdown" data-toggle="dropdown" href="#"
+                        role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="icon-user-plus nav-icon"></i>
+                        HR
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="appsDropdown">
 
-                    <li>
-                        <a class="dropdown-item" href="{{ route('employee.index') }}">Employees Management</a>
-                    </li>
-                </ul>
-            </li>
-
-
+                        <li>
+                            <a class="dropdown-item" href="{{ route('employee.index') }}">Employees Management</a>
+                        </li>
+                    </ul>
+                </li>
+            @endif
 
             @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
                 <li class="nav-item">
