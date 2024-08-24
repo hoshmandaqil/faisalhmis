@@ -94,6 +94,7 @@ class DatabaseSeeder extends Seeder
             'Patients' => ['patient_list', 'add_patient', 'edit_patient', 'delete_patient'],
             'Doctor' => ['doctor_sale_medicine', 'doctor_sale_ipd', 'doctor_set_lab', 'doctor_request_medicine', 'doctor_edit_sale_medicine'],
             'Pharmacy' => ['pharmacy_menu', 'pharmacy_sale_medicine', 'pharmacy_preview_medicine', 'pharmacy_edit_medicine', 'pharmacy_complete_medicine'],
+            'HR' => ['hr_menu'],
             'Reception' => ['reception_menu', 'reception_preview_medicine', 'reception_print_medicine'],
             'Reports' => [
                 'reports_view',
