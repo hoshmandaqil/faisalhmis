@@ -132,6 +132,83 @@
                 </ul>
             </li>
 
+
+
+            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('PO.index') }}">
+                        <i class="icon-attach_money nav-icon"></i>
+                        Purchase Order
+                    </a>
+                </li>
+            @endif
+            {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('payrolls.index') }}">
+                    <i class="icon-attach_money nav-icon"></i>
+                    Payrolls
+                </a>
+            </li>
+            {{-- @endif --}}
+            {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('expenses.index') }}">
+                    <i class="icon-attach_money nav-icon"></i>
+                    Expenses
+                </a>
+            </li>
+            {{-- @endif --}}
+
+            @if (in_array('attendance_menu', $user_permissions))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('attendance.index') }}">
+                        <i class="icon-spellcheck nav-icon"></i>
+                        E-Attendance
+                    </a>
+                </li>
+            @endif
+
+            @if (in_array('setting_view', $user_permissions))
+                <li class="nav-item dropdown ">
+                    <a class="nav-link dropdown-toggle" id="appsDropdown" data-toggle="dropdown" href="#"
+                        role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="icon-settings nav-icon"></i>
+                        Setting
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="appsDropdown">
+                        {{-- <li> --}}
+                        {{-- <a class="dropdown-item" href="{{route('doctor.index')}}">Doctors</a> --}}
+                        {{-- </li> --}}
+                        @if (in_array('user_list', $user_permissions))
+                            <li>
+                                <a class="dropdown-item" href="{{ url('users') }}">Users</a>
+                            </li>
+                        @endif
+                        @if (in_array('floor_list', $user_permissions))
+                            <li>
+                                <a class="dropdown-item" href="{{ route('floor.index') }}">Floors</a>
+                            </li>
+                        @endif
+                        @if (in_array('lab_list', $user_permissions))
+                            <li>
+                                <a class="dropdown-item" href="{{ route('lab_department.index') }}">Lab
+                                    Departments</a>
+                            </li>
+                        @endif
+                        @if (in_array('supplier_list', $user_permissions))
+                            <li>
+                                <a class="dropdown-item" href="{{ route('supplier.index') }}">Suppliers</a>
+                            </li>
+                        @endif
+                        @if (in_array('holiday_menu', $user_permissions))
+                            <li>
+                                <a class="dropdown-item" href="{{ route('holiday.index') }}">Holidays</a>
+                            </li>
+                        @endif
+
+                    </ul>
+                </li>
+            @endif
             @if (in_array('reports_view', $user_permissions))
                 <li class="nav-item dropdown ">
                     <a class="nav-link dropdown-toggle" id="appsDropdown" data-toggle="dropdown" href="#"
@@ -323,82 +400,6 @@
                     </ul>
                 </li>
 
-            @endif
-
-            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('PO.index') }}">
-                        <i class="icon-attach_money nav-icon"></i>
-                        Purchase Order
-                    </a>
-                </li>
-            @endif
-            {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('payrolls.index') }}">
-                    <i class="icon-attach_money nav-icon"></i>
-                    Payrolls
-                </a>
-            </li>
-            {{-- @endif --}}
-            {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('expenses.index') }}">
-                    <i class="icon-attach_money nav-icon"></i>
-                    Expenses
-                </a>
-            </li>
-            {{-- @endif --}}
-
-            @if (in_array('attendance_menu', $user_permissions))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('attendance.index') }}">
-                        <i class="icon-spellcheck nav-icon"></i>
-                        E-Attendance
-                    </a>
-                </li>
-            @endif
-
-            @if (in_array('setting_view', $user_permissions))
-                <li class="nav-item dropdown ">
-                    <a class="nav-link dropdown-toggle" id="appsDropdown" data-toggle="dropdown" href="#"
-                        role="button" aria-haspopup="true" aria-expanded="false">
-                        <i class="icon-settings nav-icon"></i>
-                        Setting
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="appsDropdown">
-                        {{-- <li> --}}
-                        {{-- <a class="dropdown-item" href="{{route('doctor.index')}}">Doctors</a> --}}
-                        {{-- </li> --}}
-                        @if (in_array('user_list', $user_permissions))
-                            <li>
-                                <a class="dropdown-item" href="{{ url('users') }}">Users</a>
-                            </li>
-                        @endif
-                        @if (in_array('floor_list', $user_permissions))
-                            <li>
-                                <a class="dropdown-item" href="{{ route('floor.index') }}">Floors</a>
-                            </li>
-                        @endif
-                        @if (in_array('lab_list', $user_permissions))
-                            <li>
-                                <a class="dropdown-item" href="{{ route('lab_department.index') }}">Lab
-                                    Departments</a>
-                            </li>
-                        @endif
-                        @if (in_array('supplier_list', $user_permissions))
-                            <li>
-                                <a class="dropdown-item" href="{{ route('supplier.index') }}">Suppliers</a>
-                            </li>
-                        @endif
-                        @if (in_array('holiday_menu', $user_permissions))
-                            <li>
-                                <a class="dropdown-item" href="{{ route('holiday.index') }}">Holidays</a>
-                            </li>
-                        @endif
-
-                    </ul>
-                </li>
             @endif
         </ul>
     </div>
