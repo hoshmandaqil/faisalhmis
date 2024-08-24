@@ -31,7 +31,7 @@
             <tbody>
                 @foreach ($payroll->items as $item)
                     <tr>
-                        <td>{{ $item->employee->name }}</td>
+                        <td>{{ $item->employee->first_name }}</td>
                         <td>{{ $item->gross_salary }} AFN</td>
                         <td>{{ $item->net_salary }} AFN</td>
                         <td>{{ $item->bonus }} AFN</td>

@@ -1,26 +1,29 @@
 @extends('layouts.master')
 
 @section('page_title')
-    Generate Payroll
+    Edit Payroll
 @endsection
 
 @section('page-action')
 @endsection
 
 @section('content')
-    <form action="{{ route('payrolls.store') }}" method="POST">
+    <form action="{{ route('payrolls.update', $payroll->id) }}" method="POST">
         @csrf
-        <div class="row">
-            <div class="form-group col-md-4">
-                <label for="payroll_date">Payroll Date</label>
-                <input type="date" name="payroll_date" id="payroll_date" class="form-control" required>
-            </div>
+        @method('PUT')
 
-            <div class="form-group col-md-4">
-                <label for="official_days">Official Days</label>
-                <input type="number" name="official_days" id="official_days" class="form-control" required>
-            </div>
+        <div class="form-group">
+            <label for="payroll_date">Payroll Date</label>
+            <input type="date" name="payroll_date" id="payroll_date" class="form-control" value="{{ $payroll->payroll_date }}"
+                required>
         </div>
+
+        <div class="form-group">
+            <label for="official_days">Official Days</label>
+            <input type="number" name="official_days" id="official_days" class="form-control"
+                value="{{ $payroll->official_days }}" required>
+        </div>
+
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -30,47 +33,40 @@
                     <th>Bonus</th>
                     <th class="text-nowrap">Additional Payments</th>
                     <th>Tax</th>
-                    <th class="text-nowrap">Gross Salary</th>
                     <th class="text-nowrap">Net Payable</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($employees as $employee)
-                    <input type="hidden" name="employees[{{ $employee->id }}][employee_id]"
-                        class="form-control present-days" required value="{{ $employee->id }}">
+                @foreach ($payroll->items as $item)
                     <tr>
-                        <td>{{ $employee->first_name }}</td>
-                        <td>{{ $employee->base_salary }} AFN</td>
+                        <td>{{ $item->employee->first_name }}</td>
+                        <td>{{ $item->employee->base_salary }} AFN</td>
                         <td>
-                            <input type="number" name="employees[{{ $employee->id }}][present_days]"
-                                class="form-control present-days" required>
+                            <input type="number" name="employees[{{ $item->employee->id }}][present_days]"
+                                class="form-control present-days" value="{{ $item->present_days }}" required>
                         </td>
                         <td>
-                            <input type="number" name="employees[{{ $employee->id }}][bonus]" class="form-control bonus"
-                                required>
+                            <input type="number" name="employees[{{ $item->employee->id }}][bonus]"
+                                class="form-control bonus" value="{{ $item->bonus }}" required>
                         </td>
                         <td>
-                            <input type="number" name="employees[{{ $employee->id }}][additional_payments]"
-                                class="form-control additional-payments">
+                            <input type="number" name="employees[{{ $item->employee->id }}][additional_payments]"
+                                class="form-control additional-payments" value="{{ $item->additional_payments }}">
                         </td>
                         <td>
-                            <input type="number" name="employees[{{ $employee->id }}][tax]" class="form-control tax"
-                                readonly>
+                            <input type="number" name="employees[{{ $item->employee->id }}][tax]" class="form-control tax"
+                                value="{{ $item->tax }}" readonly>
                         </td>
                         <td>
-                            <input type="number" name="employees[{{ $employee->id }}][gross_salary]"
-                                class="form-control gross-salary" readonly>
-                        </td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][net_payable]"
-                                class="form-control net-payable" readonly>
+                            <input type="number" name="employees[{{ $item->employee->id }}][net_payable]"
+                                class="form-control net-payable" value="{{ $item->amount }}" readonly>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <button type="submit" class="btn btn-primary">Generate Payroll</button>
+        <button type="submit" class="btn btn-primary">Update Payroll</button>
     </form>
 @endsection
 

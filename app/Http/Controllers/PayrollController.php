@@ -34,17 +34,14 @@ class PayrollController extends Controller
             'employees.*.bonus' => 'required|numeric',
             'employees.*.additional_payments' => 'nullable|string',
             'employees.*.tax' => 'required|numeric',
-            'employees.*.amount' => 'required|numeric',
-            // Add more validation rules if needed
+            'employees.*.net_payable' => 'required|numeric',
         ]);
 
-        info($request->all);
-        
         DB::transaction(function () use ($request) {
             // Create the payroll
             $payroll = Payroll::create([
                 'payroll_date' => $request->input('payroll_date'),
-                'total_amount' => array_sum(array_column($request->input('employees'), 'amount')),
+                'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
                 'official_days' => $request->input('official_days'),
                 'status' => 'pending', // or any initial status
                 'description' => $request->input('description'),
@@ -59,9 +56,9 @@ class PayrollController extends Controller
                     'bonus' => $employeeData['bonus'],
                     'tax' => $employeeData['tax'],
                     'additional_payments' => $employeeData['additional_payments'],
-                    'amount' => $employeeData['amount'], // This should be calculated in the frontend and passed to backend
-                    'gross_salary' => $employeeData['gross_salary'], // if you include it in the frontend data
-                    'net_salary' => $employeeData['net_salary'], // if you include it in the frontend data
+                    'amount' => $employeeData['net_payable'],
+                    'gross_salary' => $employeeData['gross_salary'],
+                    'net_salary' => $employeeData['net_payable'],
                 ]);
             }
         });
@@ -75,14 +72,51 @@ class PayrollController extends Controller
         return view('payrolls.show', compact('payroll', 'payrollItems'));
     }
 
-    public function edit(Payroll $payroll)
+    public function edit($id)
     {
-        // Handle the edit logic here if needed
+        $payroll = Payroll::with('items.employee')->findOrFail($id);
+        return view('payrolls.edit', compact('payroll'));
     }
 
-    public function update(Request $request, Payroll $payroll)
+    public function update(Request $request, $id)
     {
-        // Handle the update logic here if needed
+        $request->validate([
+            'payroll_date' => 'required|date',
+            'official_days' => 'required|integer',
+            'employees' => 'required|array',
+            'employees.*.present_days' => 'required|numeric',
+            'employees.*.bonus' => 'required|numeric',
+            'employees.*.additional_payments' => 'nullable|numeric',
+        ]);
+
+        // Update Payroll
+        $payroll = Payroll::findOrFail($id);
+        $payroll->payroll_date = $request->input('payroll_date');
+        $payroll->official_days = $request->input('official_days');
+        $payroll->save();
+
+        // Update Payroll Items
+        foreach ($request->input('employees') as $employeeId => $employeeData) {
+            $payrollItem = PayrollItem::where('payroll_id', $payroll->id)
+                ->where('employee_id', $employeeId)
+                ->firstOrFail();
+
+            $grossSalary = ($payrollItem->employee->base_salary / 30) * $employeeData['present_days'];
+            $taxableIncome = $grossSalary + $employeeData['bonus'] + ($employeeData['additional_payments'] ?? 0);
+            $tax = $taxableIncome * 0.1;  // Example tax calculation
+            $netPayable = $taxableIncome - $tax;
+
+            $payrollItem->present_days = $employeeData['present_days'];
+            $payrollItem->bonus = $employeeData['bonus'];
+            $payrollItem->additional_payments = $employeeData['additional_payments'] ?? 0;
+            $payrollItem->gross_salary = $grossSalary;
+            $payrollItem->net_salary = $netPayable;
+            $payrollItem->tax = $tax;
+            $payrollItem->amount = $netPayable;
+            $payrollItem->save();
+        }
+
+        return redirect()->route('payrolls.index')->with('success', 'Payroll updated successfully.');
     }
 
     public function destroy(Payroll $payroll)
