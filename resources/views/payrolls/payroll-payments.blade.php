@@ -6,7 +6,7 @@
 
 @section('page-action')
     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPayrollPayment">
-        Add New Expense
+        New Payment
     </button>
 @endsection
 
@@ -50,7 +50,7 @@
                         <td>
                             <div class="d-flex">
                                 <!-- View Button -->
-                                <button class="btn btn-icon btn-success btn-sm view-btn mr-2" data-id="{{ $payment->id }}"
+                                {{-- <button class="btn btn-icon btn-success btn-sm view-btn mr-2" data-id="{{ $payment->id }}"
                                     data-employee="{{ $payment->employee->first_name }}"
                                     data-amount="{{ $payment->amount }}" data-date="{{ $payment->payment_date }}"
                                     data-remarks="{{ $payment->remarks }}">
@@ -74,7 +74,7 @@
                                         onclick="return confirm('Are you sure you want to delete this payment?');">
                                         Delete
                                     </button>
-                                </form>
+                                </form> --}}
 
                             </div>
                         </td>
