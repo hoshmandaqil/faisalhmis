@@ -17,6 +17,7 @@ class PayrollPayment extends Model
         'payment_method',
         'amount',
         'cashier',
+        'remarks',
     ];
 
     public function payroll()
