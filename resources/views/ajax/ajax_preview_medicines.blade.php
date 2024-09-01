@@ -189,6 +189,8 @@
                             <table class="table">
                                 <tr>
                                     <td class="text-center center" colspan="100%">
+                                        <img src="{{ asset('assets/img/logo/logo.png') }}" alt=""
+                                            style="height: 80px" class="mb-4">
                                         <h3 class="font-weight-bold">Bayazid Rokhan Hospital</h3>
                                         <h4>Pharmacy</h4>
                                     </td>
@@ -242,9 +244,13 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <div class="px-2">
+                            <div class="px-2 d-flex justify-content-between">
                                 <p style="font-size:14px"><strong>By:</strong> {{ $patient->createdBy->name }}</p>
+                                <p style="font-size:14px"><strong>Address:</strong> Karte-Naw, Nanwayi Station</p>
+                            </div>
+                            <div class="px-2 d-flex justify-content-between">
                                 <p style="font-size:14px"><strong>Date:</strong> {{ $patient->created_at }}</p>
+                                <p style="font-size:14px"><strong>Phone No:</strong>078 700 04 44</p>
                             </div>
                         </div>
                     </div>
