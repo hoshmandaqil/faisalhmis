@@ -8,9 +8,7 @@
     <style media='screen,print'>
         <?php include public_path('assets/css/bootstrap.min.css'); ?>
     </style>
-    <link href="{{ asset('assets/css/bootstrap.min.css') }}"
-        rel="stylesheet"
-        media='all'>
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" media='all'>
     <style>
         @media print {
             .remark {
@@ -187,30 +185,37 @@
                 </div> --}}
                 <div class="col-12">
                     <div>
-                        <div class="table-responsive table-borderless table-light"
-                            style="width: 400px !important; max-wdith: 400px !important;">
-                            <table>
+                        <div class="table-responsive table-borderless table-light">
+                            <table class="table">
                                 <tr>
-                                    <td class="text-center center"
-                                        colspan="100%">
-                                        <h3>Bayazid Rokhan Hospital</h3>
+                                    <td class="text-center center" colspan="100%">
+                                        <h3 class="font-weight-bold">Bayazid Rokhan Hospital</h3>
                                         <h4>Pharmacy</h4>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="font-weight:bold;">ID:<span class="font-weight-bolder"> {{ $patient->patient_generated_id }}</span> / </td>
-                                    <td style="font-weight:bold;">Patient Name:<span class="font-weight-bolder"> {{ $patient->patient_name }}</span></td>
+                                    <td>
+                                        <strong>ID:</strong>
+                                        <span>
+                                            {{ $patient->patient_generated_id }}
+                                        </span>
+                                    </td>
+                                    <td><strong>Patient Name:</strong>
+                                        <span>
+                                            {{ $patient->patient_name }}
+                                        </span>
+                                    </td>
                                 </tr>
                             </table>
-                            <table class="table medicine_table"
-                                style="font-weight:bold; font-size: 15px !important;">
-                                <thead>
+                            <table class="table medicine_table table-bordered border-black"
+                                style="font-size: 15px !important;">
+                                <thead class="table-bordered border-black" style="font-weight:bold; ">
                                     <th>ITEM</th>
                                     <th>RATE</th>
                                     <th>QTY</th>
                                     <th>AMOUNT</th>
                                 </thead>
-                                <tbody>
+                                <tbody class="table-bordered border-black">
                                     <?php $grandTotal = 0; ?>
                                     @foreach ($soldMedicines as $medicine)
                                         <tr>
@@ -231,14 +236,16 @@
                                         @endif --}}
                                     @endforeach
                                     <tr>
-                                        <td style="border-top: 1px solid lightgray; font-weight:bold;"
-                                            colspan="100%"><b>Total: {{ round($grandTotal) }} AFN</b></td>
+                                        <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="100%">
+                                            <b>Total: {{ round($grandTotal) }} AFN</b>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <hr>
-                            <p style="font-size:14px">By: {{ $patient->createdBy->name }}</p>
-                            <p style="font-size:14px">Date: {{ $patient->created_at }}</p>
+                            <div class="px-2">
+                                <p style="font-size:14px"><strong>By:</strong> {{ $patient->createdBy->name }}</p>
+                                <p style="font-size:14px"><strong>Date:</strong> {{ $patient->created_at }}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -250,10 +257,11 @@
 
     </main>
     {{-- <hr> --}}
-    <div class="submit-section">
-        <button class="btn-sm hidden-print d-print-none"
-            type="button"
-            onclick="window.print();"> Print <i class="icon icon-print"></i></button>
+    <div class="submit-section d-flex justify-content-end px-4">
+        <button class="btn btn-dark btn-sm hidden-print d-print-none" type="button" onclick="window.print();">
+            Print
+            <i class="icon icon-print"></i>
+        </button>
     </div>
     <br class="d-print-none">
 </body>
