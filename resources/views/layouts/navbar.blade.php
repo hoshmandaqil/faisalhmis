@@ -143,20 +143,24 @@
                 </li>
             @endif
             {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('payrolls.index') }}">
-                    <i class="icon-attach_money nav-icon"></i>
-                    Payrolls
-                </a>
-            </li>
+            @if (in_array('payroll_menu', $user_permissions))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('payrolls.index') }}">
+                        <i class="icon-attach_money nav-icon"></i>
+                        Payrolls
+                    </a>
+                </li>
+            @endif
             {{-- @endif --}}
             {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('expenses.index') }}">
-                    <i class="icon-attach_money nav-icon"></i>
-                    Expenses
-                </a>
-            </li>
+            @if (in_array('expense_menu', $user_permissions))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('expenses.index') }}">
+                        <i class="icon-attach_money nav-icon"></i>
+                        Expenses
+                    </a>
+                </li>
+            @endif
             {{-- @endif --}}
 
             @if (in_array('attendance_menu', $user_permissions))
