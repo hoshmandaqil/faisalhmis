@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\PayrollPaymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -230,6 +231,15 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Route to delete a payroll
     Route::delete('/payrolls/{payroll}', [PayrollController::class, 'destroy'])->name('payrolls.destroy');
+
+    // Payroll Payments
+    Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll-payment.index');
+
+    Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails']);
+
+    Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payrolls.payments.store');
+
+    Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
 });
 
 Auth::routes(['register' => true]);

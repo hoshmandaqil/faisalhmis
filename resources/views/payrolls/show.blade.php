@@ -11,7 +11,7 @@
     <div class="mb-4">
         <h4>Payroll Information</h4>
         <p><strong>Date:</strong> {{ $payroll->payroll_date }}</p>
-        <p><strong>Total Amount:</strong> {{ $payroll->total_amount }} AFN</p>
+        <p><strong>Total Amount:</strong> {{ number_format($payroll->total_amount) }} AFN</p>
         <p><strong>Status:</strong> {{ ucfirst($payroll->status) }}</p>
     </div>
 
@@ -32,11 +32,11 @@
                 @foreach ($payroll->items as $item)
                     <tr>
                         <td>{{ $item->employee->first_name }}</td>
-                        <td>{{ $item->gross_salary }} AFN</td>
-                        <td>{{ $item->net_salary }} AFN</td>
-                        <td>{{ $item->bonus }} AFN</td>
-                        <td>{{ $item->tax }} AFN</td>
-                        <td>{{ $item->amount }} AFN</td>
+                        <td>{{ number_format($item->gross_salary) }} AFN</td>
+                        <td>{{ number_format($item->net_salary) }} AFN</td>
+                        <td>{{ number_format($item->bonus) }} AFN</td>
+                        <td>{{ number_format($item->tax) }} AFN</td>
+                        <td>{{ number_format($item->amount) }} AFN</td>
                     </tr>
                 @endforeach
             </tbody>

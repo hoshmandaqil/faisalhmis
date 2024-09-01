@@ -142,16 +142,27 @@
                     </a>
                 </li>
             @endif
-            {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
             @if (in_array('payroll_menu', $user_permissions))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('payrolls.index') }}">
-                        <i class="icon-attach_money nav-icon"></i>
+                <li class="nav-item dropdown ">
+                    <a class="nav-link dropdown-toggle" id="payrollsDropdown" data-toggle="dropdown" href="#"
+                        role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="icon-settings nav-icon"></i>
                         Payrolls
                     </a>
+                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="payrollsDropdown">
+                        <li class="nav-item">
+                            <a class="dropdown-item" href="{{ route('payrolls.index') }}">
+                                Payrolls
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="dropdown-item" href="{{ route('payroll-payment.index') }}">
+                                Payroll Payments
+                            </a>
+                        </li>
+                    </ul>
                 </li>
             @endif
-            {{-- @endif --}}
             {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
             @if (in_array('expense_menu', $user_permissions))
                 <li class="nav-item">

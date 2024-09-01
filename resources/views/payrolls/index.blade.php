@@ -14,6 +14,7 @@
             <tr>
                 <th>ID</th>
                 <th>Payroll Date</th>
+                <th>Official Days</th>
                 <th>Total Amount</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -24,7 +25,8 @@
                 <tr>
                     <td>{{ $payroll->id }}</td>
                     <td>{{ $payroll->payroll_date }}</td>
-                    <td>{{ $payroll->total_amount }}</td>
+                    <td>{{ $payroll->official_days }}</td>
+                    <td>{{ number_format($payroll->total_amount) }}</td>
                     <td>{{ ucfirst($payroll->status) }}</td>
                     <td>
                         <a href="{{ route('payrolls.show', $payroll->id) }}" class="btn btn-info btn-sm">View</a>

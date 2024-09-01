@@ -40,7 +40,7 @@
                         class="form-control present-days" required value="{{ $employee->id }}">
                     <tr>
                         <td>{{ $employee->first_name }}</td>
-                        <td>{{ $employee->base_salary }} AFN</td>
+                        <td>{{ $employee->employeeCurrentSalary->salary_amount }} AFN</td>
                         <td>
                             <input type="number" name="employees[{{ $employee->id }}][present_days]"
                                 class="form-control present-days" required>
