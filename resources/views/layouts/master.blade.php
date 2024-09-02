@@ -11,7 +11,7 @@
     <meta name="description"
         content="">
     <meta name="author"
-        content="Sajad Haibat">
+        content="Mostafa Rezaie - https://mostafarezaie.com">
     <link href="{{ asset('assets/img/fav.png') }}"
         rel="shortcut icon" />
     <!-- CSRF Token -->
@@ -60,11 +60,11 @@
 
 </head>
 
-<body>
+<body id="app">
     <!-- Loading starts -->
     {{-- @include('layouts.loading') --}}
     <!-- Loading ends -->
-
+    
     <div class="container">
         <!-- Header start -->
         @include('layouts.header')

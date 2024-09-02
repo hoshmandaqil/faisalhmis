@@ -50,10 +50,8 @@
                         <td>
                             <div class="d-flex">
                                 <!-- View Button -->
-                                {{-- <button class="btn btn-icon btn-success btn-sm view-btn mr-2" data-id="{{ $payment->id }}"
-                                    data-employee="{{ $payment->employee->first_name }}"
-                                    data-amount="{{ $payment->amount }}" data-date="{{ $payment->payment_date }}"
-                                    data-remarks="{{ $payment->remarks }}">
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                    data-target="#viewPayrollPayment">
                                     View
                                 </button>
 
@@ -74,7 +72,7 @@
                                         onclick="return confirm('Are you sure you want to delete this payment?');">
                                         Delete
                                     </button>
-                                </form> --}}
+                                </form>
 
                             </div>
                         </td>
@@ -179,6 +177,24 @@
             </div>
         </div>
     </div>
+
+    <!-- View Payment Modal -->
+    <div class="modal fade" id="viewPayrollPayment" tabindex="-1" role="dialog"
+        aria-labelledby="viewPayrollPaymentLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <example-component></example-component>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -226,7 +242,9 @@
                             $('#payment').val(response.balance); // Set payment amount
                             $('#payrollDetails').removeClass('d-none'); // Show table
                             if (Number(response.balance) <= 0) {
-                                $('#submitBtn').remove()
+                                $('#submitBtn').hide()
+                            } else {
+                                $('#submitBtn').show()
                             }
                         }
                     });
