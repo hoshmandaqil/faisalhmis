@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 //use App\Models\Pharmacy;
 use App\Models\Employee;
+use App\Models\Expense\ExpenseItem;
 use App\Models\LabDepartment;
 use App\Models\LaboratoryPatientLab;
 use App\Models\MainLabDepartment;
@@ -344,16 +345,16 @@ class ReportController extends Controller
             // This is Overall Profit and expenses Codes.
             // We are getting expenses and incomes from Kblhms too as an API.
 
-            // Get all expenses from kblhms
-            $client = new \GuzzleHttp\Client(['verify' => false]);
-            $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
-            $kblAllExpenses = json_decode($allExpensesKbl->getBody()->getContents());
+            // // Get all expenses from kblhms
+            // $client = new \GuzzleHttp\Client(['verify' => false]);
+            // $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
+            $kblAllExpenses = ExpenseItem::sum('amount');
             $allExpenses += $kblAllExpenses;
 
             // Get all income from kblhms
-            $allIncomesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_incomes");
-            $kblAllIncomes = json_decode($allIncomesKbl->getBody()->getContents());
-            $allIncomes += $kblAllIncomes;
+            // $allIncomesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_incomes");
+            // $kblAllIncomes = json_decode($allIncomesKbl->getBody()->getContents());
+            // $allIncomes += $kblAllIncomes;
 
             // OPD
             $allIncomes += Patient::sum('OPD_fee');
@@ -424,12 +425,12 @@ class ReportController extends Controller
                 }
 
 
-                $kblData = $client->get("https://kblhms.rokhan.co/api_get_appointments", [
-                    "query" => ['from' => $day, 'to' => $day]
-                ]);
-                $kblTotalIncomes = json_decode($kblData->getBody()->getContents());
+                // $kblData = $client->get("https://kblhms.rokhan.co/api_get_appointments", [
+                //     "query" => ['from' => $day, 'to' => $day]
+                // ]);
+                // $kblTotalIncomes = json_decode($kblData->getBody()->getContents());
                 // $data['OPD Incomes'][$dayDate] = $kblTotalIncomes->appointmentsIncome;
-                $data['Other Incomes'][$dayDate] = $kblTotalIncomes->otherIncomes;
+                // $data['Other Incomes'][$dayDate] = $kblTotalIncomes->otherIncomes;
 
                 // IPD Report
 
@@ -529,10 +530,10 @@ class ReportController extends Controller
                 foreach ($doctors as $doctor) {
                     $seenPatientsByDoctor[$doctor->name][$dayDate] = DB::table('patients')->where('doctor_id', $doctor->id)->whereDate('created_at', $day)->count();
                 }
-                $kblHMSExpenses = $client->get("https://kblhms.rokhan.co/api_get_expenses", [
-                    "query" => ['from' => $from, 'to' => $to]
-                ]);
-                $kblTotalExpense = json_decode($kblHMSExpenses->getBody()->getContents());
+                // $kblHMSExpenses = $client->get("https://kblhms.rokhan.co/api_get_expenses", [
+                //     "query" => ['from' => $from, 'to' => $to]
+                // ]);
+                // $kblTotalExpense = json_decode($kblHMSExpenses->getBody()->getContents());
 
                 if ($kblTotalExpense == NULL) {
                     $kblTotalExpense = 0;
