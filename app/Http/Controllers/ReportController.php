@@ -320,6 +320,8 @@ class ReportController extends Controller
 
     public function general_profits_report()
     {
+        return 'We’re temporarily offline for maintenance. We’ll be back soon. Thank you for your patience!';
+        
         $from = $_GET['from'] ?? '';
         $to = $_GET['to'] ?? '';
         $registered_by  = $_GET['registered_by'] ?? '';
@@ -558,6 +560,8 @@ class ReportController extends Controller
 
     public function new_general_profits_report()
     {
+        return 'We’re temporarily offline for maintenance. We’ll be back soon. Thank you for your patience!';
+
         $from = $_GET['from'] ?? '';
         $to = $_GET['to'] ?? '';
         $registered_by  = $_GET['registered_by'] ?? '';
