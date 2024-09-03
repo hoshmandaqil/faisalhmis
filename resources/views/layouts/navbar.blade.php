@@ -56,9 +56,11 @@
                             <a class="dropdown-item" href="{{ route('patient_pharmacy_medicine.index') }}">Sale
                                 Medicine</a>
                         </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ route('pharmacy.index') }}">Procurement</a>
-                        </li>
+                        @if (in_array('procurement',$user_permissions))
+                            <li>
+                                <a class="dropdown-item" href="{{ route('pharmacy.index') }}">Procurement</a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
             @endif
