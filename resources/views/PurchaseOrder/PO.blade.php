@@ -5,7 +5,6 @@
 @endsection
 
 @section('page-action')
-    <a href="{{ url('/Old_PO') }}" class="btn btn-warning btn-sm pull-right">Old POs</a>
     @if (in_array('PO Creation', $user_permissions))
         <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal">
             Add New PO
@@ -186,8 +185,8 @@
 
                                 <td>
                                     @if (in_array('PO_verify', $user_permissions) ||
-                                        in_array('PO_Check', $user_permissions) ||
-                                        in_array('PO_approve', $user_permissions))
+                                            in_array('PO_Check', $user_permissions) ||
+                                            in_array('PO_approve', $user_permissions))
                                         <button class="btn btn-sm btn-success" data-toggle="modal"
                                             data-target="#actionsModal" data-po-id="{{ $po->id }}">Actions
                                         </button>
