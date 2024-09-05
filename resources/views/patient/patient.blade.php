@@ -243,8 +243,8 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>Default Discount</label>
-                                <select class="form-control" name="default_discount" @if (!in_array('Patient Default Discount', $user_permissions)) disabled @endif>
-                                    <option value="1">No</option>
+                                <select class="form-control" name="default_discount">
+                                    <option value="1" selected>No</option>
                                     @if (in_array('Patient Default Discount', $user_permissions))
                                         <option value="0">Yes</option>
                                     @endif
