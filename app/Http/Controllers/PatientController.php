@@ -64,7 +64,7 @@ class PatientController extends Controller
         $patient->blood_group = $request->blood_group;
         $patient->reg_date = $request->reg_date;
         $patient->doctor_id = $request->doctor_id;
-        $patient->OPD_fee =$request->default_discount == 0? 0 : $doctorOPDFee;
+        $patient->OPD_fee = $request->default_discount == 0 ? 0 : $doctorOPDFee;
         $patient->no_discount = $request->default_discount;
         $patient->created_by = \Auth::user()->id;
         $patient->save();

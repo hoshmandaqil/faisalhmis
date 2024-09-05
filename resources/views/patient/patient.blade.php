@@ -5,16 +5,11 @@
 @endsection
 
 @section('page-action')
-    <button class="btn btn-primary btn-sm"
-        data-toggle="modal"
-        data-target="#exampleModal"
-        type="button">
+    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal" type="button">
         Add patient
     </button>
     @if (\Request::is('search_patient_list'))
-        <a class="btn btn-danger btn-sm"
-            type="button"
-            href="{{ route('patient.index') }}">
+        <a class="btn btn-danger btn-sm" type="button" href="{{ route('patient.index') }}">
             Clear Search
         </a>
     @endif
@@ -22,8 +17,7 @@
 
 @section('styles')
     <!-- Bootstrap Select CSS -->
-    <link href="{{ asset('assets/vendor/bs-select/bs-select.css') }}"
-        rel="stylesheet" />
+    <link href="{{ asset('assets/vendor/bs-select/bs-select.css') }}" rel="stylesheet" />
     <style>
         .modal-body input,
         .modal-body select {
@@ -42,16 +36,12 @@
         <div class="row justify-content-center">
             <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12">
                 <div class="search-box">
-                    <form action="{{ url('search_patient_list') }}"
-                        method="post">
+                    <form action="{{ url('search_patient_list') }}" method="post">
                         @csrf
-                        <input class="search-query"
-                            name="search_patient"
-                            type="text"
+                        <input class="search-query" name="search_patient" type="text"
                             value="{{ Request::is('search_patient_list') ? $patientSearchDetail : '' }}"
                             placeholder="Search Patient By Id, Name or Phone...">
-                        <i class="icon-search1"
-                            onclick="$(this).closest('form').submit();"></i>
+                        <i class="icon-search1" onclick="$(this).closest('form').submit();"></i>
                     </form>
                 </div>
             </div>
@@ -63,8 +53,7 @@
     <!-- Row start -->
     @if (session()->has('alert'))
         <div class="row gutters">
-            <div class="alert {{ session()->get('alert-type') }}"
-                role="alert">
+            <div class="alert {{ session()->get('alert-type') }}" role="alert">
                 {{ session()->get('alert') }}
             </div>
         </div>
@@ -72,8 +61,7 @@
     <div class="row gutters">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="table-responsive">
-                <table class="table"
-                    id="scrollVertical">
+                <table class="table" id="scrollVertical">
                     <thead>
                         <tr>
                             <th>S.NO</th>
@@ -104,25 +92,16 @@
                                 <td>{{ $patient->created_at }}</td>
                                 <td>
 
-                                    <div class="btn-group"
-                                        role="group"
-                                        aria-label="Button group with nested dropdown">
-                                        <div class="btn-group"
-                                            role="group">
-                                            <button class="btn btn-warning btn-sm dropdown-toggle"
-                                                id="btnGroupDrop1"
-                                                data-toggle="dropdown"
-                                                type="button"
-                                                aria-haspopup="true"
+                                    <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-warning btn-sm dropdown-toggle" id="btnGroupDrop1"
+                                                data-toggle="dropdown" type="button" aria-haspopup="true"
                                                 aria-expanded="false">
                                                 Actions
                                             </button>
-                                            <div class="dropdown-menu"
-                                                aria-labelledby="btnGroupDrop1">
-                                                <a class="dropdown-item text-info"
-                                                    data-toggle="modal"
-                                                    data-target="#editPatientModal"
-                                                    data-id="{{ $patient->id }}"
+                                            <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                                <a class="dropdown-item text-info" data-toggle="modal"
+                                                    data-target="#editPatientModal" data-id="{{ $patient->id }}"
                                                     data-generate-id="{{ $patient->patient_generated_id }}"
                                                     data-name="{{ $patient->patient_name }}"
                                                     data-fname="{{ $patient->patient_fname }}"
@@ -142,17 +121,12 @@
                                                     data-height="{{ $patient->height }}"
                                                     data-mental-state="{{ $patient->mental_state }}"
                                                     data-medical-history="{{ $patient->medical_history }}"
-                                                    data-default-discount="{{ $patient->no_discount }}"
-                                                    href="#">
+                                                    data-default-discount="{{ $patient->no_discount }}" href="#">
                                                     <i class="icon icon-edit"></i> Edit</a>
-                                                <form action="{{ route('patient.destroy', $patient->id) }}"
-                                                    method="post">
+                                                <form action="{{ route('patient.destroy', $patient->id) }}" method="post">
                                                     {!! csrf_field() !!}
-                                                    <input name="_method"
-                                                        type="hidden"
-                                                        value="Delete">
-                                                    <button class="dropdown-item text-danger"
-                                                        type="submit"
+                                                    <input name="_method" type="hidden" value="Delete">
+                                                    <button class="dropdown-item text-danger" type="submit"
                                                         onclick="return confirm('Are you sure You want to delete this Patient?')">
                                                         <i class="icon icon-delete"></i> Delete
                                                     </button>
@@ -174,61 +148,38 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal fade"
-        id="exampleModal"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
+    <div class="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
         tabindex="-1">
-        <div class="modal-dialog modal-lg"
-            role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Add New Patient</h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Patient</h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('patient.store') }}"
-                        method="post"
-                        enctype="multipart/form-data">
+                    <form action="{{ route('patient.store') }}" method="post" enctype="multipart/form-data">
                         {!! csrf_field() !!}
                         <div class="row">
                             <div class="form-group col-6">
                                 <label>Patient ID <span class="text-danger">*</span></label>
-                                <input class="form-control"
-                                    name="patient_generated_id"
-                                    type="text"
-                                    value="{{ 'BRH-' . ($previousPatientId + 1) }}"
-                                    readonly
-                                    required>
+                                <input class="form-control" name="patient_generated_id" type="text"
+                                    value="{{ 'BRH-' . ($previousPatientId + 1) }}" readonly required>
                             </div>
                             <div class="form-group col-6">
                                 <label>Patient Name <span class="text-danger">*</span></label>
-                                <input class="form-control"
-                                    name="patient_name"
-                                    type="text"
-                                    required>
+                                <input class="form-control" name="patient_name" type="text" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="form-group col-6">
                                 <label>Patient F/Name <span class="text-danger">*</span></label>
-                                <input class="form-control"
-                                    name="patient_fname"
-                                    type="text"
-                                    required>
+                                <input class="form-control" name="patient_fname" type="text" required>
                             </div>
                             <div class="form-group col-6">
                                 <label>Patient Mobile</label>
-                                <input class="form-control"
-                                    name="patient_phone"
-                                    type="text">
+                                <input class="form-control" name="patient_phone" type="text">
                             </div>
                         </div>
 
@@ -236,9 +187,7 @@
 
                             <div class="form-group col-6">
                                 <label>Select Doctor</label>
-                                <select class="form-control selectpicker"
-                                    name="doctor_id"
-                                    data-live-search="true">
+                                <select class="form-control selectpicker" name="doctor_id" data-live-search="true">
                                     @foreach ($doctors as $key => $doctor)
                                         <option value="{{ $doctor->id }}">{{ ucfirst($doctor->name) }}
                                             <b>({{ $doctor->OPD_fee }})</b>
@@ -248,9 +197,7 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>Gender</label>
-                                <select class="form-control"
-                                    id=""
-                                    name="gender">
+                                <select class="form-control" id="" name="gender">
                                     <option></option>
                                     <option value="0">Male</option>
                                     <option value="1">Female</option>
@@ -262,8 +209,7 @@
 
                             <div class="form-group col-6">
                                 <label>Marital Status</label>
-                                <select class="form-control"
-                                    name="marital_status">
+                                <select class="form-control" name="marital_status">
                                     <option></option>
                                     <option value="0">Single</option>
                                     <option value="1">Married</option>
@@ -271,8 +217,7 @@
                             </div>
                             <div class="form-group col-6">
                                 <label>Blood Group</label>
-                                <select class="form-control"
-                                    name="blood_group">
+                                <select class="form-control" name="blood_group">
                                     <option></option>
                                     <option>A</option>
                                     <option>B</option>
@@ -284,41 +229,31 @@
                         <div class="row">
                             <div class="form-group col-6">
                                 <label>Age</label>
-                                <input class="form-control"
-                                    name="age"
-                                    type="text">
+                                <input class="form-control" name="age" type="text">
                             </div>
                             <div class="form-group col-6">
                                 <label>Advance Payment?</label>
-                                <input class="form-control"
-                                    name="advance_pay"
-                                    type="number"
-                                    value="0">
+                                <input class="form-control" name="advance_pay" type="number" value="0">
                             </div>
                         </div>
                         <div class="row">
                             <div class="form-group col-6">
                                 <label>Register Date</label>
-                                <input class="form-control"
-                                    name="reg_date"
-                                    type="date"
-                                    value="{{ date('Y-m-d') }}">
+                                <input class="form-control" name="reg_date" type="date" value="{{ date('Y-m-d') }}">
                             </div>
                             <div class="form-group col-6">
                                 <label>Default Discount</label>
-                                <select class="form-control"
-                                    name="default_discount">
-                                    <option value="0">Yes</option>
+                                <select class="form-control" name="default_discount" @if (!in_array('Patient Default Discount', $user_permissions)) disabled @endif>
                                     <option value="1">No</option>
+                                    @if (in_array('Patient Default Discount', $user_permissions))
+                                        <option value="0">Yes</option>
+                                    @endif
                                 </select>
                             </div>
                         </div>
                         <div class="submit-section">
-                            <button class="btn btn-secondary"
-                                data-dismiss="modal"
-                                type="button">Close</button>
-                            <button class="btn btn-primary submit-btn"
-                                type="submit">Submit</button>
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+                            <button class="btn btn-primary submit-btn" type="submit">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -327,63 +262,39 @@
     </div>
 
     <!-- Edit Modal -->
-    <div class="modal fade"
-        id="editPatientModal"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
+    <div class="modal fade" id="editPatientModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
         tabindex="-1">
-        <div class="modal-dialog modal-xl"
-            role="document">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Edit Patient</h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Patient</h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editPatientForm"
-                        action=""
-                        method="post"
-                        enctype="multipart/form-data">
+                    <form id="editPatientForm" action="" method="post" enctype="multipart/form-data">
                         {!! csrf_field() !!}
-                        <input name="_method"
-                            type="hidden"
-                            value="PUT">
+                        <input name="_method" type="hidden" value="PUT">
 
                         <div class="row">
 
                             <div class="form-group col-4">
                                 <label>Patient Name <span class="text-danger">*</span></label>
-                                <input class="form-control"
-                                    name="patient_name"
-                                    type="text"
-                                    required>
+                                <input class="form-control" name="patient_name" type="text" required>
                             </div>
                             <div class="form-group col-4">
                                 <label>Patient F/Name <span class="text-danger">*</span></label>
-                                <input class="form-control"
-                                    name="patient_fname"
-                                    type="text"
-                                    required>
+                                <input class="form-control" name="patient_fname" type="text" required>
                             </div>
 
                             <div class="form-group col-4">
                                 <label>Patient Mobile</label>
-                                <input class="form-control"
-                                    name="patient_phone"
-                                    type="text">
+                                <input class="form-control" name="patient_phone" type="text">
                             </div>
                             <div class="form-group col-4">
                                 <label>Select Doctor</label>
-                                <select class="form-control selectpicker"
-                                    name="doctor_id"
-                                    data-live-search="true">
+                                <select class="form-control selectpicker" name="doctor_id" data-live-search="true">
                                     @foreach ($doctors as $key => $doctor)
                                         <option value="{{ $doctor->id }}">{{ ucfirst($doctor->name) }}
                                             <b>({{ $doctor->OPD_fee }})</b>
@@ -394,9 +305,7 @@
 
                             <div class="form-group col-4">
                                 <label>Gender</label>
-                                <select class="form-control"
-                                    id=""
-                                    name="gender">
+                                <select class="form-control" id="" name="gender">
                                     <option></option>
                                     <option value="0">Male</option>
                                     <option value="1">Female</option>
@@ -404,8 +313,7 @@
                             </div>
                             <div class="form-group col-4">
                                 <label>Marital Status</label>
-                                <select class="form-control"
-                                    name="marital_status">
+                                <select class="form-control" name="marital_status">
                                     <option></option>
                                     <option value="0">Single</option>
                                     <option value="1">Married</option>
@@ -414,8 +322,7 @@
 
                             <div class="form-group col-4">
                                 <label>Blood Group</label>
-                                <select class="form-control"
-                                    name="blood_group">
+                                <select class="form-control" name="blood_group">
                                     <option></option>
                                     <option>A</option>
                                     <option>B</option>
@@ -425,79 +332,54 @@
                             </div>
                             <div class="form-group col-4">
                                 <label>Age</label>
-                                <input class="form-control"
-                                    name="age"
-                                    type="text">
+                                <input class="form-control" name="age" type="text">
                             </div>
 
                             <div class="form-group col-4">
                                 <label>Advance Payment?</label>
-                                <input class="form-control"
-                                    name="advance_pay"
-                                    type="number"
-                                    value="0">
+                                <input class="form-control" name="advance_pay" type="number" value="0">
                             </div>
                             <div class="form-group col-4">
                                 <label>Register Date</label>
-                                <input class="form-control"
-                                    name="reg_date"
-                                    type="date"
-                                    value="{{ date('Y-m-d') }}">
+                                <input class="form-control" name="reg_date" type="date" value="{{ date('Y-m-d') }}">
                             </div>
                             <div class="form-group col-4">
                                 <label>Blood Pressure</label>
-                                <input class="form-control"
-                                    name="blood_pressure"
-                                    type="text">
+                                <input class="form-control" name="blood_pressure" type="text">
                             </div>
                             <div class="form-group col-4">
                                 <label>Respiration Rate</label>
-                                <input class="form-control"
-                                    name="respiration_rate"
-                                    type="text">
+                                <input class="form-control" name="respiration_rate" type="text">
                             </div>
 
                             <div class="form-group col-4">
                                 <label>Pulse Rate</label>
-                                <input class="form-control"
-                                    name="pulse_rate"
-                                    type="text">
+                                <input class="form-control" name="pulse_rate" type="text">
                             </div>
 
                             <div class="form-group col-4">
                                 <label>SPO2</label>
-                                <input class="form-control"
-                                    name="heart_rate"
-                                    type="text">
+                                <input class="form-control" name="heart_rate" type="text">
                             </div>
                             <div class="form-group col-3">
                                 <label>Temperature</label>
-                                <input class="form-control"
-                                    name="temperature"
-                                    type="text">
+                                <input class="form-control" name="temperature" type="text">
                             </div>
                             <div class="form-group col-3">
                                 <label>Weight</label>
-                                <input class="form-control"
-                                    name="weight"
-                                    type="text">
+                                <input class="form-control" name="weight" type="text">
                             </div>
                             <div class="form-group col-3">
                                 <label>Height</label>
-                                <input class="form-control"
-                                    name="height"
-                                    type="text">
+                                <input class="form-control" name="height" type="text">
                             </div>
                             <div class="form-group col-3">
                                 <label>Mental State</label>
-                                <input class="form-control"
-                                    name="mental_state"
-                                    type="text">
+                                <input class="form-control" name="mental_state" type="text">
                             </div>
                             <div class="form-group col-3">
                                 <label>Default Discount</label>
-                                <select class="form-control"
-                                    name="default_discount">
+                                <select class="form-control" name="default_discount">
                                     <option value="0">Yes</option>
                                     <option value="1">No</option>
                                 </select>
@@ -506,17 +388,13 @@
                         <div class="row">
                             <div class="form-group col-12">
                                 <label>Medical History</label>
-                                <textarea class="form-control"
-                                    name="medical_history"></textarea>
+                                <textarea class="form-control" name="medical_history"></textarea>
                             </div>
                         </div>
                         <div class="submit-section">
-                            <button class="btn btn-secondary"
-                                data-dismiss="modal"
-                                type="button">Close</button>
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
 
-                            <button class="btn btn-primary submit-btn"
-                                type="submit">Save</button>
+                            <button class="btn btn-primary submit-btn" type="submit">Save</button>
                         </div>
                     </form>
                 </div>
