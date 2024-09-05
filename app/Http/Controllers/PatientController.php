@@ -133,7 +133,7 @@ class PatientController extends Controller
         $patient->height = $request->height;
         $patient->mental_state = $request->mental_state;
         $patient->medical_history = $request->medical_history;
-        $patient->no_discount = $request->default_discount;
+        $patient->no_discount = $request->default_discount || $patient->no_discount;
         $patient->updated_by = \Auth::user()->id;
         $patient->save();
         return  redirect()->back()->with('alert', 'The Patient Updated Successfully')->with('alert-type', 'alert-info');
