@@ -19,7 +19,7 @@ class CreatePatientIPDSTable extends Migration
             $table->unsignedBigInteger('bed_id');
             $table->unsignedBigInteger('created_by');
             $table->longText('remark')->nullable();
-            $table->decimal('price',5,2)->default(0);
+            $table->decimal('price',6,2)->default(0);
             $table->double('discount')->nullable();
             $table->date('discharge_date')->nullable();
             $table->tinyInteger('status')->default(1);
