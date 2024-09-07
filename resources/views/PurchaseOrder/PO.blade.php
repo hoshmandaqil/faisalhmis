@@ -130,7 +130,7 @@
                                 </span>
                             </td>
                             <td>
-                                <x-buttons.dropdown width="200" :delete="auth()->user()->hasPermissionTo('Delete PO')
+                                {{-- <x-buttons.dropdown width="200" :delete="auth()->user()->hasPermissionTo('Delete PO')
                                     ? route('PO.destroy', [$application->slug, $po->id])
                                     : false">
                                     <a class="menu-link px-3" href="#"
@@ -153,7 +153,7 @@
                                             </a>
                                         @endif
                                     @endif
-                                </x-buttons.dropdown>
+                                </x-buttons.dropdown> --}}
                             </td>
                         </tr>
                     @endforeach
