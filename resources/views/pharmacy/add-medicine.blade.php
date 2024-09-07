@@ -107,7 +107,7 @@
 
 {{--                                <td>Pro Type</td>--}}
 {{--                                <td>Asset Type</td>--}}
-                                <td width="250px">Item</td>
+                                <td width="250px">Medicine Name (Brand)</td>
 {{--                                <td>Unit</td>--}}
                                 <td>Barcode</td>
 
@@ -116,7 +116,7 @@
                                 <td>%</td>
                                 <td>SPrice</td>
 
-                                <td>Vendor</td>
+                                <td>Generic Name</td>
                                 <td>Mfg date</td>
                                 <td class="w-180">Exp date</td>
                                 <td>Remark</td>
