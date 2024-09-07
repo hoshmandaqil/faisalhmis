@@ -1,16 +1,16 @@
 <template>
     <div
         class="modal fade"
-        id="createPOModal"
+        id="editPOModal"
         tabindex="-1"
         role="dialog"
-        aria-labelledby="createPOModalLabel"
+        aria-labelledby="editPOModalLabel"
         aria-hidden="true"
     >
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header"></div>
-                <div class="modal-body">Under Development...</div>
+                <div class="modal-body">Edit PO Under Development...</div>
             </div>
         </div>
     </div>
