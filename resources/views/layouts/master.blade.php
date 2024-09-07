@@ -119,6 +119,7 @@
     <script src="{{ asset('assets/js/nav.min.js') }}"></script>
     <script src="{{ asset('assets/js/moment.js') }}"></script>
     <!-- Main Js Required -->
+    <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>
         $('form').submit(function() {
