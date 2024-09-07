@@ -6,7 +6,7 @@
 
 @section('page-action')
     @if (in_array('PO Creation', $user_permissions))
-        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal">
+        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createPOModal">
             Add New PO
         </button>
     @endif
@@ -167,241 +167,16 @@
 
     <!-- Modal -->
     <div id="use-vue">
-        <create-purchase-order />
-    </div>
-
-    <div class="modal fade" id="viewPoImages" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">View Files </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="viewImagesBody">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="PoRejectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Reject Reason </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ url('po_reject') }}" method="POST" enctype="multipart/form-data">
-                        {!! csrf_field() !!}
-                        <div class="row">
-                            <input type="hidden" name="po_reject_id" id="po_reject_id">
-                            <div class="form-group col-12">
-                                <label>Reject Reason:</label>
-                                <textarea name="reject_comment" id=""class="form-control" required></textarea>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-danger btn-sm">Save</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="actionsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">PO Actions </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="actionsModalBody">
-                    <form action="{{ url('po_actions') }}" method="POST" enctype="multipart/form-data">
-                        {!! csrf_field() !!}
-                        <input type="hidden" name="po_id" id="po_id">
-                        <div class="row">
-                            <div class="form-group col-3 text-center">
-                                <label>Check</label>
-                                <input class="form-control" type="checkbox" name="po_checked"
-                                    {{ in_array('PO_Check', $user_permissions) ? '' : 'disabled' }}>
-                            </div>
-                            <div class="form-group col-3 text-center">
-                                <label>Verify</label>
-                                <input class="form-control" type="checkbox" name="po_verified"
-                                    {{ in_array('PO_verify', $user_permissions) ? '' : 'disabled' }}>
-                            </div>
-                            <div class="form-group col-3 text-center">
-                                <label>Approve</label>
-                                <input class="form-control" type="checkbox" name="po_approve"
-                                    {{ in_array('PO_approve', $user_permissions) ? '' : 'disabled' }}>
-                            </div>
-                            <div class="form-group col-3">
-                                <br>
-                                <button type="submit" class="btn btn-info">Save</button>
-                            </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <div class="modal fade" id="poEditModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="poFormEdit" action="" method="post" enctype="multipart/form-data">
-                        {!! csrf_field() !!}
-                        <input type="hidden" name="_method" value="PUT">
-                        <input type="hidden" name="po_id_edit" id="po_id_edit">
-                        <div class="row">
-                            <div class="form-group col-2">
-                                <label>Item Description <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="description" id="description_edit" required></textarea>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Quantity <span class="text-danger">*</span></label>
-                                <input class="form-control quantity" type="text" name="quantity" id="quantity_edit"
-                                    required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Price <span class="text-danger">*</span></label>
-                                <input class="form-control price" type="text" name="price" id="price_edit"
-                                    required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Total Price <span class="text-danger">*</span></label>
-                                <input class="form-control total-price" type="text" name="total_price"
-                                    id="total_price_edit" readonly>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>PO Date <span class="text-danger">*</span></label>
-                                <input class="form-control persianDate" autocomplete="off" autofill="off" type="text"
-                                    name="date" id="date_edit" required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Files </label>
-                                <input type="file" name="files" accept='image/*' class="imagesUpload" multiple>
-                            </div>
-                        </div>
-                        <div class="submit-section">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button class="btn btn-primary submit-btn">Submit</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <handle-purchase-order />
     </div>
 @endsection
 @section('scripts')
     <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
-    <script>
-        function newPo() {
-            $('#addMore').append(`
 
-            <div class="row">
-                <div class="form-group col-2">
-                    <label>Item Description <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="description[]" required></textarea>
-                </div>
-                <div class="form-group col-2">
-                    <label>Quantity <span class="text-danger">*</span></label>
-                    <input class="form-control quantity" type="text" name="quantity[]" value ="0" required>
-                </div>
-                <div class="form-group col-2">
-                    <label>Price <span class="text-danger">*</span></label>
-                    <input class="form-control price" type="text" name="price[]" value ="0" required>
-                </div>
-                <div class="form-group col-2">
-                    <label>Total Price <span class="text-danger">*</span></label>
-                    <input class="form-control total-price" type="text" name="total_price[]" value ="0" readonly>
-                </div>
-
-                <div class="form-group col-2">
-                    <label>PO Date <span class="text-danger">*</span></label>
-                    <input class="form-control persianDate" autocomplete="off" autofill="off" type="text" name="date[]" required>
-                </div>
-
-                <div class="form-group col-2">
-                    <label>Files</label>
-                    <input class="imagesUpload" type="file" accept='image/*' name="files[]" multiple >
-                </div>
-            </div>
-            `);
-        }
-    </script>
     <script>
         $('body').on('focus', ".persianDate", function() {
             $(this).persianDatepicker();
         });
-
-        function submitForm() {
-            var numberOfFiles = new Array();
-            $('.imagesUpload').each(function() {
-                var numFiles = $(this)[0].files.length;
-                numberOfFiles.push(numFiles);
-            });
-            $('#numberOfFilesPerEach').val(numberOfFiles);
-        }
-
-        $(document).on('input', '.quantity', function() {
-            var quantity = $(this).val();
-            var price = $(this).parents('div.row').find('.price').val();
-            $(this).parents('div.row').find('.total-price').val(quantity * price);
-        });
-
-        $(document).on('input', '.price', function() {
-            var price = $(this).val();
-            var quantity = $(this).parents('div.row').find('.quantity').val();
-            $(this).parents('div.row').find('.total-price').val(quantity * price);
-        });
-
-        function viewPoImages(id) {
-            if (id != '') {
-                $('#viewImagesBody').empty();
-                $('#viewImagesBody').load('{{ url('getPOImages/') }}' + '/' + id, function() {});
-            }
-        }
-
-
-        $('#actionsModal').on('show.bs.modal', function(event) {
-
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            // Extract info from data-* attributes
-            var po_id = button.data('po-id');
-            var modal = $(this)
-
-            modal.find('.modal-content #po_id').val(po_id);
-        })
-
-
-        $('#PoRejectModal').on('show.bs.modal', function(event) {
-
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            // Extract info from data-* attributes
-            var po_id = button.data('reject-po-id');
-            var modal = $(this)
-
-            modal.find('.modal-content #po_reject_id').val(po_id);
-        })
     </script>
     <script>
         var selectedOpds = [];
@@ -436,28 +211,5 @@
                 });
             }
         })
-    </script>
-    <script>
-        $('#poEditModal').on('show.bs.modal', function(event) {
-
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            // Extract info from data-* attributes
-            var po_id = button.data('id');
-            var description = button.data('description');
-            var quantity = button.data('quantity');
-            var price = button.data('price');
-            var total_price = button.data('total_price');
-            var date = button.data('date');
-            var modal = $(this)
-
-            // Set values in edit popup
-            $('#poFormEdit').attr('action', 'PO/' + po_id);
-            modal.find('.modal-content #po_id_edit').val(po_id);
-            modal.find('.modal-content #description_edit').val(description);
-            modal.find('.modal-content #quantity_edit').val(quantity);
-            modal.find('.modal-content #price_edit').val(price);
-            modal.find('.modal-content #total_price_edit').val(total_price);
-            modal.find('.modal-content #date_edit').val(date);
-        });
     </script>
 @endsection
