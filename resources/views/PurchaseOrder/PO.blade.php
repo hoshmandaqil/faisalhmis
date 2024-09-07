@@ -67,171 +67,102 @@
         </div>
     @endif
 
+    <div class="row">
+        <div class="table-responsive">
+            <table
+                class="table table-sm table-rounded border table-striped table-row-bordered table-column-bordered gs-7 gy-3"
+                id="pageTable">
+                <thead>
+                    <tr class="fw-bold fs-6 text-gray-800 border-bottom border-gray-200 text-center">
+                        <th>No.</th>
+                        <th>PO NO</th>
+                        <th>Category</th>
+                        <th>Requested</th>
+                        <th>PO Date</th>
+                        <th>Inserted By</th>
+                        <th>Amount</th>
+                        <th>Remarks</th>
+                        <th>Status</th>
+                        <th>Expense</th>
+                        <th>file</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <x-general.no-record :data="$pos" />
 
-    @if (Illuminate\Support\Facades\Route::is('PO.index'))
-        <div class="row gutters">
-            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12">
-                <div class="notify danger">
-                    <div class="notify-body">
-                        <span class="type"><a href="{{ url('approvedPOs') }}"class="text-white">Approved POs
-                            </a></span>
-                        <div class="notify-title">Total Approved Pos: <a href="{{ url('approvedPOs') }}">
-                                <b>{{ $approvedPos }}</b></a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12">
-                <div class="notify danger">
-                    <div class="notify-body">
-                        <span class="type"><a href="{{ url('unapprovedPOs') }}"class="text-white">Unapproved POs
-                            </a></span>
-                        <div class="notify-title">Total Unapproved Pos: <a href="{{ url('unapprovedPOs') }}">
-                                <b>{{ $unapprovedPos }}</b></a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12">
-                <div class="notify info">
-                    <div class="notify-body">
-                        <span class="type"><a href="{{ url('rejectedPOs') }}" class="text-white">Rejected POs </a></span>
-                        <div class="notify-title">Total Rejected Pos: <a href="{{ url('rejectedPOs') }}">
-                                <b>{{ $rejectedPos }}</b></a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12">
-                <div class="notify success">
-                    <div class="notify-body">
-                        <span class="type"><a href="{{ route('PO.index') }}" class="text-white">All POs </a></span>
-                        <div class="notify-title">Total Pos: <a href="{{ route('PO.index') }}">
-                                <b>{{ $totalPos }}</b></a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-
-
-    <div class="row gutters">
-        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-            <div class="table-responsive">
-                <table id="scrollVertical" class="table">
-                    <thead>
-                        <tr>
-                            <th>#ID</th>
-                            <th>Description</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Total Price</th>
-                            <th>Date</th>
-                            <th>Created By</th>
-                            <th>Status</th>
-                            <th>Progress</th>
-                            <th>Expense Passed</th>
-                            <th>Actions</th>
+                    @foreach ($pos as $po)
+                        <tr class="text-center">
+                            <td>{{ ($pos->currentpage() - 1) * $pos->perpage() + $loop->index + 1 }}</td>
+                            <td>{{ $po->id }}</td>
+                            <td>{{ $po->expenseCategory->name ?? '' }}</td>
+                            <td>{{ $po->po_by }}</td>
+                            <td>{{ $po->date }}</td>
+                            <td>{{ $po->insertedByUser->name }}</td>
+                            <td>{{ number_format($po->total_amount, 2) }} AF</td>
+                            <td class="font-parastoo">{{ $po->remarks }}</td>
+                            <td>
+                                <span @class([
+                                    'badge',
+                                    'badge-primary' => $po->status() == 'Issued',
+                                    'badge-info' => $po->status() == 'Checked',
+                                    'badge-warning' => $po->status() == 'Verified',
+                                    'badge-success' => $po->status() == 'Approved',
+                                    'badge-danger' => $po->status() == 'Rejected',
+                                ])>
+                                    {{ $po->status() }}
+                                </span>
+                            </td>
+                            <td>
+                                <span @class([
+                                    'badge',
+                                    'badge-success' => $po->expenses()->exists(),
+                                    'badge-danger' => !$po->expenses()->exists(),
+                                ])>{{ $po->expenses()->exists() ? 'Yes' : 'No' }}</span>
+                            </td>
+                            <td>
+                                <span>
+                                    @if ($po->files->isNotEmpty())
+                                        <i class="bi bi-check2-circle badge badge-circle badge-success fs-4"></i>
+                                    @else
+                                        <i class="bi bi-x-lg badge badge-circle badge-danger fs-4"></i>
+                                    @endif
+                                </span>
+                            </td>
+                            <td>
+                                <x-buttons.dropdown width="200" :delete="auth()->user()->hasPermissionTo('Delete PO')
+                                    ? route('PO.destroy', [$application->slug, $po->id])
+                                    : false">
+                                    <a class="menu-link px-3" href="#"
+                                        x-on:click="$store.poView.viewPO({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                        View
+                                    </a>
+                                    <a class="menu-link px-3" href="#"
+                                        x-on:click="$store.files.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                        Files/Attachements
+                                    </a>
+                                    <a class="menu-link px-3" href="#"
+                                        x-on:click="$store.status.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                        Manage Status
+                                    </a>
+                                    @if ($po->status() == 'Issued')
+                                        @if (auth()->user()->hasPermissionTo('Edit PO'))
+                                            <a class="menu-link px-3" href="#"
+                                                x-on:click="$store.form.editForm({{ json_encode($po) }})">
+                                                Edit
+                                            </a>
+                                        @endif
+                                    @endif
+                                </x-buttons.dropdown>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($POs as $po)
-                            <tr>
-                                <td>{{ $po->id }} <span><input type="checkbox" class="selectedPos"
-                                            value="{{ $po->id }}"></span></td>
-                                <td>{{ $po->description }}</td>
-                                <td>{{ $po->quantity }}</td>
-                                <td>{{ $po->price }}</td>
-                                <td>{{ $po->total_price }}</td>
-                                <td>{{ $po->date }}</td>
-                                <td>{{ $po->createdBy->name }}</td>
-                                <td>
-                                    @if ($po->approved != 0)
-                                        <span class="badge badge-success">Approved</span>
-                                    @elseif ($po->rejected_by != null)
-                                        <span class="badge badge-danger">Rejected</span>
-                                        <span class="badge">{{ $po->comment }}</span>
-                                    @else
-                                        <span class="badge badge-info">Under Process</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <table>
-                                        <tr>
-                                            <td>Check</td>
-                                            <td>Verfy</td>
-                                            <td>Approve</td>
-                                        </tr>
-
-                                        <tr>
-                                            <td><input disabled type="checkbox"
-                                                    {{ $po->checked_by != null ? 'Checked' : '' }}></td>
-                                            <td><input disabled type="checkbox"
-                                                    {{ $po->verified_by != null ? 'Checked' : '' }}></td>
-                                            <td><input disabled type="checkbox" {{ $po->approved == 1 ? 'Checked' : '' }}>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-
-                                <td>
-                                    <span class="badge badge-danger">Not yet</span>
-
-                                    {{-- @if ($po->approved != 0)
-                                    <span class="badge badge-success">Passed</span>
-                                    @else
-                                    <span class="badge badge-danger">Not yet</span>
-                                    @endif --}}
-                                </td>
-
-
-                                <td>
-                                    @if (in_array('PO_verify', $user_permissions) ||
-                                            in_array('PO_Check', $user_permissions) ||
-                                            in_array('PO_approve', $user_permissions))
-                                        <button class="btn btn-sm btn-success" data-toggle="modal"
-                                            data-target="#actionsModal" data-po-id="{{ $po->id }}">Actions
-                                        </button>
-                                    @endif
-
-                                    @if (in_array('PO_reject', $user_permissions))
-                                        <button class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#PoRejectModal" data-reject-po-id="{{ $po->id }}">Reject
-                                        </button>
-                                    @endif
-
-                                    <button class="btn btn-sm btn-dark" data-toggle="modal" data-target="#viewPoImages"
-                                        onclick="viewPoImages({{ $po->id }})">View Files
-                                    </button>
-
-                                    @if (in_array('PO_Update', $user_permissions))
-                                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal"
-                                            data-target="#poEditModal" data-id="{{ $po->id }}"
-                                            data-description="{{ $po->description }}" data-quantity="{{ $po->quantity }}"
-                                            data-price="{{ $po->price }}" data-total_price="{{ $po->total_price }}"
-                                            data-date={{ date('Y/m/d', strtotime($po->date)) }}>
-                                            Edit
-                                        </button>
-                                    @endif
-
-                                    @if (in_array('PO_Delete', $user_permissions))
-                                        <form method="POST" action="{{ route('PO.destroy', $po->id) }}">
-                                            {{ csrf_field() }}
-                                            {{ method_field('DELETE') }}
-                                            <div class="form-group">
-                                                <button type="submit" class="btn btn-danger btn-sm"
-                                                    onclick="return confirm('Are you sure you want to delete?')">Delete</button>
-                                            </div>
-                                        </form>
-                                    @endif
-                                </td>
-
-                            </tr>
-                        @endforeach
-
-                    </tbody>
-                </table>
-                {{ $POs->links() }}
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
+    </div>
+    <div class="row">
+        {{ $pos->links() }}
     </div>
 
     <!-- Modal -->
@@ -246,44 +177,144 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <form class="p-3" method="post" enctype="multipart/form-data"
+                        @submit.prevent="$store.form.submitData()">
 
-                    <form id="poForm" action="{{ route('PO.store') }}" method="post" enctype="multipart/form-data">
-                        {!! csrf_field() !!}
-                        <input type="hidden" name="numberOfFilesPerEach" id="numberOfFilesPerEach">
-                        <div class="row">
-                            <div class="form-group col-2">
-                                <label>Item Description <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="description[]" required></textarea>
+                        {{-- Main Fields --}}
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">PO Information</h5>
                             </div>
-                            <div class="form-group col-2">
-                                <label>Quantity <span class="text-danger">*</span></label>
-                                <input class="form-control quantity" type="text" name="quantity[]" value="0"
-                                    required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Price <span class="text-danger">*</span></label>
-                                <input class="form-control price" type="text" name="price[]" value="0" required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Total Price <span class="text-danger">*</span></label>
-                                <input class="form-control total-price" type="text" name="total_price[]"
-                                    value="0" readonly>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>PO Date <span class="text-danger">*</span></label>
-                                <input class="form-control persianDate" autocomplete="off" autofill="off" type="text"
-                                    name="date[]" required>
-                            </div>
-                            <div class="form-group col-2">
-                                <label>Files </label>
-                                <input type="file" name="files[]" accept='image/*' class="imagesUpload" multiple>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-4">
+                                        <label>PO Requested By
+                                            <x-general.required />
+                                        </label>
+                                        <input class="form-control" type="text" x-model="$store.form.form.po_by"
+                                            required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Date
+                                            <x-general.required />
+                                        </label>
+                                        <input class="form-control persianDate" type="text"
+                                            x-model="$store.form.form.date"
+                                            @click.outside="$store.form.form.date = $el.value" readonly required>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label>Category
+                                            <x-general.required />
+                                        </label>
+                                        <select class="form-select form-select-solid" data-control="select2"
+                                            data-placeholder="Select a category" data-dropdown-parent="#createUpdateModal"
+                                            data-allow-clear="true" x-model="$store.form.form.category"
+                                            @click.outside="$store.form.form.category = $el.value" required>
+                                            <option value=""></option>
+                                            @foreach ($categories as $category)
+                                                <optgroup label="{{ $category->name }}">
+                                                    @if ($category->subCategories->isEmpty())
+                                                        <option value="{{ $category->id }}"
+                                                            :selected="$store.form.form.category == {{ Js::from($category->id) }}">
+                                                            {{ $category->name }}
+                                                        </option>
+                                                    @else
+                                                        @foreach ($category->subCategories as $subCategory)
+                                                            <option value="{{ $subCategory->id }}"
+                                                                :selected="$store.form.form.category ==
+                                                                    {{ Js::from($subCategory->id) }}">
+                                                                {{ $subCategory->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-12">
+                                        <label>Remarks
+                                            <x-general.required />
+                                        </label>
+                                        <textarea class="form-control" x-model="$store.form.form.remarks"></textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div id="addMore"></div>
-                        <div class="submit-section">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
-                            <button class="btn btn-primary submit-btn" onclick="submitForm()">Submit</button>
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">PO Items</h5>
+                            </div>
+                            <div class="card-body">
+                                <template x-for="(item, index) in $store.form.items" :key="`po-${index}`">
+                                    <div class="row mb-4">
+                                        <div class="col-md-1">
+                                            <a class="btn btn-icon btn-sm btn-primary mt-7" href="#"
+                                                x-show="index === 0"
+                                                @click="$store.form.items.push(Object.assign({}, $store.form.emptyItemRow))">
+                                                <i class="bi bi-plus"></i>
+                                            </a>
+                                            <a class="btn btn-icon btn-sm btn-danger mt-7" href="#"
+                                                x-show="index !== 0" @click="$store.form.items.splice(index, 1)">
+                                                <i class="bi bi-dash"></i>
+                                            </a>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>Description
+                                                <x-general.required />
+                                            </label>
+                                            <input class="form-control" type="text"
+                                                x-model="$store.form.items[index].description" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Amount
+                                                <x-general.required />
+                                            </label>
+                                            <input class="form-control" type="number" step="0.1"
+                                                x-model="$store.form.items[index].amount" placeholder="Amount"
+                                                @keyup="$store.form.calculateTotal()" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Quantity
+                                                <x-general.required />
+                                            </label>
+                                            <input class="form-control" type="number"
+                                                x-model="$store.form.items[index].quantity" placeholder="Amount"
+                                                @keyup="$store.form.calculateTotal()" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Remarks</label>
+                                            <input class="form-control" type="text" placeholder="Remarks"
+                                                x-model="$store.form.items[index].remarks">
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Subtotal</label>
+                                            <input class="form-control" type="text" placeholder="Total" readonly
+                                                disabled x-model="$store.form.items[index].subtotal">
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="card mb-5">
+                            <div class="card-body center text-center">
+                                <h3>Total: <span x-text="$store.form.total"></span> AFN</h3>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 text-end mt-3">
+                                <button class="btn btn-lg btn-primary mb-5" type="submit"
+                                    :disabled="$store.form.loading">
+                                    <span class="indicator-label" x-show="!$store.form.loading">Save</span>
+                                    <span x-show="$store.form.loading" x-cloak>Please wait...
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>

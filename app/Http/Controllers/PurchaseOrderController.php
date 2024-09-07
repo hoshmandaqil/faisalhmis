@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense\ExpenseCategory;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderSetting;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 
 class PurchaseOrderController extends Controller
@@ -16,16 +18,29 @@ class PurchaseOrderController extends Controller
      */
     public function index()
     {
-        $POs = PurchaseOrder::latest()->when(request('search'), function ($q) {
-            $q->where('id', request('search'))
-                ->orWhere('description', 'LIKE', '%' . request('search') . '%')
-                ->orWhere('total_price', request('search'));
-        })->with('createdBy')->paginate(50);
-        $totalPos = PurchaseOrder::count();
-        $rejectedPos = PurchaseOrder::where('comment', '!=', NULL)->where('rejected_by', '!=', NULL)->where('approved', '!=', 1)->count();
-        $unapprovedPos = PurchaseOrder::where('approved', 0)->where('comment', null)->count();
-        $approvedPos = PurchaseOrder::where('approved', 1)->count();
-        return view('PurchaseOrder.PO', compact('POs', 'totalPos', 'rejectedPos', 'unapprovedPos', 'approvedPos'));
+        $pos = PurchaseOrder::filter(request(['search', 'status']))
+            ->with('items', 'insertedByUser', 'checkedByUser', 'verifiedByUser', 'approvedByUser', 'rejectedByUser', 'expenses')
+            ->orderByDesc('id')
+            ->paginate(25);
+
+        $pos->appends(request()->query());
+
+        $setting = PurchaseOrderSetting::first();
+
+        $users = User::select('id', 'name')->get();
+
+        $status = [
+            'issued' => 'Issued',
+            'checked' => 'Checked',
+            'verified' => 'Verified',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'approved_no_expenses' => 'Approved/No Expenses',
+        ];
+
+        $categories = ExpenseCategory::where('parent', null)->with('subCategories')->get();
+
+        return view('PurchaseOrder.PO', compact('pos', 'setting', 'users', 'status', 'categories'));
     }
 
     /**
