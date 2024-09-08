@@ -130,28 +130,37 @@
                                 </span>
                             </td>
                             <td>
-                                <x-buttons.dropdown width="200">
-                                    <a class="menu-link px-3" href="#"
-                                        x-on:click="$store.poView.viewPO({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
-                                        View
-                                    </a>
-                                    <a class="menu-link px-3" href="#"
-                                        x-on:click="$store.files.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
-                                        Files/Attachements
-                                    </a>
-                                    <a class="menu-link px-3" href="#"
-                                        x-on:click="$store.status.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
-                                        Manage Status
-                                    </a>
-                                    @if ($po->status() == 'Issued')
-                                        {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
-                                        <a class="menu-link px-3" href="#"
-                                            x-on:click="$store.form.editForm({{ json_encode($po) }})">
-                                            Edit
-                                        </a>
-                                        {{-- @endif --}}
-                                    @endif
-                                </x-buttons.dropdown>
+                                <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-warning btn-sm dropdown-toggle" id="btnGroupDrop1"
+                                            data-toggle="dropdown" type="button" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                            <a class="dropdown-item px-3" href="#"
+                                                x-on:click="$store.poView.viewPO({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                                View
+                                            </a>
+                                            <a class="dropdown-item px-3" href="#"
+                                                x-on:click="$store.files.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                                Files/Attachements
+                                            </a>
+                                            <a class="dropdown-item px-3" href="#"
+                                                x-on:click="$store.status.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                                Manage Status
+                                            </a>
+                                            @if ($po->status() == 'Issued')
+                                                {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
+                                                    <a class="dropdown-item px-3" href="#"
+                                                        x-on:click="$store.form.editForm({{ json_encode($po) }})">
+                                                        Edit
+                                                    </a>
+                                                {{-- @endif --}}
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
