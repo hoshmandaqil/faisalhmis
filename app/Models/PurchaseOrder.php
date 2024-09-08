@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Traits\HasManySync;
+use App\Models\Expense\ExpenseCategory;
 use App\Models\Expense\ExpenseSlip;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseOrder extends Model
 {
-    use HasFactory ,HasManySync;
+    use HasFactory, HasManySync;
     protected $table = 'purchase_order';
 
     protected $guarded = ['id', 'deleted_at', 'created_at', 'updated_at'];
@@ -37,15 +38,15 @@ class PurchaseOrder extends Model
         });
     }
 
-    // /**
-    //  * category: Relation to categories
-    //  *
-    //  * @return void
-    //  */
-    // public function expenseCategory()
-    // {
-    //     return $this->belongsTo(ExpenseCategory::class, 'category', 'id');
-    // }
+    /**
+     * category: Relation to categories
+     *
+     * @return void
+     */
+    public function expenseCategory()
+    {
+        return $this->belongsTo(ExpenseCategory::class, 'category', 'id');
+    }
 
     /**
      * items
