@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DataMigrationController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PayrollPaymentController;
@@ -240,6 +241,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payrolls.payments.store');
 
     Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
+
+    Route::get('data-migration',[DataMigrationController::class,'index']);
 });
 
 Auth::routes(['register' => true]);

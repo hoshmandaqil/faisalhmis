@@ -130,9 +130,7 @@
                                 </span>
                             </td>
                             <td>
-                                <x-buttons.dropdown width="200" :delete="auth()->user()->hasPermissionTo('Delete PO')
-                                    ? route('PO.destroy', [$application->slug, $po->id])
-                                    : false">
+                                <x-buttons.dropdown width="200">
                                     <a class="menu-link px-3" href="#"
                                         x-on:click="$store.poView.viewPO({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
                                         View
@@ -146,12 +144,12 @@
                                         Manage Status
                                     </a>
                                     @if ($po->status() == 'Issued')
-                                        @if (auth()->user()->hasPermissionTo('Edit PO'))
-                                            <a class="menu-link px-3" href="#"
-                                                x-on:click="$store.form.editForm({{ json_encode($po) }})">
-                                                Edit
-                                            </a>
-                                        @endif
+                                        {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
+                                        <a class="menu-link px-3" href="#"
+                                            x-on:click="$store.form.editForm({{ json_encode($po) }})">
+                                            Edit
+                                        </a>
+                                        {{-- @endif --}}
                                     @endif
                                 </x-buttons.dropdown>
                             </td>

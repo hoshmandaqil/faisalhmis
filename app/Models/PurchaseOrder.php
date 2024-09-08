@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Traits\HasManySync;
+use App\Models\Expense\ExpenseSlip;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseOrder extends Model
 {
-    use HasFactory;
+    use HasFactory ,HasManySync;
     protected $table = 'purchase_order';
 
     protected $guarded = ['id', 'deleted_at', 'created_at', 'updated_at'];
@@ -202,15 +205,15 @@ class PurchaseOrder extends Model
         return false;
     }
 
-    // /**
-    //  * Retrieves the expenses associated with this object.
-    //  *
-    //  * @return \Illuminate\Database\Eloquent\Relations\HasMany
-    //  */
-    // public function expenses()
-    // {
-    //     return $this->hasMany(ExpenseSlip::class, 'po_id', 'id')->withoutGlobalScopes();
-    // }
+    /**
+     * Retrieves the expenses associated with this object.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function expenses()
+    {
+        return $this->hasMany(ExpenseSlip::class, 'po_id', 'id')->withoutGlobalScopes();
+    }
 
     /**
      * ScopeFilter: Filter Data
