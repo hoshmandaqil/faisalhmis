@@ -32,5 +32,15 @@
                 </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-right">Grand Total</th>
+                <th>
+                    {{ number_format($po->items->sum(function($item) {
+                        return $item->amount * $item->quantity;
+                    }), 2) }}
+                </th>
+            </tr>
+        </tfoot>
     </table>
 </div>
