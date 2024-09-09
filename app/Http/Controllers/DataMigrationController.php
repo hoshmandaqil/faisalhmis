@@ -14,7 +14,7 @@ class DataMigrationController extends Controller
     public function index()
     {
         // return 'hello dear';
-        $this->movePOItemToNewDatabase();
+        $this->movePoFile();
     }
 
 
