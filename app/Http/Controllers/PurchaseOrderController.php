@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expense\ExpenseCategory;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseOrderSetting;
@@ -39,9 +38,7 @@ class PurchaseOrderController extends Controller
             'approved_no_expenses' => 'Approved/No Expenses',
         ];
 
-        $categories = ExpenseCategory::where('parent', null)->with('subCategories')->get();
-
-        return view('PurchaseOrder.PO', compact('pos', 'setting', 'users', 'status', 'categories'));
+        return view('PurchaseOrder.PO', compact('pos', 'setting', 'users', 'status'));
     }
 
     /**
@@ -60,7 +57,6 @@ class PurchaseOrderController extends Controller
         $validated = $request->validate([
             'po_by' => 'required|string|max:255',
             'date' => 'required|date',
-            'category' => 'required|integer',
             'remarks' => 'nullable|string',
             'description.*' => 'required|string',
             'amount.*' => 'required|numeric',
@@ -72,7 +68,6 @@ class PurchaseOrderController extends Controller
         $purchaseOrder = PurchaseOrder::create([
             'po_by' => $validated['po_by'],
             'date' => $validated['date'], // Assuming it's already in the correct format
-            'category' => $validated['category'],
             'remarks' => $validated['remarks'] ?? null,
             'inserted_by' => auth()->id(),
         ]);
@@ -80,11 +75,11 @@ class PurchaseOrderController extends Controller
         // Loop through the items and create PurchaseOrderItem for each
         foreach ($validated['description'] as $index => $description) {
             PurchaseOrderItem::create([
-                'purchase_order_id' => $purchaseOrder->id,
+                'po_id' => $purchaseOrder->id,
                 'description' => $description,
                 'amount' => $validated['amount'][$index],
                 'quantity' => $validated['quantity'][$index],
-                'item_remarks' => $validated['item_remarks'][$index] ?? null,
+                'remarks' => $validated['item_remarks'][$index] ?? null,
             ]);
         }
 
@@ -97,9 +92,10 @@ class PurchaseOrderController extends Controller
      * @param  \App\Models\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function show(PurchaseOrder $purchaseOrder)
+    public function show($id)
     {
-        //
+        $po = PurchaseOrder::with('items')->findOrFail($id);
+        return view('PurchaseOrder.show', compact('po'));
     }
 
     /**
@@ -128,27 +124,46 @@ class PurchaseOrderController extends Controller
      * @param  \App\Models\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $po = PurchaseOrder::where('id', $id)->first();
-        $po->description = $request->description;
-        $po->quantity = $request->quantity;
-        $po->price = $request->price;
-        $po->total_price = $request->total_price;
-        $po->date = $request->date;
-        $po->updated_by = \Auth::user()->id;
-        if ($request->hasfile('files')) {
-            $image = $request->file('files');
-            $filename =  rand() . '_' . time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path() . '/POs/', $filename);
+        // Validate the request data
+        $validated = $request->validate([
+            'po_id' => 'required|exists:purchase_order,id',
+            'po_by' => 'required|string',
+            'date' => 'required|date',
+            'remarks' => 'nullable|string',
+            'description' => 'required|array',
+            'description.*' => 'required|string',
+            'amount' => 'required|array',
+            'amount.*' => 'required|numeric',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|integer',
+            'item_remarks' => 'nullable|array',
+            'item_remarks.*' => 'nullable|string',
+        ]);
 
-            $images = (array) json_decode($po->files);
+        // Find the purchase order
+        $purchaseOrder = PurchaseOrder::findOrFail($validated['po_id']);
 
-            $images[] = $filename;
+        // Update the purchase order
+        $purchaseOrder->update([
+            'po_by' => $validated['po_by'],
+            'date' => $validated['date'],
+            'remarks' => $validated['remarks'],
+        ]);
 
-            $po->files = json_encode($images);
+        // Delete existing items
+        $purchaseOrder->items()->delete();
+
+        // Create new items
+        foreach ($validated['description'] as $index => $description) {
+            $purchaseOrder->items()->create([
+                'description' => $description,
+                'amount' => $validated['amount'][$index],
+                'quantity' => $validated['quantity'][$index],
+                'remarks' => $validated['item_remarks'][$index] ?? null,
+            ]);
         }
-        $po->save();
         return redirect()->back()->with('alert', 'The PO Updated Successfully')->with('alert-type', 'alert-info');
     }
 

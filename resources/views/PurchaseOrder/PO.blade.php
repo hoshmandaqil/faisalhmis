@@ -76,7 +76,6 @@
                     <tr class="fw-bold fs-6 text-gray-800 border-bottom border-gray-200 text-center">
                         <th>No.</th>
                         <th>PO NO</th>
-                        <th>Category</th>
                         <th>Requested</th>
                         <th>PO Date</th>
                         <th>Inserted By</th>
@@ -95,7 +94,6 @@
                         <tr class="text-center">
                             <td>{{ ($pos->currentpage() - 1) * $pos->perpage() + $loop->index + 1 }}</td>
                             <td>{{ $po->id }}</td>
-                            <td>{{ $po->expenseCategory->name ?? '' }}</td>
                             <td>{{ $po->po_by }}</td>
                             <td>{{ $po->date }}</td>
                             <td>{{ $po->insertedByUser->name }}</td>
@@ -138,8 +136,10 @@
                                             Actions
                                         </button>
                                         <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                            <a class="dropdown-item px-3" href="#"
-                                                x-on:click="$store.poView.viewPO({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                            <a class="dropdown-item px-3" href="#" 
+                                               onclick="viewPO({{ $po->id }})" 
+                                               data-toggle="modal" 
+                                               data-target="#viewModal">
                                                 View
                                             </a>
                                             <a class="dropdown-item px-3" href="#"
@@ -152,9 +152,14 @@
                                             </a>
                                             @if ($po->status() == 'Issued')
                                                 {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
-                                                <button type="button" class="btn btn-warning btn-sm edit-po"
+                                                <a type="button" class="dropdown-item px-3 edit-po"
                                                     data-id="{{ $po->id }}" data-toggle="modal"
-                                                    data-target="#editModal">Edit</button>
+                                                    data-target="#editModal">
+                                                    Edit
+                                                </a>
+                                                {{-- <button type="button" class="btn btn-warning btn-sm edit-po"
+                                                    data-id="{{ $po->id }}" data-toggle="modal"
+                                                    data-target="#editModal">Edit</button> --}}
                                                 {{-- @endif --}}
                                             @endif
                                         </div>
@@ -178,6 +183,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Purchase Order</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -201,28 +207,6 @@
                                         <label>Date <span class="text-danger">*</span></label>
                                         <input class="form-control persianDate" type="text" id="date"
                                             name="date" readonly required>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Category <span class="text-danger">*</span></label>
-                                        <select class="form-control form-select-solid" id="category" name="category"
-                                            data-control="select2" data-placeholder="Select a category" required>
-                                            <option value=""></option>
-                                            @foreach ($categories as $category)
-                                                <optgroup label="{{ $category->name }}">
-                                                    @if ($category->subCategories->isEmpty())
-                                                        <option value="{{ $category->id }}">
-                                                            {{ $category->name }}
-                                                        </option>
-                                                    @else
-                                                        @foreach ($category->subCategories as $subCategory)
-                                                            <option value="{{ $subCategory->id }}">
-                                                                {{ $subCategory->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </optgroup>
-                                            @endforeach
-                                        </select>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -392,7 +376,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editPoForm" class="p-3" method="post" enctype="multipart/form-data">
+                    <form id="editPoForm" action="{{ route('PO.update', ['PO' => ':id']) }}" class="p-3" method="post" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <!-- Hidden field for PO ID -->
@@ -415,28 +399,6 @@
                                         <label>Date <span class="text-danger">*</span></label>
                                         <input class="form-control persianDate" type="text" id="edit_date"
                                             name="date" readonly required>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Category <span class="text-danger">*</span></label>
-                                        <select class="form-control form-select-solid" id="edit_category" name="category"
-                                            data-control="select2" data-placeholder="Select a category" required>
-                                            <option value=""></option>
-                                            @foreach ($categories as $category)
-                                                <optgroup label="{{ $category->name }}">
-                                                    @if ($category->subCategories->isEmpty())
-                                                        <option value="{{ $category->id }}">
-                                                            {{ $category->name }}
-                                                        </option>
-                                                    @else
-                                                        @foreach ($category->subCategories as $subCategory)
-                                                            <option value="{{ $subCategory->id }}">
-                                                                {{ $subCategory->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </optgroup>
-                                            @endforeach
-                                        </select>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -463,6 +425,27 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- View PO Modal -->
+    <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewModalLabel">View Purchase Order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- PO details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -584,7 +567,6 @@
     <script>
         $(document).on('click', '.edit-po', function() {
             let poId = $(this).data('id');
-            console.log(poId)
             // Fetch the PO data using AJAX
             $.ajax({
                 url: '/PO/' + poId + '/edit',
@@ -594,7 +576,6 @@
                     $('#edit_po_id').val(data.po.id);
                     $('#edit_po_by').val(data.po.po_by);
                     $('#edit_date').val(data.po.date);
-                    $('#edit_category').val(data.po.category).trigger('change');
                     $('#edit_remarks').val(data.po.remarks);
 
                     // Clear old PO items
@@ -602,29 +583,37 @@
 
                     // Loop through PO items and populate fields
                     $.each(data.po.items, function(index, item) {
-                        let newRow = `<div class="row mb-4 po-item-row">
-                    <!-- Same structure as in the create modal for items -->
-                    <div class="form-group col-md-3">
-                        <label>Description <span class="text-danger">*</span></label>
-                        <input class="form-control" type="text" name="description[]" value="${item.description}" required>
-                    </div>
-                    <div class="form-group col-md-2">
-                        <label>Amount <span class="text-danger">*</span></label>
-                        <input class="form-control amount" type="number" step="0.1" name="amount[]" value="${item.amount}" required>
-                    </div>
-                    <div class="form-group col-md-2">
-                        <label>Quantity <span class="text-danger">*</span></label>
-                        <input class="form-control quantity" type="number" name="quantity[]" value="${item.quantity}" required>
-                    </div>
-                    <div class="form-group col-md-2">
-                        <label>Remarks</label>
-                        <input class="form-control" type="text" name="item_remarks[]" value="${item.remarks}">
-                    </div>
-                    <div class="form-group col-md-2">
-                        <label>Subtotal</label>
-                        <input class="form-control subtotal" type="text" name="subtotal[]" value="${item.subtotal}" readonly disabled>
-                    </div>
-                </div>`;
+                        let newRow = `
+                        <div class="row mb-4 po-item-row">
+                            <div class="col-md-1 d-flex justify-content-start align-items-center">
+                                <a class="btn btn-icon btn-sm btn-primary mt-7 add-edit-item" href="#">
+                                    <i class="icon-plus"></i>
+                                </a>
+                                <a class="btn btn-icon btn-sm btn-danger mt-7 remove-edit-item ml-2" href="#">
+                                    <i class="icon-minus"></i>
+                                </a>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>Description <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="description[]" value="${item.description}" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Amount <span class="text-danger">*</span></label>
+                                <input class="form-control amount" type="number" step="0.1" name="amount[]" value="${item.amount}" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Quantity <span class="text-danger">*</span></label>
+                                <input class="form-control quantity" type="number" name="quantity[]" value="${item.quantity}" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Remarks</label>
+                                <input class="form-control" type="text" name="item_remarks[]" value="${item.remarks}">
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Subtotal</label>
+                                <input class="form-control subtotal" type="text" name="subtotal[]" value="${item.subtotal}" readonly disabled>
+                            </div>
+                        </div>`;
                         $('#editPoItems').append(newRow);
                     });
 
@@ -635,6 +624,60 @@
                     $('#editModal').modal('show');
                 }
             });
+        });
+
+        // Add new PO item row in edit modal
+        $('#editPoItems').on('click', '.add-edit-item', function(e) {
+            e.preventDefault();
+            let newRow = `
+            <div class="row mb-4 po-item-row">
+                <div class="col-md-1 d-flex justify-content-start align-items-center">
+                    <a class="btn btn-icon btn-sm btn-primary mt-7 add-edit-item" href="#">
+                        <i class="icon-plus"></i>
+                    </a>
+                    <a class="btn btn-icon btn-sm btn-danger mt-7 remove-edit-item ml-2" href="#">
+                        <i class="icon-minus"></i>
+                    </a>
+                </div>
+                <div class="form-group col-md-3">
+                    <label>Description <span class="text-danger">*</span></label>
+                    <input class="form-control" type="text" name="description[]" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Amount <span class="text-danger">*</span></label>
+                    <input class="form-control amount" type="number" step="0.1" name="amount[]" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Quantity <span class="text-danger">*</span></label>
+                    <input class="form-control quantity" type="number" name="quantity[]" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Remarks</label>
+                    <input class="form-control" type="text" name="item_remarks[]">
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Subtotal</label>
+                    <input class="form-control subtotal" type="text" name="subtotal[]" readonly disabled>
+                </div>
+            </div>`;
+            $(this).closest('.po-item-row').after(newRow);
+        });
+
+        // Remove PO item row in edit modal
+        $('#editPoItems').on('click', '.remove-edit-item', function(e) {
+            e.preventDefault();
+            $(this).closest('.po-item-row').remove();
+            calculateEditTotal();
+        });
+
+        // Calculate total on keyup in edit modal
+        $('#editPoItems').on('keyup', '.amount, .quantity', function() {
+            let row = $(this).closest('.po-item-row');
+            let amount = parseFloat(row.find('.amount').val()) || 0;
+            let quantity = parseFloat(row.find('.quantity').val()) || 0;
+            let subtotal = amount * quantity;
+            row.find('.subtotal').val(subtotal.toFixed(2));
+            calculateEditTotal();
         });
 
         // Function to calculate total in edit modal
@@ -650,4 +693,27 @@
             $('#edit_total').text(total.toFixed(2));
         }
     </script>
+    <script>
+        // Function to view PO details
+        function viewPO(poId) {
+            console.log('Viewing PO with ID:', poId);
+            $.ajax({
+                url: `/PO/${poId}`,
+                type: 'GET',
+                success: function(response) {
+                    console.log('Received response:', response);
+                    $('#viewModal .modal-body').html(response);
+                    $('#viewModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching PO details:', xhr.responseText);
+                    console.error('Status:', status);
+                    console.error('Error:', error);
+                    alert('Error fetching PO details. Please check the console for more information.');
+                }
+            });
+        }
+    </script>
+
+
 @endsection
