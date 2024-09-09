@@ -6,7 +6,7 @@
 
 @section('page-action')
     @if (in_array('PO Creation', $user_permissions))
-        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createPOModal">
+        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModal">
             Add New PO
         </button>
     @endif
@@ -152,10 +152,9 @@
                                             </a>
                                             @if ($po->status() == 'Issued')
                                                 {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
-                                                    <a class="dropdown-item px-3" href="#"
-                                                        x-on:click="$store.form.editForm({{ json_encode($po) }})">
-                                                        Edit
-                                                    </a>
+                                                <button type="button" class="btn btn-warning btn-sm edit-po"
+                                                    data-id="{{ $po->id }}" data-toggle="modal"
+                                                    data-target="#editModal">Edit</button>
                                                 {{-- @endif --}}
                                             @endif
                                         </div>
@@ -172,18 +171,381 @@
         {{ $pos->links() }}
     </div>
 
+
     <!-- Modal -->
-    <div id="use-vue">
-        <handle-purchase-order />
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="poForm" action="{{ route('PO.store') }}" class="p-3" method="post"
+                        enctype="multipart/form-data">
+                        @csrf
+                        {{-- Main Fields --}}
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">PO Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-4">
+                                        <label>PO Requested By <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text" id="po_by" name="po_by" required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Date <span class="text-danger">*</span></label>
+                                        <input class="form-control persianDate" type="text" id="date"
+                                            name="date" readonly required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Category <span class="text-danger">*</span></label>
+                                        <select class="form-control form-select-solid" id="category" name="category"
+                                            data-control="select2" data-placeholder="Select a category" required>
+                                            <option value=""></option>
+                                            @foreach ($categories as $category)
+                                                <optgroup label="{{ $category->name }}">
+                                                    @if ($category->subCategories->isEmpty())
+                                                        <option value="{{ $category->id }}">
+                                                            {{ $category->name }}
+                                                        </option>
+                                                    @else
+                                                        @foreach ($category->subCategories as $subCategory)
+                                                            <option value="{{ $subCategory->id }}">
+                                                                {{ $subCategory->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-12">
+                                        <label>Remarks <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="remarks" name="remarks"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">PO Items</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="poItems">
+                                    <div class="row mb-4 po-item-row">
+                                        <div class="col-md-1 d-flex justify-content-start align-items-center">
+                                            <a class="btn btn-icon btn-sm btn-primary mt-7 add-item" href="#">
+                                                <i class="icon-plus"></i>
+                                            </a>
+                                            <a class="btn btn-icon btn-sm btn-danger mt-7 remove-item ml-2" href="#"
+                                                style="display: none;">
+                                                <i class="icon-minus"></i>
+                                            </a>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>Description <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text" name="description[]" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Amount <span class="text-danger">*</span></label>
+                                            <input class="form-control amount" type="number" step="0.1"
+                                                name="amount[]" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Quantity <span class="text-danger">*</span></label>
+                                            <input class="form-control quantity" type="number" name="quantity[]"
+                                                required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Remarks</label>
+                                            <input class="form-control" type="text" name="item_remarks[]">
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>Subtotal</label>
+                                            <input class="form-control subtotal" type="text" name="subtotal[]"
+                                                readonly disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-5">
+                            <div class="card-body center text-center">
+                                <h3>Total: <span id="total">0</span> AFN</h3>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 text-end mt-3">
+                                <button class="btn btn-lg btn-primary mb-5" type="submit">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="viewPoImages" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">View Files </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="viewImagesBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="PoRejectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Reject Reason </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url('po_reject') }}" method="POST" enctype="multipart/form-data">
+                        {!! csrf_field() !!}
+                        <div class="row">
+                            <input type="hidden" name="po_reject_id" id="po_reject_id">
+                            <div class="form-group col-12">
+                                <label>Reject Reason:</label>
+                                <textarea name="reject_comment" id=""class="form-control" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-danger btn-sm">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="actionsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">PO Actions </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="actionsModalBody">
+                    <form action="{{ url('po_actions') }}" method="POST" enctype="multipart/form-data">
+                        {!! csrf_field() !!}
+                        <input type="hidden" name="po_id" id="po_id">
+                        <div class="row">
+                            <div class="form-group col-3 text-center">
+                                <label>Check</label>
+                                <input class="form-control" type="checkbox" name="po_checked"
+                                    {{ in_array('PO_Check', $user_permissions) ? '' : 'disabled' }}>
+                            </div>
+                            <div class="form-group col-3 text-center">
+                                <label>Verify</label>
+                                <input class="form-control" type="checkbox" name="po_verified"
+                                    {{ in_array('PO_verify', $user_permissions) ? '' : 'disabled' }}>
+                            </div>
+                            <div class="form-group col-3 text-center">
+                                <label>Approve</label>
+                                <input class="form-control" type="checkbox" name="po_approve"
+                                    {{ in_array('PO_approve', $user_permissions) ? '' : 'disabled' }}>
+                            </div>
+                            <div class="form-group col-3">
+                                <br>
+                                <button type="submit" class="btn btn-info">Save</button>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- Edit PO Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPoForm" class="p-3" method="post" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <!-- Hidden field for PO ID -->
+                        <input type="hidden" id="edit_po_id" name="po_id">
+
+                        {{-- Main Fields --}}
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h5 class="card-title">Edit PO Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Use the same fields as the create modal -->
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-4">
+                                        <label>PO Requested By <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text" id="edit_po_by" name="po_by"
+                                            required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Date <span class="text-danger">*</span></label>
+                                        <input class="form-control persianDate" type="text" id="edit_date"
+                                            name="date" readonly required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Category <span class="text-danger">*</span></label>
+                                        <select class="form-control form-select-solid" id="edit_category" name="category"
+                                            data-control="select2" data-placeholder="Select a category" required>
+                                            <option value=""></option>
+                                            @foreach ($categories as $category)
+                                                <optgroup label="{{ $category->name }}">
+                                                    @if ($category->subCategories->isEmpty())
+                                                        <option value="{{ $category->id }}">
+                                                            {{ $category->name }}
+                                                        </option>
+                                                    @else
+                                                        @foreach ($category->subCategories as $subCategory)
+                                                            <option value="{{ $subCategory->id }}">
+                                                                {{ $subCategory->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-4">
+                                    <div class="form-group col-md-12">
+                                        <label>Remarks <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="edit_remarks" name="remarks"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Use the same PO items section -->
+                        <div id="editPoItems"></div>
+
+                        <!-- Total calculation -->
+                        <div class="card mb-5">
+                            <div class="card-body center text-center">
+                                <h3>Total: <span id="edit_total">0</span> AFN</h3>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 text-end mt-3">
+                                <button class="btn btn-lg btn-primary mb-5" type="submit">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
+
 @section('scripts')
     <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Add new PO item row
+            $('#poItems').on('click', '.add-item', function(e) {
+                e.preventDefault();
+                let row = $(this).closest('.po-item-row').clone();
+                row.find('input').val('');
+                row.find('.remove-item').show();
+                $(this).closest('.po-item-row').after(row);
+            });
+
+            // Remove PO item row
+            $('#poItems').on('click', '.remove-item', function(e) {
+                e.preventDefault();
+                $(this).closest('.po-item-row').remove();
+                calculateTotal();
+            });
+
+            // Calculate total on keyup
+            $('#poItems').on('keyup', '.amount, .quantity', function() {
+                let row = $(this).closest('.po-item-row');
+                let amount = parseFloat(row.find('.amount').val()) || 0;
+                let quantity = parseFloat(row.find('.quantity').val()) || 0;
+                let subtotal = amount * quantity;
+                row.find('.subtotal').val(subtotal.toFixed(2));
+                calculateTotal();
+            });
+
+            // Calculate the total for all rows
+            function calculateTotal() {
+                let total = 0;
+                $('.po-item-row').each(function() {
+                    let subtotal = parseFloat($(this).find('.subtotal').val()) || 0;
+                    total += subtotal;
+                });
+                $('#total').text(total.toFixed(2));
+            }
+        });
+    </script>
 
     <script>
         $('body').on('focus', ".persianDate", function() {
             $(this).persianDatepicker();
         });
+
+
+        function viewPoImages(id) {
+            if (id != '') {
+                $('#viewImagesBody').empty();
+                $('#viewImagesBody').load('{{ url('getPOImages/') }}' + '/' + id, function() {});
+            }
+        }
+
+
+        $('#actionsModal').on('show.bs.modal', function(event) {
+
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            // Extract info from data-* attributes
+            var po_id = button.data('po-id');
+            var modal = $(this)
+
+            modal.find('.modal-content #po_id').val(po_id);
+        })
+
+
+        $('#PoRejectModal').on('show.bs.modal', function(event) {
+
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            // Extract info from data-* attributes
+            var po_id = button.data('reject-po-id');
+            var modal = $(this)
+
+            modal.find('.modal-content #po_reject_id').val(po_id);
+        })
     </script>
     <script>
         var selectedOpds = [];
@@ -218,5 +580,74 @@
                 });
             }
         })
+    </script>
+    <script>
+        $(document).on('click', '.edit-po', function() {
+            let poId = $(this).data('id');
+            console.log(poId)
+            // Fetch the PO data using AJAX
+            $.ajax({
+                url: '/PO/' + poId + '/edit',
+                method: 'GET',
+                success: function(data) {
+                    // Populate the modal fields
+                    $('#edit_po_id').val(data.po.id);
+                    $('#edit_po_by').val(data.po.po_by);
+                    $('#edit_date').val(data.po.date);
+                    $('#edit_category').val(data.po.category).trigger('change');
+                    $('#edit_remarks').val(data.po.remarks);
+
+                    // Clear old PO items
+                    $('#editPoItems').html('');
+
+                    // Loop through PO items and populate fields
+                    $.each(data.po.items, function(index, item) {
+                        let newRow = `<div class="row mb-4 po-item-row">
+                    <!-- Same structure as in the create modal for items -->
+                    <div class="form-group col-md-3">
+                        <label>Description <span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" name="description[]" value="${item.description}" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Amount <span class="text-danger">*</span></label>
+                        <input class="form-control amount" type="number" step="0.1" name="amount[]" value="${item.amount}" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Quantity <span class="text-danger">*</span></label>
+                        <input class="form-control quantity" type="number" name="quantity[]" value="${item.quantity}" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Remarks</label>
+                        <input class="form-control" type="text" name="item_remarks[]" value="${item.remarks}">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Subtotal</label>
+                        <input class="form-control subtotal" type="text" name="subtotal[]" value="${item.subtotal}" readonly disabled>
+                    </div>
+                </div>`;
+                        $('#editPoItems').append(newRow);
+                    });
+
+                    // Calculate total
+                    calculateEditTotal();
+
+                    // Open the modal
+                    $('#editModal').modal('show');
+                }
+            });
+        });
+
+        // Function to calculate total in edit modal
+        function calculateEditTotal() {
+            let total = 0;
+            $('#editPoItems .po-item-row').each(function() {
+                let amount = parseFloat($(this).find('.amount').val()) || 0;
+                let quantity = parseInt($(this).find('.quantity').val()) || 0;
+                let subtotal = amount * quantity;
+                $(this).find('.subtotal').val(subtotal.toFixed(2));
+                total += subtotal;
+            });
+            $('#edit_total').text(total.toFixed(2));
+        }
     </script>
 @endsection
