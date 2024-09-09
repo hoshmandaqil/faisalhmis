@@ -11,9 +11,9 @@
         </button>
     @endif
 
-    @if (in_array('PO_approve', $user_permissions))
+    {{-- @if (in_array('PO_approve', $user_permissions))
         <a href="#" class="btn btn-success btn-sm pull-right" id="approvePosButton">Approve Selected POs</a>
-    @endif
+    @endif --}}
 
     @if (\Request::is('search_patient_list'))
         <a type="button" class="btn btn-danger btn-sm" href="{{ route('patient.index') }}">
