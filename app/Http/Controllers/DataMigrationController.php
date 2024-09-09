@@ -13,7 +13,8 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        $this->movePoFile();
+        return 'hello dear';
+        // $this->movePoFile();
     }
 
 
