@@ -13,7 +13,7 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        $this->movePoFile();
+        $this->movePOToNewDatabase();
     }
 
 
