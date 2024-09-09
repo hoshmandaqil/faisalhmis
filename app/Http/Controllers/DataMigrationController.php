@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense\ExpenseCategory;
+use App\Models\Expense\ExpenseItem;
+use App\Models\Expense\ExpenseSlip;
 use App\Models\PurchaseOrder as ModelsPurchaseOrder;
 use App\Models\PurchaseOrderFile;
 use App\Models\PurchaseOrderItem;
@@ -101,5 +103,48 @@ class DataMigrationController extends Controller
         }
 
         echo "Expense Category are shifted successfully.";
+    }
+
+    public function moveExpense()
+    {
+        $categories = DB::connection('mysql2')->table('expenses_slip')->where('application_id', 8)->get();
+        // dd($categories);
+        foreach ($categories as $file) {
+            ExpenseSlip::insert([
+                'id' => $file->id,
+                'slip_no' => $file->slip_no,
+                'paid_by' => $file->paid_by,
+                'paid_to' => $file->paid_to,
+                'date' => $file->date,
+                'file' => $file->file,
+                'remarks' => $file->remarks,
+                'category' => $file->category,
+                'cashier' => $file->cashier,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Expense slip are shifted successfully.";
+    }
+
+    public function moveExpenseItems()
+    {
+        $categories = DB::connection('mysql2')->table('expenses_items')->where('application_id', 8)->get();
+        // dd($categories);
+        foreach ($categories as $file) {
+            ExpenseItem::insert([
+                'id' => $file->id,
+                'slip_id' => $file->slip_id,
+                'expense_description' => $file->expense_description,
+                'amount' => $file->amount,
+                'quantity' => '',
+                'remarks' => $file->remarks,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Expense item are shifted successfully.";
     }
 }
