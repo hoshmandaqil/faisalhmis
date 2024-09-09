@@ -13,7 +13,7 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        $this->movePOItemToNewDatabase();
+        $this->movePoFile();
     }
 
 
@@ -64,20 +64,20 @@ class DataMigrationController extends Controller
     }
 
 
-    // public function movePoFile()
-    // {
-    //     $files = DB::connection('mysql2')->table('purchase_order_files')->where('application_id', 8)->get();
+    public function movePoFile()
+    {
+        $files = DB::connection('mysql2')->table('purchase_order_files')->where('application_id', 8)->get();
 
-    //     foreach ($files as $file) {
-    //         PurchaseOrderFile::insert([
-    //             'po_id' => $file->po_id,
-    //             'file' => $file->file,
-    //             'remarks' => $file->remarks,
-    //             'created_at' => $file->created_at,
-    //             'updated_at' => $file->updated_at,
-    //         ]);
-    //     }
+        foreach ($files as $file) {
+            PurchaseOrderFile::insert([
+                'po_id' => $file->po_id,
+                'file' => $file->file,
+                'remarks' => $file->remarks,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
 
-    //     echo "Purchase order files are shifted successfully.";
-    // }
+        echo "Purchase order files are shifted successfully.";
+    }
 }
