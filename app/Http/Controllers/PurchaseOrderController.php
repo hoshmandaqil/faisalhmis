@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense\ExpenseCategory;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseOrderSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -53,48 +54,41 @@ class PurchaseOrderController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
+        // Validate the incoming request data
+        $validated = $request->validate([
+            'po_by' => 'required|string|max:255',
+            'date' => 'required|date',
+            'category' => 'required|integer',
+            'remarks' => 'nullable|string',
+            'description.*' => 'required|string',
+            'amount.*' => 'required|numeric',
+            'quantity.*' => 'required|integer',
+            'item_remarks.*' => 'nullable|string',
+        ]);
 
-        $descriptions = $request->description;
+        // Create the PurchaseOrder
+        $purchaseOrder = PurchaseOrder::create([
+            'po_by' => $validated['po_by'],
+            'date' => $validated['date'], // Assuming it's already in the correct format
+            'category' => $validated['category'],
+            'remarks' => $validated['remarks'] ?? null,
+            'inserted_by' => auth()->id(),
+        ]);
 
-        $quantities = $request->quantity;
-        $prices = $request->price;
-        $totalPrices = $request->total_price;
-        $dates = $request->date;
-        $numberOfFilesEach = explode(',', $request->numberOfFilesPerEach);
-        $startKeyFile = 0;
-        $endKeyFile = 0;
-        $thisPOFiles = [];
-        foreach ($descriptions as $key => $des) {
-
-            $poItem = new PurchaseOrder();
-            $poItem->description = $descriptions[$key];
-            $poItem->quantity = $quantities[$key];
-            $poItem->price = $prices[$key];
-            $poItem->total_price = $totalPrices[$key];
-            $poItem->date = $dates[$key];
-            $thisPOFilesNumber = $numberOfFilesEach[$key];
-            $poItem->created_by = \Auth::user()->id;
-
-            if ($request->hasfile('files')) {
-                foreach ($request->file('files') as $image) {
-                    $filename =  rand() . '_' . time() . '_' . $image->getClientOriginalName();
-                    $image->move(public_path() . '/POs/', $filename);
-                    $images[] = $filename;
-                }
-                $poItem->files = json_encode($images);
-            }
-            $poItem->save();
+        // Loop through the items and create PurchaseOrderItem for each
+        foreach ($validated['description'] as $index => $description) {
+            PurchaseOrderItem::create([
+                'purchase_order_id' => $purchaseOrder->id,
+                'description' => $description,
+                'amount' => $validated['amount'][$index],
+                'quantity' => $validated['quantity'][$index],
+                'item_remarks' => $validated['item_remarks'][$index] ?? null,
+            ]);
         }
 
-        return redirect()->back()->with('alert', 'The PO Added Successfully')->with('alert-type', 'alert-success');
+        return back()->with(['message' => 'Purchase Order and items successfully stored']);
     }
 
     /**
@@ -114,9 +108,17 @@ class PurchaseOrderController extends Controller
      * @param  \App\Models\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseOrder $purchaseOrder)
+    public function edit($id)
     {
-        //
+        $purchaseOrder = PurchaseOrder::find($id);
+        // Load the related PO items
+        $purchaseOrder->load('items');
+
+        // Return the purchase order and items as JSON
+        return response()->json([
+            'po' => $purchaseOrder,
+            'items' => $purchaseOrder->items
+        ]);
     }
 
     /**
