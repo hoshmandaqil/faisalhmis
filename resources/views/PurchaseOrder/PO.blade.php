@@ -289,6 +289,7 @@
                     </button>
                 </div>
                 <div class="modal-body" id="viewImagesBody">
+                    loading...
                 </div>
             </div>
         </div>
