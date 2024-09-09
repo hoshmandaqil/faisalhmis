@@ -16,7 +16,7 @@ class DataMigrationController extends Controller
     public function index()
     {
         // return 'hello dear';
-        $this->moveExpenseItems();
+        $this->moveExpense();
     }
 
 
@@ -118,7 +118,7 @@ class DataMigrationController extends Controller
                 'file' => $file->file,
                 'remarks' => $file->remarks,
                 'category' => $file->category,
-                'cashier' => $file->cashier,
+                'cashier' => 8,
                 'created_at' => $file->created_at,
                 'updated_at' => $file->updated_at,
             ]);
