@@ -13,8 +13,8 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        return 'hello dear';
-        // $this->movePoFile();
+        // return 'hello dear';
+        $this->movePOToNewDatabase();
     }
 
 
@@ -29,6 +29,7 @@ class DataMigrationController extends Controller
                 'id' => $po->id,
                 'po_by' => $po->po_by,
                 'description' => $po->description,
+                'remarks' => $po->remarks,
                 'date' => !empty($po->date) ? $po->date : null,
                 'inserted_by' => 8,
                 'checked_by' => 8,
