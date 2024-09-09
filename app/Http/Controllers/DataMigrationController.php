@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense\ExpenseCategory;
 use App\Models\PurchaseOrder as ModelsPurchaseOrder;
 use App\Models\PurchaseOrderFile;
 use App\Models\PurchaseOrderItem;
@@ -13,8 +14,8 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        return 'hello dear';
-        // $this->movePoFile();
+        // return 'hello dear';
+        $this->moveExpenseCategory();
     }
 
 
@@ -42,7 +43,6 @@ class DataMigrationController extends Controller
                 'rejected_date' => !empty($po->rejected_date) ? $po->rejected_date : null,
                 'reject_comment' => $po->reject_comment,
             ]);
-           
         }
 
         echo "Purchase Order are shifted successfully.";
@@ -81,5 +81,25 @@ class DataMigrationController extends Controller
         }
 
         echo "Purchase order files are shifted successfully.";
+    }
+
+    public function moveExpenseCategory()
+    {
+        $categories = DB::connection('mysql2')->table('expenses_categories')->where('application_id', 8)->get();
+
+        foreach ($categories as $file) {
+            ExpenseCategory::insert([
+                'id' => $file->id,
+                'name' => $file->name,
+                'name_fa' => $file->name_fa,
+                'description' => $file->description,
+                'tax' => $file->tax,
+                'parent' => $file->parent,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Expense Category are shifted successfully.";
     }
 }
