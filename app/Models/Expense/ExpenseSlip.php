@@ -17,6 +17,9 @@ class ExpenseSlip extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
+    protected $appends = ['sum_paid'];
+
+
     /**
      * expenses: Relation to expense items in the slip
      *
@@ -74,8 +77,6 @@ class ExpenseSlip extends Model
      */
     public function getSumPaidAttribute()
     {
-        return $this->expenses->sum(function ($expense) {
-            return $expense->amount * $expense->quantity;
-        });
+        return $this->expenses->sum('amount');
     }
 }
