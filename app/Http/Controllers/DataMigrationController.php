@@ -34,7 +34,7 @@ class DataMigrationController extends Controller
                 'checked_date' => !empty($po->checked_date) ? $po->checked_date : null,
                 'verified_by' => 27,
                 'verified_date' => !empty($po->verified_date) ? $po->verified_date : null,
-                'approved_by' => $po->approved_by,
+                'approved_by' => 27,
                 'approved_date' => !empty($po->approved_date) ? $po->approved_date : null,
                 'rejected_by' => $po->rejected_by,
                 'rejected_date' => !empty($po->rejected_date) ? $po->rejected_date : null,
