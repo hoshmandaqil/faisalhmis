@@ -141,10 +141,10 @@
                                                 data-target="#viewModal">
                                                 View
                                             </a>
-                                            <a class="dropdown-item px-3" href="#"
+                                            {{-- <a class="dropdown-item px-3" href="#"
                                                 x-on:click="$store.files.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
                                                 Files/Attachements
-                                            </a>
+                                            </a> --}}
                                             <a class="dropdown-item px-3" href="#"
                                                 onclick="openManageStatusModal({{ $po->id }})">
                                                 Manage Status
