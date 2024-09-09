@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Expense\ExpenseCategory;
 use App\Models\Expense\ExpenseItem;
 use App\Models\Expense\ExpenseSlip;
-use App\Models\PurchaseOrder as ModelsPurchaseOrder;
 use App\Models\PurchaseOrderFile;
 use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseOrder;
@@ -17,7 +16,7 @@ class DataMigrationController extends Controller
     public function index()
     {
         // return 'hello dear';
-        $this->moveExpenseCategory();
+        $this->moveExpense();
     }
 
 
