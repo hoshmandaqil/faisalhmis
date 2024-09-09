@@ -95,6 +95,7 @@ class PurchaseOrderController extends Controller
     public function show($id)
     {
         $po = PurchaseOrder::with('items')->findOrFail($id);
+
         return view('PurchaseOrder.show', compact('po'));
     }
 
@@ -109,11 +110,11 @@ class PurchaseOrderController extends Controller
         $purchaseOrder = PurchaseOrder::find($id);
         // Load the related PO items
         $purchaseOrder->load('items');
-
         // Return the purchase order and items as JSON
         return response()->json([
             'po' => $purchaseOrder,
-            'items' => $purchaseOrder->items
+            'items' => $purchaseOrder->items,
+            'status' => $purchaseOrder->status(),
         ]);
     }
 
@@ -165,6 +166,44 @@ class PurchaseOrderController extends Controller
             ]);
         }
         return redirect()->back()->with('alert', 'The PO Updated Successfully')->with('alert-type', 'alert-info');
+    }
+
+    // In your PurchaseOrderController
+
+    public function status(Request $request)
+    {
+        $request->validate([
+            'po_id' => 'required',
+            'status' => 'required|in:check,verify,approve,reject'
+        ]);
+
+        $po = PurchaseOrder::findOrFail($request->po_id);
+        
+        // Check user permissions here if needed
+
+        switch ($request->status) {
+            case 'check':
+                $po->checked_by = auth()->id();
+                $po->checked_date = now();
+                break;
+            case 'verify':
+                $po->verified_by = auth()->id();
+                $po->verified_date = now();
+                break;
+            case 'approve':
+                $po->approved_by = auth()->id();
+                $po->approved_date = now();
+                break;
+            case 'reject':
+                $po->rejected_by = auth()->id();
+                $po->rejected_date = now();
+                $po->reject_comment = $request->reject_comment;
+                break;
+        }
+
+        $po->save();
+
+        return response()->json(['success' => 'Status updated successfully'], 200);
     }
 
     /**

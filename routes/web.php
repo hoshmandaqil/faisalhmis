@@ -145,6 +145,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('approvedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'approvedPOs']);
     Route::get('unapprovedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'unapprovedPOs']);
     Route::get('rejectedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'rejectedPOs'])->name('PO.rejectedList');
+    // In your web.php or api.php routes file
+    Route::post('/po_status', [App\Http\Controllers\PurchaseOrderController::class, 'status'])->name('po.status');
 
     Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);

@@ -136,10 +136,9 @@
                                             Actions
                                         </button>
                                         <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                            <a class="dropdown-item px-3" href="#" 
-                                               onclick="viewPO({{ $po->id }})" 
-                                               data-toggle="modal" 
-                                               data-target="#viewModal">
+                                            <a class="dropdown-item px-3" href="#"
+                                                onclick="viewPO({{ $po->id }})" data-toggle="modal"
+                                                data-target="#viewModal">
                                                 View
                                             </a>
                                             <a class="dropdown-item px-3" href="#"
@@ -147,7 +146,7 @@
                                                 Files/Attachements
                                             </a>
                                             <a class="dropdown-item px-3" href="#"
-                                                x-on:click="$store.status.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
+                                                onclick="openManageStatusModal({{ $po->id }})">
                                                 Manage Status
                                             </a>
                                             @if ($po->status() == 'Issued')
@@ -279,7 +278,6 @@
         </div>
     </div>
 
-
     <div class="modal fade" id="viewPoImages" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog modal-lg" role="document">
@@ -376,7 +374,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editPoForm" action="{{ route('PO.update', ['PO' => ':id']) }}" class="p-3" method="post" enctype="multipart/form-data">
+                    <form id="editPoForm" action="{{ route('PO.update', ['PO' => ':id']) }}" class="p-3"
+                        method="post" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <!-- Hidden field for PO ID -->
@@ -430,9 +429,9 @@
         </div>
     </div>
 
-    
     <!-- View PO Modal -->
-    <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -446,6 +445,102 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="manageStatusModal" tabindex="-1" role="dialog"
+        aria-labelledby="manageStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manageStatusModalLabel">Manage PO Status</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- The content you provided will go here -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" colspan="2">
+                                            <h5>PO No</h5>
+                                            <h6 id="modal-po-id"></h6>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>PO Description</h5>
+                                            <h6 id="modal-po-description"></h6>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Total Amount </h5>
+                                            <h6 id="modal-po-total-amount"></h6>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Status </h5>
+                                            <h6 class="text-danger" id="modal-po-status"></h6>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <tr class="fw-bold fs-6 text-gray-800 border-bottom border-gray-200">
+                                        <th>Status</th>
+                                        <th>By</th>
+                                        <th>Date</th>
+                                        <th>Remarks</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold">Checked</td>
+                                        <td id="checked-by">X</td>
+                                        <td id="checked-date">X</td>
+                                        <td></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" id="check-button">Check</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Verified</td>
+                                        <td id="verified-by">X</td>
+                                        <td id="verified-date">X</td>
+                                        <td></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" id="verify-button">Verify</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Approved</td>
+                                        <td id="approved-by">X</td>
+                                        <td id="approved-date">X</td>
+                                        <td></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" id="approve-button">Approve</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Rejected</td>
+                                        <td id="rejected-by">X</td>
+                                        <td id="rejected-date">X</td>
+                                        <td id="reject-comment"></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger" id="reject-button">Reject</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -714,6 +809,89 @@
             });
         }
     </script>
+    <script>
+        function openManageStatusModal(poId) {
+            // Fetch PO data
+            $.ajax({
+                url: `/PO/${poId}/edit`,
+                type: 'GET',
+                success: function({ po, status }) {
+                    console.log(po)
+                    // Populate modal with PO data
+                    $('#modal-po-id').text(po.id);
+                    $('#modal-po-description').text(po.remarks);
+                    $('#modal-po-total-amount').text(po.total_amount);
+                    $('#modal-po-status').text(status);
 
+                    // Populate status data
+                    $('#checked-by').text(po.checked_by || 'X');
+                    $('#checked-date').text(po.checked_date || 'X');
+                    $('#verified-by').text(po.verified_by || 'X');
+                    $('#verified-date').text(po.verified_date || 'X');
+                    $('#approved-by').text(po.approved_by || 'X');
+                    $('#approved-date').text(po.approved_date || 'X');
+                    $('#rejected-by').text(po.rejected_by || 'X');
+                    $('#rejected-date').text(po.rejected_date || 'X');
+                    $('#reject-comment').text(po.reject_comment || '');
 
+                    // Show/hide buttons based on current status
+                    updateStatusButtons(status);
+
+                    // Open the modal
+                    $('#manageStatusModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching PO details:', error);
+                    alert('Error fetching PO details. Please try again.');
+                }
+            });
+        }
+
+        function updateStatusButtons(currentStatus) {
+            // Hide all buttons first
+            $('#check-button, #verify-button, #approve-button, #reject-button').hide();
+
+            // Show appropriate buttons based on current status
+            switch (currentStatus) {
+                case 'Issued':
+                    $('#check-button').show();
+                    break;
+                case 'Checked':
+                    $('#verify-button').show();
+                    break;
+                case 'Verified':
+                    $('#approve-button').show();
+                    $('#reject-button').show();
+                    break;
+            }
+        }
+
+        // Add click handlers for status buttons
+        $('#check-button, #verify-button, #approve-button, #reject-button').click(function() {
+            let action = $(this).text().toLowerCase();
+            let poId = $('#modal-po-id').text();
+            updatePOStatus(poId, action);
+        });
+
+        function updatePOStatus(poId, status) {
+            $.ajax({
+                url: '/po_status',
+                type: 'POST',
+                data: {
+                    po_id: poId,
+                    status: status,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    alert('Status updated successfully');
+                    $('#manageStatusModal').modal('hide');
+                    location.reload(); // Reload the page to reflect changes
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating PO status:', error);
+                    alert('Error updating PO status. Please try again.');
+                }
+            });
+        }
+    </script>
 @endsection
