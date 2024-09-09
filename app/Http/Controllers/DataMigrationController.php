@@ -13,7 +13,7 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        $this->movePOToNewDatabase();
+        $this->movePOItemToNewDatabase();
     }
 
 
@@ -46,22 +46,22 @@ class DataMigrationController extends Controller
         echo "Purchase Order are shifted successfully.";
     }
 
-    // public function movePOItemToNewDatabase()
-    // {
-    //     // Fetch all purchase orders from the current database
-    //     $items = DB::connection('mysql2')->table('purchase_order_items')->where('application_id', 8)->get();
+    public function movePOItemToNewDatabase()
+    {
+        // Fetch all purchase orders from the current database
+        $items = DB::connection('mysql2')->table('purchase_order_items')->where('application_id', 8)->get();
 
-    //     foreach ($items as $item) {
-    //         PurchaseOrderItem::insert([
-    //             'po_id' => $item->po_id,
-    //             'description' => $item->description,
-    //             'amount' => $item->amount,
-    //             'quantity' => $item->quantity,
-    //         ]);
-    //     }
+        foreach ($items as $item) {
+            PurchaseOrderItem::insert([
+                'po_id' => $item->po_id,
+                'description' => $item->description,
+                'amount' => $item->amount,
+                'quantity' => $item->quantity,
+            ]);
+        }
 
-    //     echo "Purchase order items shifted successfully.";
-    // }
+        echo "Purchase order items shifted successfully.";
+    }
 
 
     // public function movePoFile()
