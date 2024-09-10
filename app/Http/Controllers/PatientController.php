@@ -60,7 +60,7 @@ class PatientController extends Controller
         $patient->marital_status = $request->marital_status;
         $patient->age = $request->age;
         $patient->patient_generated_id = NULL;
-        $patient->advance_pay = $request->advance_pay;
+        // $patient->advance_pay = $request->advance_pay;
         $patient->blood_group = $request->blood_group;
         $patient->reg_date = $request->reg_date;
         $patient->doctor_id = $request->doctor_id;
