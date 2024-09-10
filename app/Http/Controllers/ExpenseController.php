@@ -29,7 +29,7 @@ class ExpenseController extends Controller
         $expenses = $expensesQuery->paginate(10);
         $expenses->appends(request()->query());
 
-        $categories = ExpenseCategory::where('parent', null)->with('subCategories')->get();
+        $categories = ExpenseCategory::whereNull('parent')->with('subCategories')->get();
 
         $pos = PurchaseOrder::orderBy('id', 'desc')->get();
 

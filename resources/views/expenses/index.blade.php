@@ -122,7 +122,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
+                    <h5>Add New Expense</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -164,8 +164,7 @@
                                             @foreach ($categories as $category)
                                                 <optgroup label="{{ $category->name }}">
                                                     @if ($category->subCategories->isEmpty())
-                                                        <option value="{{ $category->id }}"
-                                                            :selected="$store.form.form.category == $category - > id">
+                                                        <option value="{{ $category->id }}">
                                                             {{ $category->name }}
                                                         </option>
                                                     @else
@@ -193,13 +192,13 @@
                                 <div class="row mb-4">
                                     <div class="form-group col-md-3">
                                         <label>Purchase Order</label>
-                                        <select class="form-control" name="po_id" required>
+                                        <select class="form-control selectpicker" name="po_id" required data-live-search="true">
                                             <option value="" disabled selected>Please select a PO</option>
                                             @if ($pos->isEmpty())
                                                 <option value="0">Without PO</option>
                                             @else
                                                 @foreach ($pos as $po)
-                                                    @if ($po->approved !== null)
+                                                    @if ($po->approved_by !== null)
                                                         <option value="{{ $po->id }}">
                                                             {{ $po->id }}: {{ $po->description }}
                                                         </option>
