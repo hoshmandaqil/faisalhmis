@@ -15,8 +15,8 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        // return 'hello dear';
-        $this->moveExpenseItems();
+        return 'hello dear';
+        // $this->moveExpenseItems();
     }
 
 
