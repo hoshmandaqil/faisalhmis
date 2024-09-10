@@ -107,7 +107,7 @@ class DataMigrationController extends Controller
     public function moveExpense()
     {
         $categories = DB::connection('mysql2')->table('expenses_slip')->where('application_id', 8)->get();
-        dd($categories);
+        // dd($categories);
         foreach ($categories as $file) {
             ExpenseSlip::insert([
                 'id' => $file->id,
