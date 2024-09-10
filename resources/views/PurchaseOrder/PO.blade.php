@@ -98,7 +98,7 @@
                             <td>{{ $po->date }}</td>
                             <td>{{ $po->insertedByUser->name }}</td>
                             <td>{{ number_format($po->total_amount, 2) }} AF</td>
-                            <td class="font-parastoo">{{ $po->remarks }}</td>
+                            <td class="font-parastoo" dir="rtl">{{ $po->remarks }}</td>
                             <td>
                                 <span @class([
                                     'badge',
@@ -146,13 +146,13 @@
                                                 Files/Attachements
                                             </a> --}}
                                             <a class="dropdown-item px-3" href="#"
-                                                onclick="openManageStatusModal({{ $po->id }})">
+                                                onclick="openManageStatusModal({{ $po }}, '{{ $po->status() }}')">
                                                 Manage Status
                                             </a>
                                             @if ($po->status() == 'Issued')
                                                 {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
                                                 <a type="button" class="dropdown-item px-3 edit-po"
-                                                    data-id="{{ $po->id }}" data-toggle="modal"
+                                                    data-po="{{ $po }}" data-toggle="modal"
                                                     data-target="#editModal">
                                                     Edit
                                                 </a>
@@ -663,24 +663,21 @@
     </script>
     <script>
         $(document).on('click', '.edit-po', function() {
-            let poId = $(this).data('id');
+            let po = $(this).data('po');
             // Fetch the PO data using AJAX
-            $.ajax({
-                url: '/PO/' + poId + '/edit',
-                method: 'GET',
-                success: function(data) {
-                    // Populate the modal fields
-                    $('#edit_po_id').val(data.po.id);
-                    $('#edit_po_by').val(data.po.po_by);
-                    $('#edit_date').val(data.po.date);
-                    $('#edit_remarks').val(data.po.remarks);
 
-                    // Clear old PO items
-                    $('#editPoItems').html('');
+            // Populate the modal fields
+            $('#edit_po_id').val(po.id);
+            $('#edit_po_by').val(po.po_by);
+            $('#edit_date').val(po.date);
+            $('#edit_remarks').val(po.remarks);
 
-                    // Loop through PO items and populate fields
-                    $.each(data.po.items, function(index, item) {
-                        let newRow = `
+            // Clear old PO items
+            $('#editPoItems').html('');
+
+            // Loop through PO items and populate fields
+            $.each(po.items, function(index, item) {
+                let newRow = `
                         <div class="row mb-4 po-item-row">
                             <div class="col-md-1 d-flex justify-content-start align-items-center">
                                 <a class="btn btn-icon btn-sm btn-primary mt-7 add-edit-item" href="#">
@@ -711,16 +708,14 @@
                                 <input class="form-control subtotal" type="text" name="subtotal[]" value="${item.subtotal}" readonly disabled>
                             </div>
                         </div>`;
-                        $('#editPoItems').append(newRow);
-                    });
-
-                    // Calculate total
-                    calculateEditTotal();
-
-                    // Open the modal
-                    $('#editModal').modal('show');
-                }
+                $('#editPoItems').append(newRow);
             });
+
+            // Calculate total
+            calculateEditTotal();
+
+            // Open the modal
+            $('#editModal').modal('show');
         });
 
         // Add new PO item row in edit modal
@@ -812,41 +807,29 @@
         }
     </script>
     <script>
-        function openManageStatusModal(poId) {
-            // Fetch PO data
-            $.ajax({
-                url: `/PO/${poId}/edit`,
-                type: 'GET',
-                success: function({ po, status }) {
-                    console.log(po)
-                    // Populate modal with PO data
-                    $('#modal-po-id').text(po.id);
-                    $('#modal-po-description').text(po.remarks);
-                    $('#modal-po-total-amount').text(po.total_amount);
-                    $('#modal-po-status').text(status);
+        function openManageStatusModal(po, status) {
+            // Populate modal with PO data
+            $('#modal-po-id').text(po.id);
+            $('#modal-po-description').text(po.remarks);
+            $('#modal-po-total-amount').text(po.total_amount);
+            $('#modal-po-status').text(status);
 
-                    // Populate status data
-                    $('#checked-by').text(po.checked_by || 'X');
-                    $('#checked-date').text(po.checked_date || 'X');
-                    $('#verified-by').text(po.verified_by || 'X');
-                    $('#verified-date').text(po.verified_date || 'X');
-                    $('#approved-by').text(po.approved_by || 'X');
-                    $('#approved-date').text(po.approved_date || 'X');
-                    $('#rejected-by').text(po.rejected_by || 'X');
-                    $('#rejected-date').text(po.rejected_date || 'X');
-                    $('#reject-comment').text(po.reject_comment || '');
+            // Populate status data
+            $('#checked-by').text(po.checked_by || 'X');
+            $('#checked-date').text(po.checked_date || 'X');
+            $('#verified-by').text(po.verified_by || 'X');
+            $('#verified-date').text(po.verified_date || 'X');            
+            $('#approved-by').text(po.approved_by || 'X');
+            $('#approved-date').text(po.approved_date || 'X');
+            $('#rejected-by').text(po.rejected_by || 'X');
+            $('#rejected-date').text(po.rejected_date || 'X');
+            $('#reject-comment').text(po.reject_comment || '');
 
-                    // Show/hide buttons based on current status
-                    updateStatusButtons(status);
+            // Show/hide buttons based on current status
+            updateStatusButtons(status);
 
-                    // Open the modal
-                    $('#manageStatusModal').modal('show');
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching PO details:', error);
-                    alert('Error fetching PO details. Please try again.');
-                }
-            });
+            // Open the modal
+            $('#manageStatusModal').modal('show');
         }
 
         function updateStatusButtons(currentStatus) {

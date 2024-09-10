@@ -9,7 +9,9 @@
         <div class="col-md-6">
             <p><strong>Status:</strong> {{ $po->status() }}</p>
             <p><strong>Total Amount:</strong> {{ number_format($po->total_amount, 2) }} AF</p>
-            <p><strong>Remarks:</strong> {{ $po->remarks }}</p>
+            <div><strong>Remarks:</strong>
+                <p dir="rtl">{{ $po->remarks }}</p>
+            </div>
         </div>
     </div>
     <h3>Items</h3>
@@ -23,9 +25,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($po->items as $item)
+            @foreach ($po->items as $item)
                 <tr>
-                    <td>{{ $item->description }}</td>
+                    <td dir="rtl">{{ $item->description }}</td>
                     <td>{{ number_format($item->amount, 2) }}</td>
                     <td>{{ $item->quantity }}</td>
                     <td>{{ number_format($item->amount * $item->quantity, 2) }}</td>
@@ -36,9 +38,12 @@
             <tr>
                 <th colspan="3" class="text-right">Grand Total</th>
                 <th>
-                    {{ number_format($po->items->sum(function($item) {
-                        return $item->amount * $item->quantity;
-                    }), 2) }}
+                    {{ number_format(
+                        $po->items->sum(function ($item) {
+                            return $item->amount * $item->quantity;
+                        }),
+                        2,
+                    ) }}
                 </th>
             </tr>
         </tfoot>
