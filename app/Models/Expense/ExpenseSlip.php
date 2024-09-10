@@ -77,6 +77,8 @@ class ExpenseSlip extends Model
      */
     public function getSumPaidAttribute()
     {
-        return $this->expenses->sum('amount');
+        return $this->expenses->sum(function ($query) {
+            return $query->amount * $query->quantity;
+        });
     }
 }
