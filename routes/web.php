@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DataMigrationController;
 use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PayrollPaymentController;
 use Illuminate\Support\Facades\Route;
@@ -148,6 +149,7 @@ Route::group(['middleware' => ['auth']], function () {
     // In your web.php or api.php routes file
     Route::post('/po_status', [App\Http\Controllers\PurchaseOrderController::class, 'status'])->name('po.status');
 
+    // Expenses
     Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
     Route::delete('expenses/files', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
@@ -156,6 +158,15 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/', [ExpenseCategoryController::class, 'index'])->name('expense_categories.index');
         Route::post('{id?}', [ExpenseCategoryController::class, 'store'])->name('expense_categories.store');
         Route::delete('{id}', [ExpenseCategoryController::class, 'destroy'])->name('expense_categories.destroy');
+    });
+
+    // Incomes
+    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store']);
+
+    Route::prefix('income-categories')->group(function () {
+        Route::get('/', [IncomeCategoryController::class, 'index'])->name('income_categories.index');
+        Route::post('{id?}', [IncomeCategoryController::class, 'store'])->name('income_categories.store');
+        Route::delete('{id}', [IncomeCategoryController::class, 'destroy'])->name('income_categories.destroy');
     });
 
     // Old POs

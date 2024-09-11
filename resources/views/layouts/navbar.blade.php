@@ -85,7 +85,7 @@
                             <a class="dropdown-item" href="{{ route('patient_pharmacy_medicine.index') }}">Sale
                                 Medicine</a>
                         </li>
-                        @if (in_array('procurement',$user_permissions))
+                        @if (in_array('procurement', $user_permissions))
                             <li>
                                 <a class="dropdown-item" href="{{ route('pharmacy.index') }}">Procurement</a>
                             </li>
@@ -178,6 +178,20 @@
                 </li>
             @endif
             {{-- @endif --}}
+            <li class="nav-item dropdown ">
+                <a class="nav-link dropdown-toggle" id="financeDropdown" data-toggle="dropdown" href="#"
+                    role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="icon-attach_money nav-icon"></i>
+                    Finance
+                </a>
+                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="financeDropdown">
+                    <li class="nav-item">
+                        <a class="dropdown-item" href="{{ route('incomes.index') }}">
+                            Miscellaneous Income
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
             @if (in_array('attendance_menu', $user_permissions))
                 <li class="nav-item">
