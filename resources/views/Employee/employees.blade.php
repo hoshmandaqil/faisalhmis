@@ -46,6 +46,7 @@
                             <th>S.NO</th>
                             <th>ID</th>
                             <th>Name</th>
+                            <th>F/Name</th>
                             <th>Position</th>
                             <th>Gender</th>
                             <th>Phone Number</th>
@@ -59,6 +60,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $employee->employee_id }}</td>
                                 <td>{{ ucfirst($employee->first_name) . ' ' . ucfirst($employee->last_name) }}</td>
+                                <td>{{ ucfirst($employee->father_name) }}</td>
                                 <td>{{ ucfirst($employee->position) }}</td>
                                 <td>{{ $employee->gender == 0 ? 'Male' : 'Female' }}</td>
                                 <td>{{ $employee->phone_number }}</td>

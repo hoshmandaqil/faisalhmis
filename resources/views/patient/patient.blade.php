@@ -231,16 +231,16 @@
                                 <label>Age</label>
                                 <input class="form-control" name="age" type="text">
                             </div>
-                            <div class="form-group col-6">
+                            {{-- <div class="form-group col-6">
                                 <label>Advance Payment?</label>
                                 <input class="form-control" name="advance_pay" type="number" value="0">
-                            </div>
-                        </div>
-                        <div class="row">
+                            </div> --}}
                             <div class="form-group col-6">
                                 <label>Register Date</label>
                                 <input class="form-control" name="reg_date" type="date" value="{{ date('Y-m-d') }}">
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="form-group col-6">
                                 <label>Default Discount</label>
                                 <select class="form-control" name="default_discount">
