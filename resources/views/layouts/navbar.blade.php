@@ -16,7 +16,7 @@
                     Dashboard
                 </a>
             </li>
-            
+
             @if (in_array('reception_menu', $user_permissions))
                 <li class="nav-item dropdown ">
                     <a class="nav-link dropdown-toggle @if (\Request::is('patient')) active-page @endif"
@@ -94,7 +94,7 @@
                 </li>
             @endif
 
-            
+
 
             @if (in_array('lab_menu', $user_permissions))
 
@@ -159,24 +159,9 @@
                 </li>
             @endif
 
-            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('PO.index') }}">
-                        <i class="icon-attach_money nav-icon"></i>
-                        Purchase Order
-                    </a>
-                </li>
-            @endif
-            
-            {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
-            @if (in_array('expense_menu', $user_permissions))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('expenses.index') }}">
-                        <i class="icon-attach_money nav-icon"></i>
-                        Expenses
-                    </a>
-                </li>
-            @endif
+
+
+
             {{-- @endif --}}
             <li class="nav-item dropdown ">
                 <a class="nav-link dropdown-toggle" id="financeDropdown" data-toggle="dropdown" href="#"
@@ -185,6 +170,16 @@
                     Finance
                 </a>
                 <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="financeDropdown">
+                    @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
+                        <a class="dropdown-item" href="{{ route('PO.index') }}">
+                            Purchase Order
+                        </a>
+                    @endif
+                    @if (in_array('expense_menu', $user_permissions))
+                        <a class="dropdown-item" href="{{ route('expenses.index') }}">
+                            Expenses
+                        </a>
+                    @endif
                     <li class="nav-item">
                         <a class="dropdown-item" href="{{ route('incomes.index') }}">
                             Miscellaneous Income
