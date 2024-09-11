@@ -73,18 +73,20 @@
                                 <td>{{ ($incomes->currentpage() - 1) * $incomes->perpage() + $loop->index + 1 }}
                                 <td>{{ $income->slip_no }}</td>
                                 <td>{{ $income->date }}</td>
-                                <td>{{ $income->incomeCategory->name }}</td>
+                                <td>{{ $income->incomeCategory ? $income->incomeCategory->name : 'N/A' }}</td>
                                 <td>{{ $income->remarks }}</td>
                                 <td>{{ number_format($income->amount) }} AF</td>
                                 <td>{{ $income->paid_by }}</td>
                                 <td>{{ $income->paid_to }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#viewIncome" data-expense="{{ $income }}">
+                                        data-target="#viewIncome" data-income="{{ $income }}"
+                                        data-category="{{ $income->incomeCategory ? $income->incomeCategory->name : 'N/A' }}"
+                                        data-cashier="{{ $income->user->name }}">
                                         View
                                     </button>
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#addIncomeModal" data-expense="{{ $income }}">
+                                        data-target="#addIncomeModal" data-income="{{ $income }}">
                                         Edit
                                     </button>
                                 </td>
@@ -196,12 +198,13 @@
         </div>
     </div>
 
-    <!-- Expense Categories Modal -->
+    <!-- Income Categories Modal -->
     <div class="modal fade" id="incomeCategoriesModal" tabindex="-1" role="dialog"
         aria-labelledby="incomeCategoriesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+                    <h4>Income Categories</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -260,9 +263,7 @@
 
                         <div class="row mb-4">
                             <div class="col-md-12 d-flex justify-content-between">
-                                <h4>Expense Categories</h4>
-                                <button class="btn btn-primary btn-sm" @click="$store.categories.categoryFormToggle()">Add
-                                    New Category</button>
+                                <h4>Income Categories</h4>
                             </div>
                         </div>
                         <div class="row">
@@ -298,7 +299,7 @@
                                                             Edit
                                                         </button>
                                                         <form
-                                                            action="{{ route('expense_categories.destroy', $category->id) }}"
+                                                            action="{{ route('income_categories.destroy', $category->id) }}"
                                                             method="post">
                                                             @method('DELETE')
                                                             @csrf
@@ -337,11 +338,12 @@
                                 <table class="table table-sm table-rounded border gs-7 gy-3">
                                     <tr>
                                         <td class="mx-auto text-start w-25" rowspan="100%">
-                                            <img class="h-50px" src="" alt="Company Logo" />
+                                            <img src="{{ asset('assets/img/logo/logo.png') }}" alt=""
+                                                style="height: 50px" class="mb-4">
                                         </td>
                                         <td class="text-end w-25">
                                             <ul class="list-unstyled">
-                                                <li><strong>Date: </strong> <span id="expenseDate"></span></li>
+                                                <li><strong>Date: </strong> <span id="incomeDate"></span></li>
                                             </ul>
                                         </td>
                                     </tr>
@@ -356,26 +358,8 @@
                                         <td><strong>Paid By:</strong> <span id="paidBy"></span></td>
                                         <td><strong>Paid To:</strong> <span id="paidTo"></span></td>
                                         <td><strong>Income Category:</strong> <span id="incomeCategory"></span></td>
-                                        <td><strong>Slip No:</strong> <span id="voucherNo"></span></td>
+                                        <td><strong>Slip No:</strong> <span id="slipNo"></span></td>
                                     </tr>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4">
-                            <div class="col-md-12">
-                                <table
-                                    class="table table-sm table-rounded table-row-bordered table-striped border gs-7 gy-3">
-                                    <thead>
-                                        <tr class="fw-bold fs-6 border-bottom border-gray-200">
-                                            <th>Description</th>
-                                            <th>Amount</th>
-                                            <th>Remarks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="expenseItems">
-                                        <!-- Income items will be injected here by jQuery -->
-                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -386,7 +370,7 @@
                                     <tr>
                                         <td><strong>Remarks:</strong> <span id="remarks"></span></td>
                                         <td><strong>Cashier:</strong> <span id="cashier"></span></td>
-                                        <td><strong>Total Paid:</strong> <span id="totalPaid"></span></td>
+                                        <td><strong>Amount:</strong> <span id="amount"></span></td>
                                     </tr>
                                 </table>
                             </div>
@@ -425,9 +409,29 @@
             $(this).persianDatepicker();
         });
     </script>
-    {{-- Edit Expense --}}
+    {{-- Reset Income Form on Modal Open --}}
     <script>
-        // Edit Income Category
+        $(document).ready(function() {
+            $('#incomeCategoriesModal').on('show.bs.modal', function() {
+                var form = $('#incomeForm');
+
+                // Clear all input fields
+                form.find('input[type="text"], input[type="number"], textarea').val('');
+
+                // Uncheck checkboxes
+                form.find('input[type="checkbox"]').prop('checked', false);
+
+                // Reset select elements to default option
+                form.find('select').prop('selectedIndex', 0);
+
+                // For example, if you have a hidden field for category ID:
+                $('#categoryId').val('');
+            });
+        });
+    </script>
+    {{-- Edit Income Category --}}
+    <script>
+        // Edit Income Category    
         document.addEventListener('DOMContentLoaded', function() {
             const editButtons = document.querySelectorAll('.edit-btn');
             const form = document.getElementById('incomeForm');
@@ -435,29 +439,23 @@
             editButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const id = this.dataset.id;
+                    const name = this.dataset.name;
+                    const nameFa = this.dataset.nameFa;
                     const description = this.dataset.description;
-                    const paidBy = this.dataset.paidBy;
-                    const paidTo = this.dataset.paidTo;
-                    const category = this.dataset.category;
-                    const date = this.dataset.date;
-                    const amount = this.dataset.amount;
-                    const remarks = this.dataset.remarks;
+                    const tax = this.dataset.tax;
 
                     // Set form action to the update route
-                    form.action = `/incomes/${id}`;
+                    form.action = `/income-categories/${id}`;
+                    form.querySelector('#categoryId').value = id;
 
                     // Populate the form with income data
-                    form.querySelector('#income_id').value = id;
-                    form.querySelector('textarea[name="income_description"]').value = description;
-                    form.querySelector('input[name="paid_by"]').value = paidBy;
-                    form.querySelector('input[name="paid_to"]').value = paidTo;
-                    form.querySelector('select[name="category"]').value = category;
-                    form.querySelector('input[name="date"]').value = date;
-                    form.querySelector('input[name="amount"]').value = amount;
-                    form.querySelector('textarea[name="remarks"]').value = remarks;
+                    form.querySelector('input[name="name"]').value = name;
+                    form.querySelector('input[name="name_fa"]').value = nameFa;
+                    form.querySelector('input[name="description"]').value = description;
+                    form.querySelector('input[name="tax"]').checked = tax === '1';
 
                     // Open the modal
-                    $('#addIncomeModal').modal('show');
+                    $('#incomeCategoriesModal').modal('show');
                 });
             });
         });
@@ -469,30 +467,21 @@
             $('#viewIncome').on('show.bs.modal', function(event) {
                 var button = $(event.relatedTarget);
                 var income = button.data('income');
+                var incomeCategory = button.data('category');
+                var incomeCashir = button.data('cashier');
 
                 // Populate modal fields with income details
                 $('#viewIncome #slipNo').text(income.slip_no);
-                $('#viewIncome #expenseDate').text(income.date);
+                $('#viewIncome #incomeDate').text(income.date);
                 $('#viewIncome #paidBy').text(income.paid_by);
                 $('#viewIncome #paidTo').text(income.paid_to);
-                $('#viewIncome #incomeCategory').text(income.category ? income.category.name : '');
+                $('#viewIncome #incomeCategory').text(incomeCategory);
                 $('#viewIncome #remarks').text(income.remarks);
-                $('#viewIncome #cashier').text(income.cashier ? income.cashier.name : '');
+                $('#viewIncome #cashier').text(incomeCashir);
+                $('#viewIncome #amount').text(income.amount);
 
                 // Clear previous income items
                 $('#incomeItems').empty();
-
-                // Populate income items
-                $.each(income.expenses, function(i, item) {
-                    $('#incomeItems').append(`
-                        <tr>
-                            <td>${item.expense_description}</td>
-                            <td>${item.amount.toLocaleString()} AFN</td>
-                            <td>${item.quantity}</td>
-                            <td>${item.remarks}</td>
-                        </tr>
-                    `);
-                });
             });
         });
     </script>
@@ -501,6 +490,23 @@
     <script>
         $(document).ready(function() {
             $('#addIncomeModal').on('show.bs.modal', function(event) {
+                // Clear all form fields
+                $('#incomeForm')[0].reset();
+
+                // Clear any hidden fields or fields not reset by form.reset()
+                $('#income_id').val('');
+                $('textarea[name="income_description"]').val('');
+                $('input[name="paid_by"]').val('');
+                $('input[name="paid_to"]').val('');
+                $('select[name="category"]').val('');
+                $('input[name="date"]').val('');
+                $('input[name="amount"]').val('');
+                $('textarea[name="remarks"]').val('');
+                $('input[name="slip_no"]').val('');
+                $('input[name="cashier"]').val('');
+
+                // Reset total amount display
+                $('#total-amount').text('0.00');
                 var button = $(event.relatedTarget); // Button that triggered the modal
                 var income = button.data('income'); // Extract info from data-* attributes
 
@@ -518,42 +524,6 @@
                     $('input[name="cashier"]').val(income.cashier);
 
                     let totalPrice = 0;
-
-                    // Populate income items
-                    $('#expense-items-container').empty();
-                    $.each(income.expenses, function(index, item) {
-                        var expenseItemHtml = `
-                            <div class="row mb-4 expense-item-row">
-                                <div class="col-md-1">
-                                    <a class="btn btn-icon btn-sm btn-primary mt-7 add-item" href="#">
-                                        +
-                                    </a>
-                                    <a class="btn btn-icon btn-sm btn-danger mt-7 remove-item" href="#">
-                                        -
-                                    </a>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label>Expense Description *</label>
-                                    <input class="form-control" type="text" name="expenses[${index}][expense_description]" value="${item.expense_description}" required>
-                                </div>
-                                <div class="form-group col-md-2">
-                                    <label>Amount *</label>
-                                    <input class="form-control" type="number" name="expenses[${index}][amount]" value="${item.amount}" required>
-                                </div>
-                                <div class="form-group col-md-2">
-                                    <label>Quantity *</label>
-                                    <input class="form-control" type="number" name="expenses[${index}][quantity]" value="${item.quantity}" required>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <label>Remarks</label>
-                                    <input class="form-control" type="text" name="expenses[${index}][remarks]" value="${item.remarks}">
-                                </div>
-                            </div>
-                        `;
-                        $('#expense-items-container').append(expenseItemHtml);
-
-                        totalPrice += Number(item.amount) * item.quantity;
-                    });
 
                     $('#total-amount').text(totalPrice.toFixed(2));
                 } else {
