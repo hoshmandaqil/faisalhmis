@@ -68,7 +68,7 @@
                     </thead>
                     <tbody>
                         @foreach ($expenses as $expense)
-                            <tr class="text-center">
+                            <tr>
                                 <td>{{ ($expenses->currentpage() - 1) * $expenses->perpage() + $loop->index + 1 }}</td>
                                 <td>{{ $expense->slip_no }}</td>
                                 <td>{{ $expense->paid_by }}</td>
