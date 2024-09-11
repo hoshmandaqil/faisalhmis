@@ -16,6 +16,35 @@
                     Dashboard
                 </a>
             </li>
+            
+            @if (in_array('reception_menu', $user_permissions))
+                <li class="nav-item dropdown ">
+                    <a class="nav-link dropdown-toggle @if (\Request::is('patient')) active-page @endif"
+                        id="appsDropdown" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
+                        aria-expanded="false">
+                        <i class="icon-card_travel nav-icon"></i>
+                        Reception
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="appsDropdown">
+                        {{-- <li> --}}
+                        {{-- <a class="dropdown-item" href="chat.html">In-Patients</a> --}}
+                        {{-- </li> --}}
+                        <li>
+                            <a class="dropdown-item" href="{{ route('patient.index') }}">Patient Registration</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url('patient_reception_medicine') }}">Pharmacy
+                                Patients</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url('reception_patient_labs') }}">Laboratory Patients</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('patient_ipd.index') }}">IPD Patients</a>
+                        </li>
+                    </ul>
+                </li>
+            @endif
 
             @if (in_array('patient_list', $user_permissions) || in_array('doctor_menu', $user_permissions))
                 <li class="nav-item dropdown ">
@@ -65,34 +94,7 @@
                 </li>
             @endif
 
-            @if (in_array('reception_menu', $user_permissions))
-                <li class="nav-item dropdown ">
-                    <a class="nav-link dropdown-toggle @if (\Request::is('patient')) active-page @endif"
-                        id="appsDropdown" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
-                        aria-expanded="false">
-                        <i class="icon-card_travel nav-icon"></i>
-                        Reception
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="appsDropdown">
-                        {{-- <li> --}}
-                        {{-- <a class="dropdown-item" href="chat.html">In-Patients</a> --}}
-                        {{-- </li> --}}
-                        <li>
-                            <a class="dropdown-item" href="{{ route('patient.index') }}">Patient Registration</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ url('patient_reception_medicine') }}">Pharmacy
-                                Patients</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ url('reception_patient_labs') }}">Laboratory Patients</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ route('patient_ipd.index') }}">IPD Patients</a>
-                        </li>
-                    </ul>
-                </li>
-            @endif
+            
 
             @if (in_array('lab_menu', $user_permissions))
 
@@ -135,15 +137,6 @@
                     </ul>
                 </li>
             @endif
-
-            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('PO.index') }}">
-                        <i class="icon-attach_money nav-icon"></i>
-                        Purchase Order
-                    </a>
-                </li>
-            @endif
             @if (in_array('payroll_menu', $user_permissions))
                 <li class="nav-item dropdown ">
                     <a class="nav-link dropdown-toggle" id="payrollsDropdown" data-toggle="dropdown" href="#"
@@ -165,6 +158,16 @@
                     </ul>
                 </li>
             @endif
+
+            @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions))
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('PO.index') }}">
+                        <i class="icon-attach_money nav-icon"></i>
+                        Purchase Order
+                    </a>
+                </li>
+            @endif
+            
             {{-- @if (in_array('PO_menu', $user_permissions) || in_array('PO Creation', $user_permissions)) --}}
             @if (in_array('expense_menu', $user_permissions))
                 <li class="nav-item">
