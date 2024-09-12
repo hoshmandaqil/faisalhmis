@@ -34,12 +34,32 @@
         <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
 
             <div class="daily-sales">
-                <h6>Today Patients</h6><br>
+                <h6>Today All Patients</h6><br>
                 <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
                         target="_blank">{{ $todayPatient }}</a></h1>
                 <div id="apexLineChartGradient" class="blue-graph"></div>
             </div>
 
+
+        </div>
+        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
+
+            <div class="daily-sales">
+                <h6>Today OD paitents</h6><br>
+                <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                        target="_blank">{{ $outDorPaitent }}</a></h1>
+                <div id="apexLineChartGradient" class="blue-graph"></div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
+
+            <div class="daily-sales">
+                <h6>Today IN paitents</h6><br>
+                <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                        target="_blank">{{$todayPatient - $outDorPaitent }}</a></h1>
+                <div id="apexLineChartGradient" class="blue-graph"></div>
+            </div>
         </div>
 
         <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
