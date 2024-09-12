@@ -41,6 +41,7 @@ class ReportController extends Controller
         // dd($today, $currentMonth, $currentYear, $previousDay, $previousMonth, $previousMonthYear);
 
         $todayPatient = DB::table('patients')->whereDate('created_at', $today)->count();
+        $outDorPaitent = DB::table('patients')->where('doctor_id',28)->whereDate('created_at', $today)->count();
         $yesterdayPatient = DB::table('patients')->whereDate('created_at', $previousDay)->count();
         $currentMonthPatient = DB::table('patients')->whereYear('created_at', $currentYear)
             ->whereMonth('created_at', $currentMonth)->count();
@@ -49,7 +50,7 @@ class ReportController extends Controller
         $totalAllPatients = DB::table('patients')->count();
         $currentYearAllPatients = DB::table('patients')->whereYear('created_at', $currentYear)->count();
 
-        return view('dashboard', compact('todayPatient', 'yesterdayPatient', 'currentMonthPatient', 'previousMonthPatient', 'totalAllPatients', 'currentYearAllPatients'));
+        return view('dashboard', compact('todayPatient', 'yesterdayPatient', 'currentMonthPatient', 'previousMonthPatient', 'totalAllPatients', 'currentYearAllPatients','outDorPaitent'));
     }
 
 
