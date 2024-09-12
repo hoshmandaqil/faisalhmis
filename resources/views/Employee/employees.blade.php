@@ -530,7 +530,7 @@
 
     <div class="modal fade" id="setPercentage" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"
         aria-labelledby="exampleModalLabel1" data-keyboard="false">
-        <div class="modal-dialog modal-md" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel1">Set Percentage </h5>
