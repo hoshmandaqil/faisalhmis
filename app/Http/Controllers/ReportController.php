@@ -8,6 +8,7 @@ use App\Models\Expense\ExpenseItem;
 use App\Models\LabDepartment;
 use App\Models\LaboratoryPatientLab;
 use App\Models\MainLabDepartment;
+use App\Models\MiscellaneousIncome;
 use App\Models\Patient;
 use App\Models\PatientIPD;
 use App\Models\PatientPharmacyMedicine;
@@ -334,6 +335,7 @@ class ReportController extends Controller
         $seenPatientsByDoctor = [];
         $allIncomes = 0;
         $allExpenses = 0;
+        $otherIncome =0;
 
         // Extract registered by list
         $patientsRegisteredBy = Patient::where('created_by', '!=', 'NULL')->groupBy('created_by')->with('createdBy')->get()->pluck('createdBy.name', 'created_by');
@@ -350,6 +352,7 @@ class ReportController extends Controller
             // $client = new \GuzzleHttp\Client(['verify' => false]);
             // $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
             $kblAllExpenses = ExpenseItem::sum('amount');
+            $otherIncome = MiscellaneousIncome::sum('amount');
             $allExpenses += $kblAllExpenses;
 
             // Get all income from kblhms
@@ -553,7 +556,8 @@ class ReportController extends Controller
             'doctor_id',
             'doctors',
             'allExpenses',
-            'allIncomes'
+            'allIncomes',
+            'otherIncome'
         ));
     }
 
