@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Payroll;
 use App\Models\Employee;
+use App\Models\EmployeeMainLabDepartment;
+use App\Models\LabDepartment;
+use App\Models\MainLabDepartment;
 use App\Models\PayrollItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,8 +21,62 @@ class PayrollController extends Controller
 
     public function create()
     {
-        // Get all employees with their base salary
-        $employees = Employee::all();
+        // Get all employees with their related laboratory tests
+        $allEmployees = Employee::with(['user.patients.laboratoryTests'])->get();
+        
+        $mainLabDepartments = MainLabDepartment::all();
+
+        // Transform the data to include all employee fields and related laboratory tests
+        $employees = $allEmployees->map(function ($employee) use ($mainLabDepartments) {
+            $labTests = $employee->user->patients->flatMap(function ($patient) {
+                return $patient->laboratoryTests;
+            });
+
+            $employeeMainLabDepartments = EmployeeMainLabDepartment::where('employee_id', $employee->id)->get();
+
+            $mainLabDepartmentSummary = $mainLabDepartments->map(function ($mainLabDepartment) use ($labTests, $employeeMainLabDepartments) {
+                $testsForMainDepartment = $labTests->filter(function ($test) use ($mainLabDepartment) {
+                    return $test->testName->mainDepartment->id === $mainLabDepartment->id;
+                });
+
+                $totalPrice = $testsForMainDepartment->sum('price');
+                $employeePercentageAndTax = $employeeMainLabDepartments->where('main_lab_department_id', $mainLabDepartment->id)->first();
+                
+                if ($employeePercentageAndTax) {
+                    $payable = $totalPrice * ($employeePercentageAndTax->percentage / 100);
+                    $tax = $payable * ($employeePercentageAndTax->tax / 100);
+                } else {
+                    $payable = 0;
+                    $tax = 0;
+                }
+
+                return [
+                    'main_lab_department' => $mainLabDepartment->dep_name,
+                    'number_of_tests' => $testsForMainDepartment->count(),
+                    'total_price' => $totalPrice,
+                    'payable' => $payable,
+                    'tax' => $tax,
+                ];
+            })->filter(function ($summary) {
+                return $summary['number_of_tests'] > 0;
+            })->values();
+
+            $employee->lab_tests_summary = $mainLabDepartmentSummary;
+            $employee->lab_tests_count = $labTests->count();
+            $employee->lab_tests = $labTests->map(function ($test) {
+                return [
+                    'id' => $test->id,
+                    'price' => $test->price,
+                    'result' => $test->result,
+                    'lab_department_id' => $test->lab_department_id,
+                    'main_lab_department_id' => $test->testName->mainDepartment->id,
+                ];
+            });
+            return $employee;
+        });
+
+        info($employees);
+
         return view('payrolls.create', compact('employees'));
     }
 

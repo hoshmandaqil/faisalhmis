@@ -31,7 +31,8 @@
                     <th class="text-nowrap">Additional Payments</th>
                     <th>Tax</th>
                     <th class="text-nowrap">Gross Salary</th>
-                    <th class="text-nowrap">Net Payable</th>
+                    <th class="text-nowrap">Net Salary Payable</th>
+                    <th class="text-nowrap">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,8 +51,43 @@
                                 required>
                         </td>
                         <td>
-                            <input type="number" name="employees[{{ $employee->id }}][additional_payments]"
-                                class="form-control additional-payments">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class="bg-secondary">
+                                        <th class="pt-2 pb-2">Department</th>
+                                        <th class="pt-2 pb-2">Tests</th>
+                                        <th class="pt-2 pb-2 text-nowrap">Total Price</th>
+                                        <th class="pt-2 pb-2">Gross</th>
+                                        <th class="pt-2 pb-2">Tax</th>
+                                        <th class="pt-2 pb-2 text-nowrap"">Net Payable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($employee->lab_tests_summary as $summary)
+                                        <tr>
+                                            <td class="pt-2 pb-2">{{ $summary['main_lab_department'] }}</td>
+                                            <td class="pt-2 pb-2">{{ $summary['number_of_tests'] }}</td>
+                                            <td class="pt-2 pb-2">{{ $summary['total_price'] }} AFN</td>
+                                            <td class="pt-2 pb-2">{{ $summary['payable'] }} AFN</td>
+                                            <td class="pt-2 pb-2">{{ $summary['tax'] }} AFN</td>
+                                            <td class="pt-2 pb-2">{{ $summary['payable'] - $summary['tax'] }} AFN</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-light">
+                                        <td class="pb-2 pt-2" colspan="2"><strong>Total</strong></td>
+                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('total_price') }} AFN</strong>
+                                        </td>
+                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('payable') }} AFN</strong></td>
+                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('tax') }} AFN</strong></td>
+                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}
+                                                AFN</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <input type="hidden" name="employees[{{ $employee->id }}][additional_payments]"
+                                class="form-control additional-payments" required>
                         </td>
                         <td>
                             <input type="number" name="employees[{{ $employee->id }}][tax]" class="form-control tax"
