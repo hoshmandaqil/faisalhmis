@@ -77,17 +77,26 @@
                                 <tfoot>
                                     <tr class="bg-light">
                                         <td class="pb-2 pt-2" colspan="2"><strong>Total</strong></td>
-                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('total_price') }} AFN</strong>
+                                        <td class="pb-2 pt-2">
+                                            <strong>{{ $employee->lab_tests_summary->sum('total_price') }} AFN</strong>
                                         </td>
-                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('payable') }} AFN</strong></td>
-                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('tax') }} AFN</strong></td>
-                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}
+                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('payable') }}
                                                 AFN</strong></td>
+                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('tax') }}
+                                                AFN</strong></td>
+                                        <td class="pb-2 pt-2">
+                                            <strong><span>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}</span>
+                                                AFN</strong>
+                                        </td>
+                                        <input type="hidden" name="employees[{{ $employee->id }}][tests_net_payable]"
+                                            class="tests-net-payable"
+                                            value="{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}">
                                     </tr>
                                 </tfoot>
                             </table>
                             <input type="hidden" name="employees[{{ $employee->id }}][additional_payments]"
-                                class="form-control additional-payments" required>
+                                class="form-control additional-payments" required
+                                value="{{ $employee->lab_tests_summary }}">
                         </td>
                         <td>
                             <input type="number" name="employees[{{ $employee->id }}][tax]" class="form-control tax"
@@ -100,6 +109,10 @@
                         <td>
                             <input type="number" name="employees[{{ $employee->id }}][net_payable]"
                                 class="form-control net-payable" readonly>
+                        </td>
+                        <td>
+                            <input type="number" name="employees[{{ $employee->id }}][grand_total]"
+                                class="form-control grand-total" readonly>
                         </td>
                     </tr>
                 @endforeach
@@ -119,15 +132,17 @@
                 const presentDays = parseFloat(row.find('input.present-days').val()) || 0;
                 const bonus = parseFloat(row.find('input.bonus').val()) || 0;
                 const additionalPayments = parseFloat(row.find('input.additional-payments').val()) || 0;
+                const testsNetPayable = parseFloat(row.find('input.tests-net-payable').val()) || 0;
 
                 const grossSalary = (baseSalary / 30) * presentDays;
                 const taxableIncome = grossSalary + bonus + additionalPayments;
-                const tax = taxableIncome * 0.1; // Example tax calculation
+                const tax = taxableIncome * 0.1;
                 const netPayable = taxableIncome - tax;
 
                 row.find('input.tax').val(tax.toFixed(2));
                 row.find('input.net-payable').val(netPayable.toFixed(2));
                 row.find('input.gross-salary').val(taxableIncome.toFixed(2));
+                row.find('input.grand-total').val((netPayable + testsNetPayable).toFixed(2));
             });
         });
     </script>
