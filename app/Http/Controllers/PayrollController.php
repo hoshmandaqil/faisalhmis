@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\EmployeeMainLabDepartment;
 use App\Models\LabDepartment;
 use App\Models\MainLabDepartment;
+use App\Models\Patient;
 use App\Models\PayrollItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -61,6 +62,37 @@ class PayrollController extends Controller
                 return $summary['number_of_tests'] > 0;
             })->values();
 
+            $patients = Patient::with('ipds')->where('doctor_id', $employee->user->id)->get();
+
+            // $opd_amount = $employee->opd_amount;
+            $opd_percentage = $employee->opd_percentage;
+
+            // $ipd_amount = $employee->ipd_amount;
+            $ipd_percentage = $employee->ipd_percentage;
+
+            $total_opd_price = $patients->sum('OPD_fee');
+            $total_ipd_price = $patients->flatMap->ipds->sum('price');
+
+            $opd_payable = $total_opd_price * ($opd_percentage / 100);
+            $ipd_payable = $total_ipd_price * ($ipd_percentage / 100);
+
+            $mainLabDepartmentSummary = collect([
+                [
+                    'main_lab_department' => 'OPD',
+                    'number_of_tests' => $patients->count(),
+                    'total_price' => $total_opd_price,
+                    'payable' => $opd_payable,
+                    'tax' => $opd_payable * 0.1,
+                ],
+                [
+                    'main_lab_department' => 'IPD',
+                    'number_of_tests' => $patients->flatMap->ipds->count(),
+                    'total_price' => $total_ipd_price,
+                    'payable' => $ipd_payable,
+                    'tax' => $ipd_payable * 0.1,
+                ]
+            ])->concat($mainLabDepartmentSummary);
+
             $employee->lab_tests_summary = $mainLabDepartmentSummary;
             $employee->lab_tests_count = $labTests->count();
             $employee->lab_tests = $labTests->map(function ($test) {
@@ -74,8 +106,6 @@ class PayrollController extends Controller
             });
             return $employee;
         });
-
-        info($employees);
 
         return view('payrolls.create', compact('employees'));
     }

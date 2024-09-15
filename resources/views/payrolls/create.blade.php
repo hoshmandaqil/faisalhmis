@@ -8,122 +8,142 @@
 @endsection
 
 @section('content')
-    <form action="{{ route('payrolls.store') }}" method="POST">
-        @csrf
+    <form action="{{ route('payrolls.create') }}" method="GET" id="payrollDateForm">
         <div class="row">
             <div class="form-group col-md-4">
                 <label for="payroll_date">Payroll Date</label>
-                <input type="date" name="payroll_date" id="payroll_date" class="form-control" required>
-            </div>
-
-            <div class="form-group col-md-4">
-                <label for="official_days">Official Days</label>
-                <input type="number" name="official_days" id="official_days" class="form-control" required>
+                <input type="text" name="payroll_date" id="payroll_date" class="form-control persianDate" required
+                    value="{{ request('payroll_date') }}" required>
             </div>
         </div>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Employee</th>
-                    <th class="text-nowrap">Base Salary</th>
-                    <th class="text-nowrap">Present Days</th>
-                    <th>Bonus</th>
-                    <th class="text-nowrap">Additional Payments</th>
-                    <th>Tax</th>
-                    <th class="text-nowrap">Gross Salary</th>
-                    <th class="text-nowrap">Net Salary Payable</th>
-                    <th class="text-nowrap">Grand Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($employees as $employee)
-                    <input type="hidden" name="employees[{{ $employee->id }}][employee_id]"
-                        class="form-control present-days" required value="{{ $employee->id }}">
-                    <tr>
-                        <td>{{ $employee->first_name }}</td>
-                        <td>{{ $employee->employeeCurrentSalary->salary_amount }} AFN</td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][present_days]"
-                                class="form-control present-days" required>
-                        </td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][bonus]" class="form-control bonus"
-                                required>
-                        </td>
-                        <td>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr class="bg-secondary">
-                                        <th class="pt-2 pb-2">Department</th>
-                                        <th class="pt-2 pb-2">Tests</th>
-                                        <th class="pt-2 pb-2 text-nowrap">Total Price</th>
-                                        <th class="pt-2 pb-2">Gross</th>
-                                        <th class="pt-2 pb-2">Tax</th>
-                                        <th class="pt-2 pb-2 text-nowrap"">Net Payable</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($employee->lab_tests_summary as $summary)
-                                        <tr>
-                                            <td class="pt-2 pb-2">{{ $summary['main_lab_department'] }}</td>
-                                            <td class="pt-2 pb-2">{{ $summary['number_of_tests'] }}</td>
-                                            <td class="pt-2 pb-2">{{ $summary['total_price'] }} AFN</td>
-                                            <td class="pt-2 pb-2">{{ $summary['payable'] }} AFN</td>
-                                            <td class="pt-2 pb-2">{{ $summary['tax'] }} AFN</td>
-                                            <td class="pt-2 pb-2">{{ $summary['payable'] - $summary['tax'] }} AFN</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot>
-                                    <tr class="bg-light">
-                                        <td class="pb-2 pt-2" colspan="2"><strong>Total</strong></td>
-                                        <td class="pb-2 pt-2">
-                                            <strong>{{ $employee->lab_tests_summary->sum('total_price') }} AFN</strong>
-                                        </td>
-                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('payable') }}
-                                                AFN</strong></td>
-                                        <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('tax') }}
-                                                AFN</strong></td>
-                                        <td class="pb-2 pt-2">
-                                            <strong><span>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}</span>
-                                                AFN</strong>
-                                        </td>
-                                        <input type="hidden" name="employees[{{ $employee->id }}][tests_net_payable]"
-                                            class="tests-net-payable"
-                                            value="{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}">
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            <input type="hidden" name="employees[{{ $employee->id }}][additional_payments]"
-                                class="form-control additional-payments" required
-                                value="{{ $employee->lab_tests_summary }}">
-                        </td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][tax]" class="form-control tax"
-                                readonly>
-                        </td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][gross_salary]"
-                                class="form-control gross-salary" readonly>
-                        </td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][net_payable]"
-                                class="form-control net-payable" readonly>
-                        </td>
-                        <td>
-                            <input type="number" name="employees[{{ $employee->id }}][grand_total]"
-                                class="form-control grand-total" readonly>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <button type="submit" class="btn btn-primary">Generate Payroll</button>
     </form>
+
+    @if (request('payroll_date'))
+        <form action="{{ route('payrolls.store') }}" method="POST">
+            @csrf
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="official_days">Official Days</label>
+                    <input type="number" name="official_days" id="official_days" class="form-control" required>
+                </div>
+            </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th class="text-nowrap">Base Salary</th>
+                        <th class="text-nowrap">Present Days</th>
+                        <th>Bonus</th>
+                        <th class="text-nowrap">Additional Payments</th>
+                        <th>Tax</th>
+                        <th class="text-nowrap">Gross Salary</th>
+                        <th class="text-nowrap">Net Salary Payable</th>
+                        <th class="text-nowrap">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($employees as $employee)
+                        <input type="hidden" name="employees[{{ $employee->id }}][employee_id]"
+                            class="form-control present-days" required value="{{ $employee->id }}">
+                        <tr>
+                            <td>{{ $employee->first_name }}</td>
+                            <td>{{ $employee->employeeCurrentSalary->salary_amount }} AFN</td>
+                            <td>
+                                <input type="number" name="employees[{{ $employee->id }}][present_days]"
+                                    class="form-control present-days" required>
+                            </td>
+                            <td>
+                                <input type="number" name="employees[{{ $employee->id }}][bonus]"
+                                    class="form-control bonus" required>
+                            </td>
+                            <td>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr class="bg-secondary">
+                                            <th class="pt-2 pb-2">Department</th>
+                                            <th class="pt-2 pb-2 text-nowrap">Tests</th>
+                                            <th class="pt-2 pb-2 text-nowrap">Total Price</th>
+                                            <th class="pt-2 pb-2">Gross</th>
+                                            <th class="pt-2 pb-2">Tax</th>
+                                            <th class="pt-2 pb-2 text-nowrap"">Net Payable</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($employee->lab_tests_summary as $summary)
+                                            <tr>
+                                                <td class="pt-2 pb-2">{{ $summary['main_lab_department'] }}</td>
+                                                <td class="pt-2 pb-2">{{ $summary['number_of_tests'] }}</td>
+                                                <td class="pt-2 pb-2">{{ $summary['total_price'] }} AFN</td>
+                                                <td class="pt-2 pb-2">{{ $summary['payable'] }} AFN</td>
+                                                <td class="pt-2 pb-2">{{ $summary['tax'] }} AFN</td>
+                                                <td class="pt-2 pb-2">{{ $summary['payable'] - $summary['tax'] }} AFN</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="bg-light">
+                                            <td class="pb-2 pt-2" colspan="2"><strong>Total</strong></td>
+                                            <td class="pb-2 pt-2">
+                                                <strong>{{ $employee->lab_tests_summary->sum('total_price') }} AFN</strong>
+                                            </td>
+                                            <td class="pb-2 pt-2">
+                                                <strong>{{ $employee->lab_tests_summary->sum('payable') }}
+                                                    AFN</strong>
+                                            </td>
+                                            <td class="pb-2 pt-2"><strong>{{ $employee->lab_tests_summary->sum('tax') }}
+                                                    AFN</strong></td>
+                                            <td class="pb-2 pt-2">
+                                                <strong><span>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}</span>
+                                                    AFN</strong>
+                                            </td>
+                                            <input type="hidden" name="employees[{{ $employee->id }}][tests_net_payable]"
+                                                class="tests-net-payable"
+                                                value="{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}">
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <input type="hidden" name="employees[{{ $employee->id }}][additional_payments]"
+                                    class="form-control additional-payments" required
+                                    value="{{ $employee->lab_tests_summary }}">
+                            </td>
+                            <td>
+                                <input type="number" name="employees[{{ $employee->id }}][tax]" class="form-control tax"
+                                    readonly>
+                            </td>
+                            <td>
+                                <input type="number" name="employees[{{ $employee->id }}][gross_salary]"
+                                    class="form-control gross-salary" readonly>
+                            </td>
+                            <td>
+                                <input type="number" name="employees[{{ $employee->id }}][net_payable]"
+                                    class="form-control net-payable" readonly>
+                            </td>
+                            <td>
+                                <input type="number" name="employees[{{ $employee->id }}][grand_total]"
+                                    class="form-control grand-total" readonly>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <button type="submit" class="btn btn-primary">Generate Payroll</button>
+        </form>
+    @endif
 @endsection
 
 @section('scripts')
+    <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
+    <script>
+        $('body').on('focus', ".persianDate", function() {
+            $(this).persianDatepicker();
+        });
+
+        document.getElementById('payroll_date').addEventListener('change', function() {
+            document.getElementById('payrollDateForm').submit();
+        });
+    </script>
+
     <script>
         $(document).ready(function() {
             $('input.present-days, input.bonus, input.additional-payments').on('input', function() {
