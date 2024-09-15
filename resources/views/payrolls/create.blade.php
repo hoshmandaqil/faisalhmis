@@ -171,6 +171,8 @@
                 let totalPayable = 0;
                 let totalGrandTotal = 0;
 
+                const officialDays = parseFloat($('#official_days').val()) || 30; // Default to 30 if not set
+
                 $('tbody tr').each(function() {
                     const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(' AF', ''));
                     const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
@@ -179,7 +181,7 @@
                     const netPayable = parseFloat($(this).find('input.net-payable').val()) || 0;
                     const grandTotal = parseFloat($(this).find('input.grand-total').val()) || 0;
 
-                    totalSalary += (baseSalary / 30) * presentDays;
+                    totalSalary += (baseSalary / officialDays) * presentDays;
                     totalTax += tax;
                     totalBonus += bonus;
                     totalPayable += netPayable;
@@ -193,23 +195,27 @@
                 $('#total-grand-total').text(totalGrandTotal.toFixed(2));
             }
 
-            $('input.present-days, input.bonus, input.additional-payments').on('input', function() {
-                const row = $(this).closest('tr');
-                const baseSalary = parseFloat(row.find('td').eq(1).text().replace(' AF', ''));
-                const presentDays = parseFloat(row.find('input.present-days').val()) || 0;
-                const bonus = parseFloat(row.find('input.bonus').val()) || 0;
-                const additionalPayments = parseFloat(row.find('input.additional-payments').val()) || 0;
-                const testsNetPayable = parseFloat(row.find('input.tests-net-payable').val()) || 0;
+            $('input.present-days, input.bonus, input.additional-payments, #official_days').on('input', function() {
+                const officialDays = parseFloat($('#official_days').val()) || 30; // Default to 30 if not set
 
-                const grossSalary = (baseSalary / 30) * presentDays;
-                const taxableIncome = grossSalary + bonus + additionalPayments;
-                const tax = taxableIncome * 0.1;
-                const netPayable = taxableIncome - tax;
+                $('tbody tr').each(function() {
+                    const row = $(this);
+                    const baseSalary = parseFloat(row.find('td').eq(1).text().replace(' AF', ''));
+                    const presentDays = parseFloat(row.find('input.present-days').val()) || 0;
+                    const bonus = parseFloat(row.find('input.bonus').val()) || 0;
+                    const additionalPayments = parseFloat(row.find('input.additional-payments').val()) || 0;
+                    const testsNetPayable = parseFloat(row.find('input.tests-net-payable').val()) || 0;
 
-                row.find('input.tax').val(tax.toFixed(2));
-                row.find('input.net-payable').val(netPayable.toFixed(2));
-                row.find('input.gross-salary').val(taxableIncome.toFixed(2));
-                row.find('input.grand-total').val((netPayable + testsNetPayable).toFixed(2));
+                    const grossSalary = (baseSalary / officialDays) * presentDays;
+                    const taxableIncome = grossSalary + bonus + additionalPayments;
+                    const tax = taxableIncome * 0.1;
+                    const netPayable = taxableIncome - tax;
+
+                    row.find('input.tax').val(tax.toFixed(2));
+                    row.find('input.net-payable').val(netPayable.toFixed(2));
+                    row.find('input.gross-salary').val(taxableIncome.toFixed(2));
+                    row.find('input.grand-total').val((netPayable + testsNetPayable).toFixed(2));
+                });
 
                 updateTotals();
             });
