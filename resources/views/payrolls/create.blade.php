@@ -32,7 +32,7 @@
             <div class="row">
                 <div class="form-group col-md-4">
                     <label for="official_days">Official Days</label>
-                    <input type="number" name="official_days" id="official_days" class="form-control" required>
+                    <input type="number" name="official_days" id="official_days" class="form-control" required value="30">
                 </div>
             </div>
             <table class="table table-bordered">
@@ -133,14 +133,14 @@
                         </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
+                <tfoot class="bg-dark text-white">
                     <tr>
-                        <th colspan="2">Totals</th>
-                        <th>Salary: <span id="total-salary">0</span> AF</th>
-                        <th>Tax: <span id="total-tax">0</span> AF</th>
-                        <th>Bonus: <span id="total-bonus">0</span> AF</th>
-                        <th colspan="3">Payable: <span id="total-payable">0</span> AF</th>
-                        <th>Grand Total: <span id="total-grand-total">0</span> AF</th>
+                        <th colspan="2" style="vertical-align: middle">Totals</th>
+                        <th><strong class="mb-2 d-inline-block">Salary:</strong><br><span id="total-salary">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span id="total-tax">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span id="total-bonus">0</span> AF</th>
+                        <th colspan="3"><strong class="mb-2 d-inline-block">Payable:</strong><br><span id="total-payable">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span id="total-grand-total">0</span> AF</th>
                     </tr>
                 </tfoot>
             </table>
@@ -171,10 +171,10 @@
                 let totalPayable = 0;
                 let totalGrandTotal = 0;
 
-                const officialDays = parseFloat($('#official_days').val()) || 30; // Default to 30 if not set
+                const officialDays = parseFloat($('#official_days').val()) || 30;
 
                 $('tbody tr').each(function() {
-                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(' AF', ''));
+                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
                     const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
                     const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
                     const tax = parseFloat($(this).find('input.tax').val()) || 0;
@@ -188,11 +188,11 @@
                     totalGrandTotal += grandTotal;
                 });
 
-                $('#total-salary').text(totalSalary.toFixed(2));
-                $('#total-tax').text(totalTax.toFixed(2));
-                $('#total-bonus').text(totalBonus.toFixed(2));
-                $('#total-payable').text(totalPayable.toFixed(2));
-                $('#total-grand-total').text(totalGrandTotal.toFixed(2));
+                $('#total-salary').text(formatNumber(totalSalary));
+                $('#total-tax').text(formatNumber(totalTax));
+                $('#total-bonus').text(formatNumber(totalBonus));
+                $('#total-payable').text(formatNumber(totalPayable));
+                $('#total-grand-total').text(formatNumber(totalGrandTotal));
             }
 
             $('input.present-days, input.bonus, input.additional-payments, #official_days').on('input', function() {
@@ -200,7 +200,7 @@
 
                 $('tbody tr').each(function() {
                     const row = $(this);
-                    const baseSalary = parseFloat(row.find('td').eq(1).text().replace(' AF', ''));
+                    const baseSalary = parseFloat(row.find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
                     const presentDays = parseFloat(row.find('input.present-days').val()) || 0;
                     const bonus = parseFloat(row.find('input.bonus').val()) || 0;
                     const additionalPayments = parseFloat(row.find('input.additional-payments').val()) || 0;
@@ -223,6 +223,11 @@
             // Initial calculation of totals
             updateTotals();
         });
+    </script>
+    <script>
+        function formatNumber(num) {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
     </script>
 @endsection
 
