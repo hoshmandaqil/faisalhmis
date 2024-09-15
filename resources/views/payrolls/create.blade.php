@@ -11,9 +11,14 @@
     <form action="{{ route('payrolls.create') }}" method="GET" id="payrollDateForm">
         <div class="row align-items-end">
             <div class="form-group col-md-4">
-                <label for="payroll_date">Payroll Date</label>
-                <input type="text" name="payroll_date" id="payroll_date" class="form-control persianDate" required
-                    value="{{ request('payroll_date') }}" required>
+                <label for="start_date">Start of Month</label>
+                <input type="text" name="start_date" id="start_date" class="form-control persianDate" required
+                    value="{{ request('start_date') }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="end_date">End of Month</label>
+                <input type="text" name="end_date" id="end_date" class="form-control persianDate" required
+                    value="{{ request('end_date') }}">
             </div>
             <div class="col-md-4 mb-3">
                 <button type="submit" class="btn btn-primary">Generate Payroll</button>
@@ -21,7 +26,7 @@
         </div>
     </form>
 
-    @if (request('payroll_date'))
+    @if (request('start_date') && request('end_date'))
         <form action="{{ route('payrolls.store') }}" method="POST">
             @csrf
             <div class="row">

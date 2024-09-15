@@ -22,15 +22,18 @@ class PayrollController extends Controller
 
     public function create(Request $request)
     {
-        $payroll_date = $request->payroll_date ? toMeladi($request->payroll_date) : date('Y-m-d');
+        $start_date = $request->start_date ? toMeladi($request->start_date) : date('Y-m-01');
+        $end_date = $request->end_date ? toMeladi($request->end_date) : date('Y-m-t');
 
-        // Get all employees with their related laboratory tests
-        $allEmployees = Employee::with(['user.patients.laboratoryTests'])->get();
+        // Get all employees with their related laboratory tests within the date range
+        $allEmployees = Employee::with(['user.patients.laboratoryTests' => function ($query) use ($start_date, $end_date) {
+            $query->whereBetween('created_at', [$start_date, $end_date]);
+        }])->get();
         
         $mainLabDepartments = MainLabDepartment::all();
 
         // Transform the data to include all employee fields and related laboratory tests
-        $employees = $allEmployees->map(function ($employee) use ($mainLabDepartments) {
+        $employees = $allEmployees->map(function ($employee) use ($mainLabDepartments, $start_date, $end_date) {
             $labTests = $employee->user->patients->flatMap(function ($patient) {
                 return $patient->laboratoryTests;
             });
@@ -64,12 +67,14 @@ class PayrollController extends Controller
                 return $summary['number_of_tests'] > 0;
             })->values();
 
-            $patients = Patient::with('ipds')->where('doctor_id', $employee->user->id)->get();
+            $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
+                $query->whereBetween('created_at', [$start_date, $end_date]);
+            }])
+            ->where('doctor_id', $employee->user->id)
+            ->whereBetween('created_at', [$start_date, $end_date])
+            ->get();
 
-            // $opd_amount = $employee->opd_amount;
             $opd_percentage = $employee->opd_percentage;
-
-            // $ipd_amount = $employee->ipd_amount;
             $ipd_percentage = $employee->ipd_percentage;
 
             $total_opd_price = $patients->sum('OPD_fee');
@@ -109,7 +114,7 @@ class PayrollController extends Controller
             return $employee;
         });
 
-        return view('payrolls.create', compact('employees'));
+        return view('payrolls.create', compact('employees', 'start_date', 'end_date'));
     }
 
     public function store(Request $request)
