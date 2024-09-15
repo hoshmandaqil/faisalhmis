@@ -133,6 +133,16 @@
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2">Totals</th>
+                        <th>Salary: <span id="total-salary">0</span> AF</th>
+                        <th>Tax: <span id="total-tax">0</span> AF</th>
+                        <th>Bonus: <span id="total-bonus">0</span> AF</th>
+                        <th colspan="3">Payable: <span id="total-payable">0</span> AF</th>
+                        <th>Grand Total: <span id="total-grand-total">0</span> AF</th>
+                    </tr>
+                </tfoot>
             </table>
 
             <button type="submit" class="btn btn-primary">Generate Payroll</button>
@@ -154,6 +164,35 @@
 
     <script>
         $(document).ready(function() {
+            function updateTotals() {
+                let totalSalary = 0;
+                let totalTax = 0;
+                let totalBonus = 0;
+                let totalPayable = 0;
+                let totalGrandTotal = 0;
+
+                $('tbody tr').each(function() {
+                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(' AF', ''));
+                    const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
+                    const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
+                    const tax = parseFloat($(this).find('input.tax').val()) || 0;
+                    const netPayable = parseFloat($(this).find('input.net-payable').val()) || 0;
+                    const grandTotal = parseFloat($(this).find('input.grand-total').val()) || 0;
+
+                    totalSalary += (baseSalary / 30) * presentDays;
+                    totalTax += tax;
+                    totalBonus += bonus;
+                    totalPayable += netPayable;
+                    totalGrandTotal += grandTotal;
+                });
+
+                $('#total-salary').text(totalSalary.toFixed(2));
+                $('#total-tax').text(totalTax.toFixed(2));
+                $('#total-bonus').text(totalBonus.toFixed(2));
+                $('#total-payable').text(totalPayable.toFixed(2));
+                $('#total-grand-total').text(totalGrandTotal.toFixed(2));
+            }
+
             $('input.present-days, input.bonus, input.additional-payments').on('input', function() {
                 const row = $(this).closest('tr');
                 const baseSalary = parseFloat(row.find('td').eq(1).text().replace(' AF', ''));
@@ -171,7 +210,12 @@
                 row.find('input.net-payable').val(netPayable.toFixed(2));
                 row.find('input.gross-salary').val(taxableIncome.toFixed(2));
                 row.find('input.grand-total').val((netPayable + testsNetPayable).toFixed(2));
+
+                updateTotals();
             });
+
+            // Initial calculation of totals
+            updateTotals();
         });
     </script>
 @endsection
@@ -179,6 +223,9 @@
 @section('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/persianDatepicker/css/persianDatepicker-default.css') }}" />
     <style>
+        table td {
+            vertical-align: top !important;
+        }
         .modal-body input,
         .modal-body select {
             height: 30px !important;
