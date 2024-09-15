@@ -5,7 +5,7 @@
 @endsection
 
 @section('page-action')
-    <a href="{{ route('payrolls.create') }}" class="btn btn-primary mb-3">Generate Payroll</a>
+    <a href="{{ route('payrolls.create') }}" class="btn btn-primary mb-3">Create Payroll</a>
 @endsection
 
 @section('content')

@@ -9,11 +9,14 @@
 
 @section('content')
     <form action="{{ route('payrolls.create') }}" method="GET" id="payrollDateForm">
-        <div class="row">
+        <div class="row align-items-end">
             <div class="form-group col-md-4">
                 <label for="payroll_date">Payroll Date</label>
                 <input type="text" name="payroll_date" id="payroll_date" class="form-control persianDate" required
                     value="{{ request('payroll_date') }}" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <button type="submit" class="btn btn-primary">Generate Payroll</button>
             </div>
         </div>
     </form>
@@ -135,11 +138,11 @@
 @section('scripts')
     <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
     <script>
-        $('body').on('focus', ".persianDate", function() {
-            $(this).persianDatepicker();
+        $(document).ready(function() {
+            $(".persianDate").persianDatepicker();
         });
 
-        document.getElementById('payroll_date').addEventListener('change', function() {
+        document.getElementById('payroll_date').addEventListener('input', function() {
             document.getElementById('payrollDateForm').submit();
         });
     </script>
@@ -166,4 +169,18 @@
             });
         });
     </script>
+@endsection
+
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/persianDatepicker/css/persianDatepicker-default.css') }}" />
+    <style>
+        .modal-body input,
+        .modal-body select {
+            height: 30px !important;
+        }
+
+        .modal-body div.form-group {
+            margin-top: -10px !important;
+        }
+    </style>
 @endsection

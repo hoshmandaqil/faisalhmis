@@ -20,8 +20,10 @@ class PayrollController extends Controller
         return view('payrolls.index', compact('payrolls'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $payroll_date = $request->payroll_date ? toMeladi($request->payroll_date) : date('Y-m-d');
+
         // Get all employees with their related laboratory tests
         $allEmployees = Employee::with(['user.patients.laboratoryTests'])->get();
         
