@@ -55,7 +55,7 @@
                             class="form-control present-days" required value="{{ $employee->id }}">
                         <tr>
                             <td>{{ $employee->first_name }}</td>
-                            <td>{{ $employee->employeeCurrentSalary->salary_amount }} AFN</td>
+                            <td>{{ $employee->employeeCurrentSalary->salary_amount }} AF</td>
                             <td>
                                 <input type="number" name="employees[{{ $employee->id }}][present_days]"
                                     class="form-control present-days" required style="max-width: 100px">
@@ -81,10 +81,10 @@
                                             <tr>
                                                 <td class="pt-2 pb-2">{{ $summary['main_lab_department'] }}</td>
                                                 <td class="pt-2 pb-2 text-nowrap">{{ $summary['number_of_tests'] }}</td>
-                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['total_price'] }} AFN</td>
-                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] }} AFN</td>
-                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['tax'] }} AFN</td>
-                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] - $summary['tax'] }} AFN</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['total_price'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['tax'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] - $summary['tax'] }} AF</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -92,17 +92,17 @@
                                         <tr class="bg-light">
                                             <td class="pb-2 pt-2" colspan="2"><strong>Total</strong></td>
                                             <td class="pb-2 pt-2 text-nowrap">
-                                                <strong>{{ $employee->lab_tests_summary->sum('total_price') }} AFN</strong>
+                                                <strong>{{ $employee->lab_tests_summary->sum('total_price') }} AF</strong>
                                             </td>
                                             <td class="pb-2 pt-2 text-nowrap">
                                                 <strong>{{ $employee->lab_tests_summary->sum('payable') }}
-                                                    AFN</strong>
+                                                    AF</strong>
                                             </td>
                                             <td class="pb-2 pt-2 text-nowrap"><strong>{{ $employee->lab_tests_summary->sum('tax') }}
-                                                    AFN</strong></td>
+                                                    AF</strong></td>
                                             <td class="pb-2 pt-2 text-nowrap">
                                                 <strong><span>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}</span>
-                                                    AFN</strong>
+                                                    AF</strong>
                                             </td>
                                             <input type="hidden" name="employees[{{ $employee->id }}][tests_net_payable]"
                                                 class="tests-net-payable text-nowrap"
@@ -156,7 +156,7 @@
         $(document).ready(function() {
             $('input.present-days, input.bonus, input.additional-payments').on('input', function() {
                 const row = $(this).closest('tr');
-                const baseSalary = parseFloat(row.find('td').eq(1).text().replace(' AFN', ''));
+                const baseSalary = parseFloat(row.find('td').eq(1).text().replace(' AF', ''));
                 const presentDays = parseFloat(row.find('input.present-days').val()) || 0;
                 const bonus = parseFloat(row.find('input.bonus').val()) || 0;
                 const additionalPayments = parseFloat(row.find('input.additional-payments').val()) || 0;

@@ -41,20 +41,20 @@ class PayrollController extends Controller
             $employeeMainLabDepartments = EmployeeMainLabDepartment::where('employee_id', $employee->id)->get();
 
             $mainLabDepartmentSummary = $mainLabDepartments->map(function ($mainLabDepartment) use ($labTests, $employeeMainLabDepartments) {
+                $employeePercentageAndTax = $employeeMainLabDepartments->where('main_lab_department_id', $mainLabDepartment->id)->first();
+                
+                // Skip if employee has zero percentage for this department
+                if (!$employeePercentageAndTax || $employeePercentageAndTax->percentage == 0) {
+                    return null;
+                }
+
                 $testsForMainDepartment = $labTests->filter(function ($test) use ($mainLabDepartment) {
                     return $test->testName->mainDepartment->id === $mainLabDepartment->id;
                 });
 
                 $totalPrice = $testsForMainDepartment->sum('price');
-                $employeePercentageAndTax = $employeeMainLabDepartments->where('main_lab_department_id', $mainLabDepartment->id)->first();
-                
-                if ($employeePercentageAndTax) {
-                    $payable = $totalPrice * ($employeePercentageAndTax->percentage / 100);
-                    $tax = $payable * ($employeePercentageAndTax->tax / 100);
-                } else {
-                    $payable = 0;
-                    $tax = 0;
-                }
+                $payable = $totalPrice * ($employeePercentageAndTax->percentage / 100);
+                $tax = $payable * ($employeePercentageAndTax->tax / 100);
 
                 return [
                     'main_lab_department' => $mainLabDepartment->dep_name,
@@ -63,9 +63,7 @@ class PayrollController extends Controller
                     'payable' => $payable,
                     'tax' => $tax,
                 ];
-            })->filter(function ($summary) {
-                return $summary['number_of_tests'] > 0;
-            })->values();
+            })->filter()->values();
 
             $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
                 $query->whereBetween('created_at', [$start_date, $end_date]);
