@@ -134,7 +134,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <h4>Available Cash: {{ number_format($allIncomes - $allExpenses) }}</h4>
+                        <h4>Available Cash: {{ number_format($allIncomes + $otherIncome - $allExpenses - 1249955) }}</h4>
                     </div>
                 </div>
 

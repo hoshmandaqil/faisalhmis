@@ -18,87 +18,93 @@
     @endif
 
     <div class="row gutters justify-content-center">
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
+        <div class="col-12 col-lg-6 row gutters justify-content-between">
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
 
-            <div class="daily-sales">
-                <h6>Yesterday Patients</h6><br>
-                <?php $yesterday = date('Y-m-d', strtotime('-1 days'));
-                $today = date('Y-m-d'); ?>
-                <h1><a href="{{ url('registered_patient_report') . '?from=' . $yesterday . '&to=' . $yesterday . '&doctor_id=0' }}"
-                        target="_blank">{{ $yesterdayPatient }}</a></h1>
-                <div id="apexLineChartGradient3" class="pink-graph"></div>
+                <div class="daily-sales">
+                    <h6>Yesterday Patients</h6><br>
+                    <?php $yesterday = date('Y-m-d', strtotime('-1 days'));
+                    $today = date('Y-m-d'); ?>
+                    <h1><a href="{{ url('registered_patient_report') . '?from=' . $yesterday . '&to=' . $yesterday . '&doctor_id=0' }}"
+                            target="_blank">{{ $yesterdayPatient }}</a></h1>
+                    <div id="apexLineChartGradient3" class="pink-graph"></div>
+                </div>
+
             </div>
 
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
+
+                <div class="daily-sales">
+                    <h6>Today All Patients</h6><br>
+                    <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                            target="_blank">{{ $todayPatient }}</a></h1>
+                    <div id="apexLineChartGradient" class="blue-graph"></div>
+                </div>
+
+
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
+
+                <div class="daily-sales">
+                    <h6>Today OD paitents</h6><br>
+                    <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                            target="_blank">{{ $outDorPaitent }}</a></h1>
+                    <div id="apexLineChartGradient" class="blue-graph"></div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
+
+                <div class="daily-sales">
+                    <h6>Today IN Door paitents</h6><br>
+                    <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                            target="_blank">{{ $todayPatient - $outDorPaitent }}</a></h1>
+                    <div id="apexLineChartGradient" class="blue-graph"></div>
+                </div>
+            </div>
         </div>
+        <div class="col-12 col-lg-6 row gutters justify-content-between">
 
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
 
-            <div class="daily-sales">
-                <h6>Today All Patients</h6><br>
-                <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
-                        target="_blank">{{ $todayPatient }}</a></h1>
-                <div id="apexLineChartGradient" class="blue-graph"></div>
+                <div class="daily-sales">
+                    <h6>Previous Month Patients</h6>
+                    <h1>{{ $previousMonthPatient }}</h1>
+                    <div id="apexLineChartGradient4" class="lavandar-graph"></div>
+                </div>
+
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
+
+                <div class="daily-sales">
+                    <h6>Current Month Patients</h6>
+                    <h1>{{ $currentMonthPatient }}</h1>
+                    <div id="apexLineChartGradient2" class="orange-graph"></div>
+                </div>
+
             </div>
 
 
-        </div>
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
 
-            <div class="daily-sales">
-                <h6>Today OD paitents</h6><br>
-                <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
-                        target="_blank">{{ $outDorPaitent }}</a></h1>
-                <div id="apexLineChartGradient" class="blue-graph"></div>
+                <div class="daily-sales">
+                    <h6>Current Year Patients</h6>
+                    <h1>{{ $currentYearAllPatients }}</h1>
+                    <div id="apexLineChartGradient4" class="lavandar-graph"></div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12">
+
+                <div class="daily-sales">
+                    <h6>Total Patients</h6><br>
+                    <h1>{{ $totalAllPatients }}</h1>
+                    <div id="apexLineChartGradient4" class="lavandar-graph"></div>
+                </div>
             </div>
         </div>
 
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
 
-            <div class="daily-sales">
-                <h6>Today IN paitents</h6><br>
-                <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
-                        target="_blank">{{$todayPatient - $outDorPaitent }}</a></h1>
-                <div id="apexLineChartGradient" class="blue-graph"></div>
-            </div>
-        </div>
-
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
-
-            <div class="daily-sales">
-                <h6>Previous Month Patients</h6>
-                <h1>{{ $previousMonthPatient }}</h1>
-                <div id="apexLineChartGradient4" class="lavandar-graph"></div>
-            </div>
-
-        </div>
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
-
-            <div class="daily-sales">
-                <h6>Current Month Patients</h6>
-                <h1>{{ $currentMonthPatient }}</h1>
-                <div id="apexLineChartGradient2" class="orange-graph"></div>
-            </div>
-
-        </div>
-
-
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
-
-            <div class="daily-sales">
-                <h6>Current Year Patients</h6>
-                <h1>{{ $currentYearAllPatients }}</h1>
-                <div id="apexLineChartGradient4" class="lavandar-graph"></div>
-            </div>
-        </div>
-
-        <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6 col-12">
-
-            <div class="daily-sales">
-                <h6>Total Patients</h6><br>
-                <h1>{{ $totalAllPatients }}</h1>
-                <div id="apexLineChartGradient4" class="lavandar-graph"></div>
-            </div>
-        </div>
 
     </div>
 
