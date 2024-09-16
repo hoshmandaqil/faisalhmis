@@ -155,7 +155,9 @@
                 </tfoot>
             </table>
 
-            <button type="submit" class="btn btn-primary">Generate Payroll</button>
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary">Save Payroll</button>
+            </div>
         </form>
     @endif
 @endsection
