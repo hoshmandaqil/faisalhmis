@@ -227,7 +227,7 @@ class PayrollController extends Controller
                     'present_days' => $employeeData['present_days'],
                     'bonus' => $employeeData['bonus'] ?? 0,
                     'tax' => $employeeData['tax'],
-                    'additional_payments' => json_encode($employeeData['additional_payments']),
+                    'additional_payments' => $employeeData['additional_payments'],
                     'gross_salary' => $employeeData['gross_salary'],
                     'net_salary' => $employeeData['net_payable'],
                     'amount' => $employeeData['grand_total'],
