@@ -92,7 +92,7 @@ class ExpenseController extends Controller
                 // If no file just name it as the current file, otherwise delete it.
                 if (!isset($data['file'])) {
                     $file_name = $exp->file;
-                } else if(!empty($exp->file)) {
+                } else if (!empty($exp->file)) {
                     $file_path = public_path('storage/expenses' . '/' . $exp->file);
 
                     if (file_exists($file_path)) {
@@ -169,5 +169,12 @@ class ExpenseController extends Controller
             $expensesFile->update(['file' => '']);
         }
         return back()->with('success',  'Successfully deleted!');
+    }
+    public function destroy($id)
+    {
+        // dd($id);
+        $expense = ExpenseSlip::withTrashed()->findOrFail($id);
+        $expense->delete();
+        return back()->with('success', 'Successfully Deleted!');
     }
 }
