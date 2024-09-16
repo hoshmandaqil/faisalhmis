@@ -104,11 +104,13 @@
                                                 data-sum-paid="{{ number_format($expense->sum_paid) }}">
                                                 Files/Attachments
                                             </a>
-                                            <a class="dropdown-item" href="#" data-toggle="modal"
-                                                data-target="#addExpenseModal" data-expense="{{ $expense }}"
-                                                data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                                Edit
-                                            </a>
+                                            @if (in_array('edit_expense', $user_permissions))
+                                                <a class="dropdown-item" href="#" data-toggle="modal"
+                                                    data-target="#addExpenseModal" data-expense="{{ $expense }}"
+                                                    data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                    Edit
+                                                </a>
+                                            @endif
                                             @if (in_array('delete_expense', $user_permissions))
                                                 <a class="dropdown-item text-danger" href="#" data-toggle="modal"
                                                     data-target="#deleteExpenseModal"
