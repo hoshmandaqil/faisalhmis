@@ -11,7 +11,7 @@ class ExpenseItem extends Model
 
     protected $table = 'expenses_items';
 
-    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
      * slip: Relation to the main slip

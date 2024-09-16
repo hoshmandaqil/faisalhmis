@@ -87,25 +87,41 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @php
-                                        $shamsiDate = $expense->date;
-                                    @endphp
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#viewExpense" data-expense="{{ $expense }}"
-                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                        View
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#expenseFiles" data-expense="{{ $expense }}"
-                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                        Files/Attachements
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#addExpenseModal" data-expense="{{ $expense }}"
-                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                        Edit
-                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button"
+                                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                                data-target="#viewExpense" data-expense="{{ $expense }}"
+                                                data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                View
+                                            </a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                                data-target="#expenseFiles" data-expense="{{ $expense }}"
+                                                data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                Files/Attachments
+                                            </a>
+                                            @if (in_array('edit_expense', $user_permissions))
+                                                <a class="dropdown-item" href="#" data-toggle="modal"
+                                                    data-target="#addExpenseModal" data-expense="{{ $expense }}"
+                                                    data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                    Edit
+                                                </a>
+                                            @endif
+                                            @if (in_array('delete_expense', $user_permissions))
+                                                <a class="dropdown-item text-danger" href="#" data-toggle="modal"
+                                                    data-target="#deleteExpenseModal"
+                                                    data-expense-id="{{ $expense->id }}">
+                                                    Delete
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
+
                             </tr>
                         @endforeach
 
@@ -192,7 +208,8 @@
                                 <div class="row mb-4">
                                     <div class="form-group col-md-3">
                                         <label>Purchase Order</label>
-                                        <select class="form-control selectpicker" name="po_id" required data-live-search="true">
+                                        <select class="form-control selectpicker" name="po_id" required
+                                            data-live-search="true">
                                             <option value="" disabled selected>Please select a PO</option>
                                             @if ($pos->isEmpty())
                                                 <option value="0">Without PO</option>
@@ -644,7 +661,8 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button onclick="printDiv('paymentPrint')" type="button" class="btn btn-icon btn-primary btn-sm">
+                        <button onclick="printDiv('paymentPrint')" type="button"
+                            class="btn btn-icon btn-primary btn-sm">
                             Print
                         </button>
                     </div>
@@ -652,6 +670,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteExpenseModal" tabindex="-1" role="dialog"
+        aria-labelledby="deleteExpenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteExpenseModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this expense?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form id="deleteExpenseForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 @endsection
 
@@ -936,6 +981,20 @@
 
             // Initialize total amount on page load
             updateTotalAmount();
+        });
+    </script>
+
+
+    <script>
+        $('#deleteExpenseModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var expenseId = button.data('expense-id');
+
+            var form = $(this).find('form');
+            var actionUrl = '{{ route('expenses.destroy', ':id') }}';
+            actionUrl = actionUrl.replace(':id', expenseId);
+
+            form.attr('action', actionUrl);
         });
     </script>
 @endsection

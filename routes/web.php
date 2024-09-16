@@ -150,7 +150,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/po_status', [App\Http\Controllers\PurchaseOrderController::class, 'status'])->name('po.status');
 
     // Expenses
-    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
+    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store','destroy']);
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
     Route::delete('expenses/files', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
 
