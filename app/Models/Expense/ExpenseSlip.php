@@ -6,16 +6,17 @@ use App\Http\Traits\HasManySync;
 use App\Models\PurchaseOrder;
 use App\Models\User;
 use Attribute;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ExpenseSlip extends Model
 {
-    use HasFactory, HasManySync;
+    use HasFactory, HasManySync,SoftDeletes;
 
     protected $table = 'expenses_slip';
 
-    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $appends = ['sum_paid'];
 
