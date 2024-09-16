@@ -16,6 +16,7 @@ class PayrollItem extends Model
         'gross_salary',
         'net_salary',
         'amount',
+        'grand_total',
         'bonus',
         'tax',
         'present_days',

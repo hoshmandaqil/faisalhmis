@@ -10,7 +10,8 @@ class Payroll extends Model
     use HasFactory;
 
     protected $fillable = [
-        'payroll_date',
+        'start_date',
+        'end_date',
         'total_amount',
         'official_days',
         'status',

@@ -118,21 +118,28 @@ class PayrollController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'payroll_date' => 'required|date',
+            'start_date' => 'required',
+            'end_date' => 'required',
             'official_days' => 'required|integer',
             'employees' => 'required|array',
             'employees.*.employee_id' => 'required|exists:employees,id',
             'employees.*.present_days' => 'required|numeric',
-            'employees.*.bonus' => 'required|numeric',
-            'employees.*.additional_payments' => 'nullable|string',
+            'employees.*.bonus' => 'nullable|numeric',
+            'employees.*.additional_payments' => 'nullable',
             'employees.*.tax' => 'required|numeric',
             'employees.*.net_payable' => 'required|numeric',
+            'employees.*.gross_salary' => 'required|numeric',
+            'employees.*.grand_total' => 'required|numeric',
         ]);
+        
+        $start_date = toMeladi($request->input('start_date'));
+        $end_date = toMeladi($request->input('end_date'));
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request, $start_date, $end_date) {
             // Create the payroll
             $payroll = Payroll::create([
-                'payroll_date' => $request->input('payroll_date'),
+                'start_date' => $start_date,
+                'end_date' => $end_date,
                 'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
                 'official_days' => $request->input('official_days'),
                 'status' => 'pending', // or any initial status
@@ -145,12 +152,13 @@ class PayrollController extends Controller
                     'payroll_id' => $payroll->id,
                     'employee_id' => $employeeData['employee_id'],
                     'present_days' => $employeeData['present_days'],
-                    'bonus' => $employeeData['bonus'],
+                    'bonus' => $employeeData['bonus'] ?? 0,
                     'tax' => $employeeData['tax'],
-                    'additional_payments' => $employeeData['additional_payments'],
-                    'amount' => $employeeData['net_payable'],
+                    'additional_payments' => json_encode($employeeData['additional_payments']),
                     'gross_salary' => $employeeData['gross_salary'],
                     'net_salary' => $employeeData['net_payable'],
+                    'amount' => $employeeData['grand_total'],
+                    'grand_total' => $employeeData['grand_total'],
                 ]);
             }
         });

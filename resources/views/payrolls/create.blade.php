@@ -29,10 +29,15 @@
     @if (request('start_date') && request('end_date'))
         <form action="{{ route('payrolls.store') }}" method="POST">
             @csrf
+            <input type="hidden" name="start_date" class="form-control persianDate" required
+                value="{{ request('start_date') }}">
+            <input type="hidden" name="end_date" id="end_date" class="form-control persianDate" required
+                value="{{ request('end_date') }}">
             <div class="row">
                 <div class="form-group col-md-4">
                     <label for="official_days">Official Days</label>
-                    <input type="number" name="official_days" id="official_days" class="form-control" required value="30">
+                    <input type="number" name="official_days" id="official_days" class="form-control" required
+                        value="30">
                 </div>
             </div>
             <table class="table table-bordered">
@@ -62,7 +67,7 @@
                             </td>
                             <td>
                                 <input type="number" name="employees[{{ $employee->id }}][bonus]"
-                                    class="form-control bonus" required>
+                                    class="form-control bonus">
                             </td>
                             <td>
                                 <table class="table table-bordered">
@@ -84,7 +89,8 @@
                                                 <td class="pt-2 pb-2 text-nowrap">{{ $summary['total_price'] }} AF</td>
                                                 <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] }} AF</td>
                                                 <td class="pt-2 pb-2 text-nowrap">{{ $summary['tax'] }} AF</td>
-                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] - $summary['tax'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">
+                                                    {{ $summary['payable'] - $summary['tax'] }} AF</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -98,7 +104,8 @@
                                                 <strong>{{ $employee->lab_tests_summary->sum('payable') }}
                                                     AF</strong>
                                             </td>
-                                            <td class="pb-2 pt-2 text-nowrap"><strong>{{ $employee->lab_tests_summary->sum('tax') }}
+                                            <td class="pb-2 pt-2 text-nowrap">
+                                                <strong>{{ $employee->lab_tests_summary->sum('tax') }}
                                                     AF</strong></td>
                                             <td class="pb-2 pt-2 text-nowrap">
                                                 <strong><span>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}</span>
@@ -136,11 +143,14 @@
                 <tfoot class="bg-dark text-white">
                     <tr>
                         <th colspan="2" style="vertical-align: middle">Totals</th>
-                        <th><strong class="mb-2 d-inline-block">Salary:</strong><br><span id="total-salary">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Salary:</strong><br><span id="total-salary">0</span> AF
+                        </th>
                         <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span id="total-tax">0</span> AF</th>
                         <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span id="total-bonus">0</span> AF</th>
-                        <th colspan="3"><strong class="mb-2 d-inline-block">Payable:</strong><br><span id="total-payable">0</span> AF</th>
-                        <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span id="total-grand-total">0</span> AF</th>
+                        <th colspan="3"><strong class="mb-2 d-inline-block">Payable:</strong><br><span
+                                id="total-payable">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
+                                id="total-grand-total">0</span> AF</th>
                     </tr>
                 </tfoot>
             </table>
@@ -174,7 +184,8 @@
                 const officialDays = parseFloat($('#official_days').val()) || 30;
 
                 $('tbody tr').each(function() {
-                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
+                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g,
+                        '')) || 0;
                     const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
                     const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
                     const tax = parseFloat($(this).find('input.tax').val()) || 0;
@@ -196,15 +207,19 @@
             }
 
             $('input.present-days, input.bonus, input.additional-payments, #official_days').on('input', function() {
-                const officialDays = parseFloat($('#official_days').val()) || 30; // Default to 30 if not set
+                const officialDays = parseFloat($('#official_days').val()) ||
+                30; // Default to 30 if not set
 
                 $('tbody tr').each(function() {
                     const row = $(this);
-                    const baseSalary = parseFloat(row.find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
+                    const baseSalary = parseFloat(row.find('td').eq(1).text().replace(/[^\d.-]/g,
+                        '')) || 0;
                     const presentDays = parseFloat(row.find('input.present-days').val()) || 0;
                     const bonus = parseFloat(row.find('input.bonus').val()) || 0;
-                    const additionalPayments = parseFloat(row.find('input.additional-payments').val()) || 0;
-                    const testsNetPayable = parseFloat(row.find('input.tests-net-payable').val()) || 0;
+                    const additionalPayments = parseFloat(row.find('input.additional-payments')
+                    .val()) || 0;
+                    const testsNetPayable = parseFloat(row.find('input.tests-net-payable').val()) ||
+                        0;
 
                     const grossSalary = (baseSalary / officialDays) * presentDays;
                     const taxableIncome = grossSalary + bonus + additionalPayments;
@@ -226,7 +241,10 @@
     </script>
     <script>
         function formatNumber(num) {
-            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return num.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
     </script>
 @endsection
@@ -237,6 +255,7 @@
         table td {
             vertical-align: top !important;
         }
+
         .modal-body input,
         .modal-body select {
             height: 30px !important;
