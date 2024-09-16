@@ -106,7 +106,8 @@
                                             </td>
                                             <td class="pb-2 pt-2 text-nowrap">
                                                 <strong>{{ $employee->lab_tests_summary->sum('tax') }}
-                                                    AF</strong></td>
+                                                    AF</strong>
+                                            </td>
                                             <td class="pb-2 pt-2 text-nowrap">
                                                 <strong><span>{{ $employee->lab_tests_summary->sum('payable') - $employee->lab_tests_summary->sum('tax') }}</span>
                                                     AF</strong>
@@ -119,7 +120,7 @@
                                 </table>
                                 <input type="hidden" name="employees[{{ $employee->id }}][additional_payments]"
                                     class="form-control additional-payments" required
-                                    value="{{ $employee->lab_tests_summary }}">
+                                    value="{{ json_encode($employee->lab_tests_summary) }}">
                             </td>
                             <td>
                                 <input type="number" name="employees[{{ $employee->id }}][tax]" class="form-control tax"
@@ -142,13 +143,16 @@
                 </tbody>
                 <tfoot class="bg-dark text-white">
                     <tr>
-                        <th colspan="2" style="vertical-align: middle">Totals</th>
-                        <th><strong class="mb-2 d-inline-block">Salary:</strong><br><span id="total-salary">0</span> AF
-                        </th>
-                        <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span id="total-tax">0</span> AF</th>
+                        <th style="vertical-align: middle">Totals</th>
+                        <th colspan="2"><strong class="mb-2 d-inline-block">Base Salary:</strong><br><span
+                                id="total-salary">0</span> AF
                         <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span id="total-bonus">0</span> AF</th>
-                        <th colspan="3"><strong class="mb-2 d-inline-block">Payable:</strong><br><span
-                                id="total-payable">0</span> AF</th>
+                        </th>
+                        <th></th>
+                        <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span id="total-tax">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Gross Salary:</strong><br><span id="total-gross-salary">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Payable:</strong><br><span id="total-payable">0</span> AF
+                        </th>
                         <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
                                 id="total-grand-total">0</span> AF</th>
                     </tr>
@@ -167,10 +171,6 @@
     <script>
         $(document).ready(function() {
             $(".persianDate").persianDatepicker();
-
-            document.getElementById('payroll_date').addEventListener('input', function() {
-                document.getElementById('payrollDateForm').submit();
-            });
         });
 
         function calculateTax(salary) {
@@ -185,53 +185,53 @@
             return tax;
         }
 
-        $(document).ready(function() {
-            function updateTotals() {
-                let totalSalary = 0;
-                let totalTax = 0;
-                let totalBonus = 0;
-                let totalPayable = 0;
-                let totalGrandTotal = 0;
+        function updateTotals() {
+            let totalSalary = 0;
+            let totalTax = 0;
+            let totalBonus = 0;
+            let totalPayable = 0;
+            let totalGrandTotal = 0;
+            let totalGrossSalary = 0;
 
-                const officialDays = parseFloat($('#official_days').val()) || 30;
+            const officialDays = parseFloat($('#official_days').val()) || 30;
 
-                $('tbody tr').each(function() {
-                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
-                    const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
-                    const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
-                    const testsNetPayable = parseFloat($(this).find('input.tests-net-payable').val()) || 0;
+            $('tbody > tr').each(function() {
+                const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
+                const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
+                const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
+                const testsNetPayable = parseFloat($(this).find('input.tests-net-payable').val()) || 0;
 
-                    const adjustedSalary = (baseSalary / officialDays) * presentDays;
-                    const grossSalary = adjustedSalary + bonus;
-                    const tax = calculateTax(grossSalary);
-                    const netPayable = grossSalary - tax;
-                    const grandTotal = netPayable + testsNetPayable;
+                const adjustedSalary = (baseSalary / officialDays) * presentDays;
+                const grossSalary = adjustedSalary + bonus;
+                const tax = calculateTax(grossSalary);
+                const netPayable = grossSalary - tax;
+                const grandTotal = netPayable + testsNetPayable;
 
-                    $(this).find('input.tax').val(tax.toFixed(2));
-                    $(this).find('input.gross-salary').val(grossSalary.toFixed(2));
-                    $(this).find('input.net-payable').val(netPayable.toFixed(2));
-                    $(this).find('input.grand-total').val(grandTotal.toFixed(2));
+                $(this).find('input.tax').val(tax.toFixed(2));
+                $(this).find('input.gross-salary').val(grossSalary.toFixed(2));
+                $(this).find('input.net-payable').val(netPayable.toFixed(2));
+                $(this).find('input.grand-total').val(grandTotal.toFixed(2));
 
-                    totalSalary += grossSalary;
-                    totalTax += tax;
-                    totalBonus += bonus;
-                    totalPayable += netPayable;
-                    totalGrandTotal += grandTotal;
-                });
-
-                $('#total-salary').text(formatNumber(totalSalary));
-                $('#total-tax').text(formatNumber(totalTax));
-                $('#total-bonus').text(formatNumber(totalBonus));
-                $('#total-payable').text(formatNumber(totalPayable));
-                $('#total-grand-total').text(formatNumber(totalGrandTotal));
-            }
-
-            $('input.present-days, input.bonus, input.additional-payments, #official_days').on('input', function() {
-                updateTotals();
+                totalSalary += adjustedSalary;
+                totalTax += tax;
+                totalBonus += bonus;
+                totalPayable += netPayable;
+                totalGrandTotal += grandTotal;
+                totalGrossSalary += grossSalary;
             });
 
-            // Initial calculation of totals
+            $('#total-salary').text(formatNumber(totalSalary));
+            $('#total-tax').text(formatNumber(totalTax));
+            $('#total-bonus').text(formatNumber(totalBonus));
+            $('#total-payable').text(formatNumber(totalPayable));
+            $('#total-grand-total').text(formatNumber(totalGrandTotal));
+            $('#total-gross-salary').text(formatNumber(totalGrossSalary));
+        }
+
+        // Call updateTotals() when the page loads and when relevant inputs change
+        $(document).ready(function() {
             updateTotals();
+            $('input.present-days, input.bonus, #official_days').on('input', updateTotals);
         });
 
         function formatNumber(num) {

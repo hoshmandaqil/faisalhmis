@@ -117,6 +117,7 @@ class PayrollController extends Controller
 
     public function store(Request $request)
     {
+        info($request->all());
         $request->validate([
             'start_date' => 'required',
             'end_date' => 'required',
@@ -140,7 +141,7 @@ class PayrollController extends Controller
             $payroll = Payroll::create([
                 'start_date' => $start_date,
                 'end_date' => $end_date,
-                'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
+                'total_amount' => array_sum(array_column($request->input('employees'), 'grand_total')),
                 'official_days' => $request->input('official_days'),
                 'status' => 'pending', // or any initial status
                 'description' => $request->input('description'),
@@ -154,7 +155,7 @@ class PayrollController extends Controller
                     'present_days' => $employeeData['present_days'],
                     'bonus' => $employeeData['bonus'] ?? 0,
                     'tax' => $employeeData['tax'],
-                    'additional_payments' => json_encode($employeeData['additional_payments']),
+                    'additional_payments' => $employeeData['additional_payments'],
                     'gross_salary' => $employeeData['gross_salary'],
                     'net_salary' => $employeeData['net_payable'],
                     'amount' => $employeeData['grand_total'],
