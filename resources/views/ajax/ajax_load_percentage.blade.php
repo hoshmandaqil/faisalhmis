@@ -18,7 +18,7 @@
         </div>
         <div class="form-group col-md-4">
             <input type="number" step="0.01" class="form-control" value="{{ $employee->opd_percentage }}"
-                name="opd" max="100" placeholder="Percentage">
+                name="opd" max="100" placeholder="0.00">
         </div>
         <div class="form-group col-md-4">
             <input type="number" step="0.01" class="form-control" value="{{ $employee->opd_tax }}"
@@ -31,7 +31,7 @@
         </div>
         <div class="form-group col-md-4">
             <input type="number" step="0.01" class="form-control" value="{{ $employee->ipd_percentage }}"
-                name="ipd" max="100" placeholder="Percentage">
+                name="ipd" max="100" placeholder="0.00">
         </div>
         <div class="form-group col-md-4">
             <input type="number" step="0.01" class="form-control" value="{{ $employee->ipd_tax }}"
