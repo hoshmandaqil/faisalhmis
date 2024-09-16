@@ -131,7 +131,7 @@ class PayrollController extends Controller
             'employees.*.gross_salary' => 'required|numeric',
             'employees.*.grand_total' => 'required|numeric',
         ]);
-        
+
         $start_date = toMeladi($request->input('start_date'));
         $end_date = toMeladi($request->input('end_date'));
 
@@ -168,53 +168,72 @@ class PayrollController extends Controller
 
     public function show(Payroll $payroll)
     {
-        $payrollItems = $payroll->items; // get related payroll items
+        $payrollItems = $payroll->items;
+        info($payrollItems);
         return view('payrolls.show', compact('payroll', 'payrollItems'));
     }
 
     public function edit($id)
     {
         $payroll = Payroll::with('items.employee')->findOrFail($id);
+        
+        // Decode additional_payments for each payroll item
+        foreach ($payroll->items as $item) {
+            $item->additional_payments = json_decode($item->additional_payments, true);
+        }
+
         return view('payrolls.edit', compact('payroll'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'payroll_date' => 'required|date',
+            'start_date' => 'required',
+            'end_date' => 'required',
             'official_days' => 'required|integer',
             'employees' => 'required|array',
+            'employees.*.employee_id' => 'required|exists:employees,id',
             'employees.*.present_days' => 'required|numeric',
-            'employees.*.bonus' => 'required|numeric',
-            'employees.*.additional_payments' => 'nullable|numeric',
+            'employees.*.bonus' => 'nullable|numeric',
+            'employees.*.additional_payments' => 'nullable',
+            'employees.*.tax' => 'required|numeric',
+            'employees.*.net_payable' => 'required|numeric',
+            'employees.*.gross_salary' => 'required|numeric',
+            'employees.*.grand_total' => 'required|numeric',
         ]);
 
-        // Update Payroll
-        $payroll = Payroll::findOrFail($id);
-        $payroll->payroll_date = $request->input('payroll_date');
-        $payroll->official_days = $request->input('official_days');
-        $payroll->save();
+        $start_date = toMeladi($request->input('start_date'));
+        $end_date = toMeladi($request->input('end_date'));
 
-        // Update Payroll Items
-        foreach ($request->input('employees') as $employeeId => $employeeData) {
-            $payrollItem = PayrollItem::where('payroll_id', $payroll->id)
-                ->where('employee_id', $employeeId)
-                ->firstOrFail();
+        DB::transaction(function () use ($request, $id, $start_date, $end_date) {
+            // Update the payroll
+            $payroll = Payroll::findOrFail($id);
+            $payroll->update([
+                'start_date' => $start_date,
+                'end_date' => $end_date,
+                'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
+                'official_days' => $request->input('official_days'),
+                'description' => $request->input('description'),
+            ]);
 
-            $grossSalary = ($payrollItem->employee->base_salary / 30) * $employeeData['present_days'];
-            $taxableIncome = $grossSalary + $employeeData['bonus'] + ($employeeData['additional_payments'] ?? 0);
-            $tax = $taxableIncome * 0.1;  // Example tax calculation
-            $netPayable = $taxableIncome - $tax;
+            // Update payroll items
+            foreach ($request->input('employees') as $employeeData) {
+                $payrollItem = PayrollItem::where('payroll_id', $payroll->id)
+                    ->where('employee_id', $employeeData['employee_id'])
+                    ->firstOrFail();
 
-            $payrollItem->present_days = $employeeData['present_days'];
-            $payrollItem->bonus = $employeeData['bonus'];
-            $payrollItem->additional_payments = $employeeData['additional_payments'] ?? 0;
-            $payrollItem->gross_salary = $grossSalary;
-            $payrollItem->net_salary = $netPayable;
-            $payrollItem->tax = $tax;
-            $payrollItem->amount = $netPayable;
-            $payrollItem->save();
-        }
+                $payrollItem->update([
+                    'present_days' => $employeeData['present_days'],
+                    'bonus' => $employeeData['bonus'] ?? 0,
+                    'tax' => $employeeData['tax'],
+                    'additional_payments' => json_encode($employeeData['additional_payments']),
+                    'gross_salary' => $employeeData['gross_salary'],
+                    'net_salary' => $employeeData['net_payable'],
+                    'amount' => $employeeData['grand_total'],
+                    'grand_total' => $employeeData['grand_total'],
+                ]);
+            }
+        });
 
         return redirect()->route('payrolls.index')->with('success', 'Payroll updated successfully.');
     }
