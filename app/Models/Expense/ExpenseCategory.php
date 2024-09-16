@@ -11,7 +11,7 @@ class ExpenseCategory extends Model
 
     protected $table = 'expenses_categories';
 
-    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
      * subCategories: Relation to self class for retrieving subcategories
