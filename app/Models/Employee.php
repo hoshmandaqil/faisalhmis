@@ -9,7 +9,7 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['opd_percentage', 'ipd_percentage', 'ipd_amount', 'opd_amount'];
+    protected $fillable = ['opd_percentage', 'ipd_percentage', 'ipd_amount', 'opd_amount', 'opd_tax', 'ipd_tax'];
 
     public function user()
     {

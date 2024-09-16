@@ -87,14 +87,14 @@ class PayrollController extends Controller
                     'number_of_tests' => $patients->count(),
                     'total_price' => $total_opd_price,
                     'payable' => $opd_payable,
-                    'tax' => $opd_payable * 0.1,
+                    'tax' => $opd_payable * ($employee->opd_tax / 100),
                 ],
                 [
                     'main_lab_department' => 'IPD',
                     'number_of_tests' => $patients->flatMap->ipds->count(),
                     'total_price' => $total_ipd_price,
                     'payable' => $ipd_payable,
-                    'tax' => $ipd_payable * 0.1,
+                    'tax' => $ipd_payable * ($employee->ipd_tax / 100),
                 ]
             ])->concat($mainLabDepartmentSummary);
 
