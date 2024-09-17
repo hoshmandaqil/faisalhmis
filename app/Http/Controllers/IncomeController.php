@@ -56,4 +56,13 @@ class IncomeController extends Controller
 
         return back()->with('success', 'The expense successfully saved!');
     }
+
+
+    public function destroy($id)
+    {
+        $income = MiscellaneousIncome::findOrFail($id);
+        $income->delete();
+
+        return back()->with('success', 'Income deleted successfully.');
+    }
 }
