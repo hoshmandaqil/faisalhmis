@@ -83,7 +83,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('general_profits_report/', [\App\Http\Controllers\ReportController::class, 'general_profits_report']);
     Route::get('new_general_profits_report/', [\App\Http\Controllers\ReportController::class, 'new_general_profits_report']);
     Route::get('cumulative_report/', [\App\Http\Controllers\ReportController::class, 'cumulative_report']);
-    Route::get('registered_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_patient_report']);
+    Route::get('registered_all_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_all_patient_report']);
+    Route::get('registered_in_door_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_in_door_patient_report']);
+    Route::get('registered_out_door_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_out_door_patient_report']);
     Route::get('returned_medicines_report/', [\App\Http\Controllers\ReportController::class, 'returned_medicines_report']);
     Route::get('manual_expired_medicines_report/', [\App\Http\Controllers\ReportController::class, 'manual_expired_medicines_report']);
     Route::get('OPD_fee_report/', [\App\Http\Controllers\ReportController::class, 'OPD_fee_report']);
@@ -150,7 +152,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/po_status', [App\Http\Controllers\PurchaseOrderController::class, 'status'])->name('po.status');
 
     // Expenses
-    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store','destroy']);
+    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store', 'destroy']);
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
     Route::delete('expenses/files', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
 
@@ -161,7 +163,7 @@ Route::group(['middleware' => ['auth']], function () {
     });
 
     // Incomes
-    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store']);
+    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store','destroy']);
 
     Route::prefix('income-categories')->group(function () {
         Route::get('/', [IncomeCategoryController::class, 'index'])->name('income_categories.index');
@@ -255,7 +257,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
 
-    Route::get('data-migration',[DataMigrationController::class,'index']);
+    Route::get('data-migration', [DataMigrationController::class, 'index']);
 });
 
 Auth::routes(['register' => true]);

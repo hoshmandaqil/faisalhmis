@@ -204,8 +204,8 @@
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Date <span class="text-danger">*</span></label>
-                                        <input class="form-control persianDate" type="text" id="date"
-                                            name="date" readonly required>
+                                        <input class="form-control" type="date" id="date"
+                                            name="date" required>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -398,8 +398,8 @@
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Date <span class="text-danger">*</span></label>
-                                        <input class="form-control persianDate" type="text" id="edit_date"
-                                            name="date" readonly required>
+                                        <input class="form-control" type="text" id="edit_date"
+                                            name="date" required>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
