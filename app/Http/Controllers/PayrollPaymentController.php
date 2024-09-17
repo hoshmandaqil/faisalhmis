@@ -26,7 +26,6 @@ class PayrollPaymentController extends Controller
 
     public function store(Request $request)
     {
-        info($request->all());
         // Validate the incoming request data
         $validatedData = $request->validate([
             'employee_id' => 'required|exists:employees,id',
@@ -38,8 +37,8 @@ class PayrollPaymentController extends Controller
         ]);
 
         // Find the payroll for the given date
-        $payroll = Payroll::whereYear('payroll_date', Carbon::parse($validatedData['payroll_date'])->year)
-            ->whereMonth('payroll_date', Carbon::parse($validatedData['payroll_date'])->month)
+        $payroll = Payroll::whereYear('end_date', Carbon::parse($validatedData['payroll_date'])->year)
+            ->whereMonth('end_date', Carbon::parse($validatedData['payroll_date'])->month)
             ->firstOrFail();
 
         // // Find the corresponding payroll item
@@ -121,8 +120,8 @@ class PayrollPaymentController extends Controller
         [$year, $month] = explode('-', $payrollDate);
 
         // Find the payroll where the year and month match
-        $payroll = Payroll::whereYear('payroll_date', $year)
-            ->whereMonth('payroll_date', $month)
+        $payroll = Payroll::whereYear('end_date', $year)
+            ->whereMonth('end_date', $month)
             ->firstOrFail();
 
         // Fetch the payroll item details based on employee ID and payroll ID
@@ -139,7 +138,7 @@ class PayrollPaymentController extends Controller
         $balance = $payrollItem->net_salary - $totalPaid;
 
         return response()->json([
-            'payroll_date' => $payroll->payroll_date,
+            'payroll_date' => $payroll->end_date,
             'salary' => $payrollItem->gross_salary,
             'present_days' => $payrollItem->present_days,
             'additional_payments' => $payrollItem->additional_payments,
