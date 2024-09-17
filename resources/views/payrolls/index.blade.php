@@ -168,7 +168,7 @@
     function openManageStatusModal(payroll, status) {
         // Populate modal with payroll data
         $('#modal-payroll-id').text(payroll.id);
-        $('#modal-payroll-date').text(payroll.payroll_date);
+        $('#modal-payroll-date').text(payroll.end_date);
         $('#modal-payroll-total-amount').text(payroll.total_amount);
         $('#modal-payroll-status').text(status);
 
