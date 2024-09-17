@@ -67,7 +67,7 @@ class PayrollPaymentController extends Controller
                 'amount' => $request->payment_amount,
                 'cashier' => $id == null ? auth()->user()->id : $request->cashier,
                 'payment_method' => $request->payment_type,
-                'payment_date' => $request->payroll_date,
+                'payment_date' => $request->payment_date,
                 'remarks' => $request->remarks,
             ],
         );
@@ -106,8 +106,9 @@ class PayrollPaymentController extends Controller
         return redirect()->route('payroll_payments.index')->with('success', 'Payroll payment updated successfully.');
     }
 
-    public function destroy(PayrollPayment $payrollPayment)
+    public function destroy($id)
     {
+        $payrollPayment = PayrollPayment::findOrFail($id);
         $payrollPayment->delete();
 
         return redirect()->route('payroll_payments.index')->with('success', 'Payroll payment deleted successfully.');
@@ -128,8 +129,6 @@ class PayrollPaymentController extends Controller
         $payrollItem = PayrollItem::where('payroll_id', $payroll->id)
             ->where('employee_id', $employeeId)
             ->firstOrFail();
-        
-        info($payrollItem);
 
         // Calculate total paid amount for this payroll and employee
         $totalPaid = PayrollPayment::where('payroll_id', $payroll->id)
@@ -137,7 +136,7 @@ class PayrollPaymentController extends Controller
             ->sum('amount');
 
         // Calculate the remaining balance
-        $balance = $payrollItem->net_salary - $totalPaid;
+        $balance = $payrollItem->grand_total - $totalPaid;
 
         return response()->json([
             'payroll_date' => $payroll->end_date,

@@ -249,13 +249,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/payrolls/{payroll}', [PayrollController::class, 'destroy'])->name('payrolls.destroy');
 
     // Payroll Payments
-    Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll-payment.index');
+    Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll_payments.index');
 
     Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails'])->name('payroll_payments.getPayrollDetails');
 
     Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payroll_payments.store');
 
-    Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
+    Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'destroy'])->name('payroll_payments.destroy');
 
     Route::get('data-migration', [DataMigrationController::class, 'index']);
 

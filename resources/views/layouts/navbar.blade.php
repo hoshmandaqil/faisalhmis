@@ -151,7 +151,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="dropdown-item" href="{{ route('payroll-payment.index') }}">
+                            <a class="dropdown-item" href="{{ route('payroll_payments.index') }}">
                                 Payroll Payments
                             </a>
                         </li>

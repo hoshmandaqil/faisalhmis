@@ -48,32 +48,37 @@
                             </span>
                         </td>
                         <td>
-                            <div class="d-flex">
-                                <!-- View Button -->
-                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                    data-target="#viewPayrollPayment" data-id="{{ $payment->id }}">
-                                    View
-                                </button>
-
-                                <!-- Edit Button -->
-                                <button class="btn btn-icon btn-primary btn-sm edit-btn mr-2" data-id="{{ $payment->id }}"
-                                    data-employee="{{ $payment->employee->first_name }}"
-                                    data-amount="{{ $payment->amount }}" data-date="{{ $payment->payment_date }}"
-                                    data-type="{{ $payment->payment_method }}" data-remarks="{{ $payment->remarks }}">
-                                    Edit
-                                </button>
-
-                                <!-- Delete Button -->
-                                <form action="{{ route('payroll_payments.destroy', $payment->id) }}" method="post"
-                                    class="d-inline">
-                                    @method('DELETE')
-                                    @csrf
-                                    <button type="submit" class="btn btn-icon btn-danger btn-sm"
-                                        onclick="return confirm('Are you sure you want to delete this payment?');">
-                                        Delete
+                            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-warning btn-sm dropdown-toggle" id="btnGroupDrop1"
+                                        data-toggle="dropdown" type="button" aria-haspopup="true"
+                                        aria-expanded="false">
+                                        Actions
                                     </button>
-                                </form>
-
+                                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                        <a class="dropdown-item px-3" href="#" data-toggle="modal"
+                                            data-target="#viewPayrollPayment" data-id="{{ $payment->id }}">
+                                            View
+                                        </a>
+                                        <a class="dropdown-item px-3 edit-btn" href="#" 
+                                            data-id="{{ $payment->id }}"
+                                            data-employee="{{ $payment->employee->first_name }}"
+                                            data-amount="{{ $payment->amount }}" 
+                                            data-date="{{ $payment->payment_date }}"
+                                            data-type="{{ $payment->payment_method }}" 
+                                            data-remarks="{{ $payment->remarks }}">
+                                            Edit
+                                        </a>
+                                        <form action="{{ route('payroll_payments.destroy', $payment->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item px-3" 
+                                                onclick="return confirm('Are you sure you want to delete this payment?');">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -85,7 +90,7 @@
     <!-- Add Payment Modal -->
     <div class="modal fade" id="addPayrollPayment" tabindex="-1" role="dialog" aria-labelledby="addPayrollPaymentLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-dialog modal-wide" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
@@ -103,7 +108,8 @@
                                 <select id="employee" name="employee" class="form-control" required>
                                     <option value="">Select Employee</option>
                                     @foreach ($employees as $employee)
-                                        <option value="{{ $employee->id }}">{{ $employee->first_name }} {{ $employee->last_name }}</option>
+                                        <option value="{{ $employee->id }}">{{ $employee->first_name }}
+                                            {{ $employee->last_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -133,8 +139,8 @@
                                         <th>Tax</th>
                                         <th>Gross Salary</th>
                                         <th>Net Payable</th>
+                                        <th>Paid</th>
                                         <th>Balance</th>
-                                        {{-- <th>Remarks</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -147,8 +153,8 @@
                                         <td id="tax"></td>
                                         <td id="grossSalary"></td>
                                         <td id="netPayable"></td>
+                                        <td id="paid"></td>
                                         <td id="balance"></td>
-                                        {{-- <td id="remarks"></td> --}}
                                     </tr>
                                 </tbody>
                             </table>
@@ -163,7 +169,7 @@
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="paymentDate">Payment Date</label>
-                                <input type="date" id="paymentDate" name="payment_date" class="form-control" required>
+                                <input type="date" id="paymentDate" name="payment_date" class="form-control" required value="{{ date('Y-m-d') }}">
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="paymentRemarks">Remarks</label>
@@ -183,7 +189,7 @@
     <!-- View Payment Modal -->
     <div class="modal fade" id="viewPayrollPayment" tabindex="-1" role="dialog"
         aria-labelledby="viewPayrollPaymentLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-dialog modal-wide" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Payroll Payment Details</h5>
@@ -216,24 +222,27 @@
                 if (employeeId && payrollDate) {
                     // Make an AJAX call to fetch payroll details
                     $.ajax({
-                        url: '{{ route("payroll_payments.getPayrollDetails") }}',
+                        url: '{{ route('payroll_payments.getPayrollDetails') }}',
                         method: 'GET',
                         data: {
                             employee_id: employeeId,
                             payroll_date: payrollDate
                         },
                         success: function(response) {
-                            if(response){
+                            if (response) {
                                 let data = response;
 
-                                $('#payrollMonthDisplay').text(data.payroll_month);
-                                $('#baseSalary').text(formatNumber(data.gross_salary - data.bonus) + ' AF');
+                                $('#payrollMonthDisplay').text(data.payroll_date);
+                                $('#baseSalary').text(formatNumber(data.gross_salary - data
+                                    .bonus) + ' AF');
                                 $('#presentDays').text(data.present_days);
                                 $('#bonus').text(formatNumber(data.bonus) + ' AF');
-                                $('#additionalPayments').html(formatAdditionalPayments(data.additional_payments));
+                                $('#additionalPayments').html(formatAdditionalPayments(data
+                                    .additional_payments));
                                 $('#tax').text(formatNumber(data.tax) + ' AF');
                                 $('#grossSalary').text(formatNumber(data.gross_salary) + ' AF');
                                 $('#netPayable').text(formatNumber(data.net_salary) + ' AF');
+                                $('#paid').text(formatNumber(data.paid) + ' AF');
                                 $('#balance').text(formatNumber(data.balance) + ' AF');
                                 // $('#remarks').text(data.remarks || '');
 
@@ -281,14 +290,14 @@
 
                 // AJAX request to store payment
                 $.ajax({
-                    url: '{{ route("payroll_payments.store") }}',
+                    url: '{{ route('payroll_payments.store') }}',
                     type: 'POST',
                     data: formData,
                     success: function(response) {
-                        if(response.success){
+                        if (response) {
                             alert(response.message);
                             $('#addPayrollPayment').modal('hide');
-                            location.reload(); // Reload to reflect changes
+                            location.reload(); 
                         } else {
                             alert('Failed to save payment.');
                         }
@@ -311,18 +320,45 @@
                 return 'N/A';
             }
 
-            let table = '<table class="table table-bordered"><thead class="bg-light"><tr><th>Department</th><th>Tests</th><th>Total Price</th><th>Gross</th><th>Tax</th><th>Net Payable</th></tr></thead><tbody>';
+            let table =
+                '<table class="table table-bordered"><thead><tr class="bg-secondary"><th class="pb-2 pt-2 text-nowrap">Department</th><th class="pb-2 pt-2">Tests</th><th class="pb-2 pt-2 text-nowrap">Total Price</th><th class="pb-2 pt-2">Gross</th><th class="pb-2 pt-2">Tax</th><th class="pb-2 pt-2 text-nowrap">Net Payable</th></tr></thead><tbody>';
 
             additionalPayments.forEach(function(payment) {
                 table += '<tr>';
-                table += `<td>${payment.main_lab_department}</td>`;
-                table += `<td>${payment.number_of_tests}</td>`;
-                table += `<td>${formatNumber(payment.total_price)} AF</td>`;
-                table += `<td>${formatNumber(payment.payable)} AF</td>`;
-                table += `<td>${formatNumber(payment.tax)} AF</td>`;
-                table += `<td>${formatNumber(payment.payable - payment.tax)} AF</td>`;
+                table += `<td class="pb-2 pt-2">${payment.main_lab_department}</td>`;
+                table += `<td class="pb-2 pt-2">${payment.number_of_tests}</td>`;
+                table += `<td class="pb-2 pt-2">${formatNumber(payment.total_price)} AF</td>`;
+                table += `<td class="pb-2 pt-2">${formatNumber(payment.payable)} AF</td>`;
+                table += `<td class="pb-2 pt-2">${formatNumber(payment.tax)} AF</td>`;
+                table += `<td class="pb-2 pt-2">${formatNumber(payment.payable - payment.tax)} AF</td>`;
                 table += '</tr>';
             });
+            // Calculate totals
+            let totalTests = 0;
+            let totalPrice = 0;
+            let totalGross = 0;
+            let totalTax = 0;
+            let totalNetPayable = 0;
+
+            additionalPayments.forEach(function(payment) {
+                totalTests += parseInt(payment.number_of_tests);
+                totalPrice += parseFloat(payment.total_price);
+                totalGross += parseFloat(payment.payable);
+                totalTax += parseFloat(payment.tax);
+                totalNetPayable += parseFloat(payment.payable) - parseFloat(payment.tax);
+            });
+
+            // Add footer with totals inside tfoot
+            table += '<tfoot>';
+            table += '<tr class="bg-light font-weight-bold">';
+            table += '<td class="pb-2 pt-2">Total</td>';
+            table += `<td class="pb-2 pt-2">${totalTests}</td>`;
+            table += `<td class="pb-2 pt-2">${formatNumber(totalPrice)} AF</td>`;
+            table += `<td class="pb-2 pt-2">${formatNumber(totalGross)} AF</td>`;
+            table += `<td class="pb-2 pt-2">${formatNumber(totalTax)} AF</td>`;
+            table += `<td class="pb-2 pt-2">${formatNumber(totalNetPayable)} AF</td>`;
+            table += '</tr>';
+            table += '</tfoot>';
 
             table += '</tbody></table>';
             return table;
@@ -346,12 +382,22 @@
 
         .modal-body input,
         .modal-body select,
-        .modal-body textarea{
+        .modal-body textarea {
             height: 35px !important;
         }
 
         .modal-body div.form-group {
             margin-top: -10px !important;
+        }
+
+        .modal-wide {
+            max-width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .modal-wide {
+                max-width: 90%;
+            }
         }
     </style>
 @endsection
