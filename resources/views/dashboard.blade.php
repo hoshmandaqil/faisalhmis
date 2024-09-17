@@ -36,7 +36,7 @@
 
                 <div class="daily-sales">
                     <h6>Today All Patients</h6><br>
-                    <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                    <h1><a href="{{ url('registered_all_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
                             target="_blank">{{ $todayPatient }}</a></h1>
                     <div id="apexLineChartGradient" class="blue-graph"></div>
                 </div>
@@ -57,7 +57,7 @@
 
                 <div class="daily-sales">
                     <h6>Today IN Door paitents</h6><br>
-                    <h1><a href="{{ url('registered_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
+                    <h1><a href="{{ url('registered_in_door_patient_report') . '?from=' . $today . '&to=' . $today . '&doctor_id=0' }}"
                             target="_blank">{{ $todayPatient - $outDorPaitent }}</a></h1>
                     <div id="apexLineChartGradient" class="blue-graph"></div>
                 </div>

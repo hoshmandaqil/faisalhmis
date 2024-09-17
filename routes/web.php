@@ -83,7 +83,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('general_profits_report/', [\App\Http\Controllers\ReportController::class, 'general_profits_report']);
     Route::get('new_general_profits_report/', [\App\Http\Controllers\ReportController::class, 'new_general_profits_report']);
     Route::get('cumulative_report/', [\App\Http\Controllers\ReportController::class, 'cumulative_report']);
-    Route::get('registered_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_patient_report']);
+    Route::get('registered_all_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_all_patient_report']);
+    Route::get('registered_in_door_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_in_door_patient_report']);
     Route::get('registered_out_door_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_out_door_patient_report']);
     Route::get('returned_medicines_report/', [\App\Http\Controllers\ReportController::class, 'returned_medicines_report']);
     Route::get('manual_expired_medicines_report/', [\App\Http\Controllers\ReportController::class, 'manual_expired_medicines_report']);

@@ -1057,7 +1057,7 @@ class ReportController extends Controller
     }
 
 
-    public function registered_patient_report()
+    public function registered_in_door_patient_report()
     {
         $from = $_GET['from'] ?? '';
         $to = $_GET['to'] ?? '';
@@ -1065,7 +1065,25 @@ class ReportController extends Controller
         $registeredPatients = [];
         if ($from != null && $to != NULL) {
             $registeredPatients = Patient::whereDate('created_at', '>=', $from)
-                ->where('doctor_id','!=', 28)
+                ->where('doctor_id', '!=', 28)
+                ->whereDate('created_at', '<=', $to);
+            if ($doctor_id  != 0) {
+                $registeredPatients->where('doctor_id', $doctor_id);
+            }
+            $registeredPatients = $registeredPatients->latest()->with('doctor', 'createdBy')->get();
+        }
+        $doctors = User::where('type', 3)->select('id', 'name')->get();
+        return view('report.registered_patient_report', compact('from', 'to', 'doctors', 'doctor_id', 'registeredPatients'));
+    }
+
+    public function registered_all_patient_report()
+    {
+        $from = $_GET['from'] ?? '';
+        $to = $_GET['to'] ?? '';
+        $doctor_id = $_GET['doctor_id'] ?? '';
+        $registeredPatients = [];
+        if ($from != null && $to != NULL) {
+            $registeredPatients = Patient::whereDate('created_at', '>=', $from)
                 ->whereDate('created_at', '<=', $to);
             if ($doctor_id  != 0) {
                 $registeredPatients->where('doctor_id', $doctor_id);
