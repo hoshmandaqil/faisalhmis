@@ -7,22 +7,18 @@
 @section('content')
     <div class="mb-4">
         <h4>Payroll Information</h4>
-        <div class="row">
+        <div class="row mt-4">
             <div class="col-md-3">
-                <h6><strong>Start Date:</strong></h6>
-                <p>{{ $payroll->start_date }}</p>
+                <h5><strong>Start Date:</strong> {{ $payroll->start_date }}</h5>
             </div>
             <div class="col-md-3">
-                <h6><strong>End Date:</strong></h6>
-                <p>{{ $payroll->end_date }}</p>
+                <h5><strong>End Date:</strong> {{ $payroll->end_date }}</h5>
             </div>
             <div class="col-md-3">
-                <h6><strong>Official Days:</strong></h6>
-                <p>{{ $payroll->official_days }}</p>
+                <h5><strong>Official Days:</strong> {{ $payroll->official_days }}</h5>
             </div>
             <div class="col-md-3">
-                <h6><strong>Status:</strong></h6>
-                <p>{{ ucfirst($payroll->status) }}</p>
+                <h5><strong>Status:</strong> {{ ucfirst($payroll->status) }}</h5>
             </div>
         </div>
     </div>
