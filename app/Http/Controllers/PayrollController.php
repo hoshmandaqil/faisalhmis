@@ -22,8 +22,8 @@ class PayrollController extends Controller
 
     public function create(Request $request)
     {
-        $start_date = $request->start_date ? toMeladi($request->start_date) : date('Y-m-01');
-        $end_date = $request->end_date ? toMeladi($request->end_date) : date('Y-m-t');
+        $start_date = $request->start_date ? $request->start_date : date('Y-m-01');
+        $end_date = $request->end_date ? $request->end_date : date('Y-m-t');
 
         // Get all employees
         $allEmployees = Employee::with(['user.patients.laboratoryTests' => function ($query) use ($start_date, $end_date) {
@@ -143,8 +143,8 @@ class PayrollController extends Controller
             'employees.*.grand_total' => 'required|numeric',
         ]);
 
-        $start_date = toMeladi($request->input('start_date'));
-        $end_date = toMeladi($request->input('end_date'));
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
 
         DB::transaction(function () use ($request, $start_date, $end_date) {
             // Create the payroll
@@ -213,8 +213,8 @@ class PayrollController extends Controller
             'employees.*.grand_total' => 'required|numeric',
         ]);
 
-        $start_date = toMeladi($request->input('start_date'));
-        $end_date = toMeladi($request->input('end_date'));
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
 
         DB::transaction(function () use ($request, $id, $start_date, $end_date) {
             // Update the payroll
