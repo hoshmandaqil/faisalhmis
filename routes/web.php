@@ -163,7 +163,7 @@ Route::group(['middleware' => ['auth']], function () {
     });
 
     // Incomes
-    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store']);
+    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store','destroy']);
 
     Route::prefix('income-categories')->group(function () {
         Route::get('/', [IncomeCategoryController::class, 'index'])->name('income_categories.index');
