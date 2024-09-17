@@ -79,17 +79,41 @@
                                 <td>{{ $income->paid_by }}</td>
                                 <td>{{ $income->paid_to }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#viewIncome" data-income="{{ $income }}"
-                                        data-category="{{ $income->incomeCategory ? $income->incomeCategory->name : 'N/A' }}"
-                                        data-cashier="{{ $income->user->name }}">
-                                        View
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#addIncomeModal" data-income="{{ $income }}">
-                                        Edit
-                                    </button>
+                                    @php
+                                        $shamsiDate = $income->date;
+                                    @endphp
+                                    <div class="dropdown">
+                                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button"
+                                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <!-- View Income Modal Trigger -->
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                                data-target="#viewIncome" data-income="{{ $income }}"
+                                                data-category="{{ $income->incomeCategory ? $income->incomeCategory->name : 'N/A' }}"
+                                                data-cashier="{{ $income->user->name }}">
+                                                View
+                                            </a>
+                                            <!-- Edit Income Modal Trigger -->
+                                            @if (in_array('edit_income', $user_permissions))
+                                                <a class="dropdown-item" href="#" data-toggle="modal"
+                                                    data-target="#addIncomeModal" data-income="{{ $income }}">
+                                                    Edit
+                                                </a>
+                                            @endif
+                                            <!-- Delete Income Modal Trigger -->
+                                            @if (in_array('delete_income', $user_permissions))
+                                                <a class="dropdown-item text-danger" href="#" data-toggle="modal"
+                                                    data-target="#deleteIncomeModal" data-income-id="{{ $income->id }}">
+                                                    Delete
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
+
                             </tr>
                         @endforeach
 
@@ -399,6 +423,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteIncomeModal" tabindex="-1" role="dialog"
+        aria-labelledby="deleteIncomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteIncomeModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this income?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form id="deleteIncomeForm" action="" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -486,6 +536,7 @@
         });
     </script>
 
+
     {{-- Edit Income --}}
     <script>
         $(document).ready(function() {
@@ -532,6 +583,18 @@
                     $('#income_id').val('');
                 }
             });
+        });
+    </script>
+
+    <script>
+        $('#deleteIncomeModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var incomeId = button.data('income-id');
+            var modal = $(this);
+            var form = modal.find('#deleteIncomeForm');
+
+            var actionUrl = '/incomes/' + incomeId;
+            form.attr('action', actionUrl);
         });
     </script>
 @endsection
