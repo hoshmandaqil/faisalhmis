@@ -40,7 +40,7 @@
                                 {{ $payment->employee->status ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
-                        <td>{{ number_format($payment->amount) }}</td>
+                        <td>{{ number_format($payment->amount, 2) }}</td>
                         <td>{{ $payment->payment_date }}</td>
                         <td>
                             <span>
@@ -51,7 +51,7 @@
                             <div class="d-flex">
                                 <!-- View Button -->
                                 <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                    data-target="#viewPayrollPayment">
+                                    data-target="#viewPayrollPayment" data-id="{{ $payment->id }}">
                                     View
                                 </button>
 
@@ -59,7 +59,7 @@
                                 <button class="btn btn-icon btn-primary btn-sm edit-btn mr-2" data-id="{{ $payment->id }}"
                                     data-employee="{{ $payment->employee->first_name }}"
                                     data-amount="{{ $payment->amount }}" data-date="{{ $payment->payment_date }}"
-                                    data-remarks="{{ $payment->remarks }}">
+                                    data-type="{{ $payment->payment_method }}" data-remarks="{{ $payment->remarks }}">
                                     Edit
                                 </button>
 
@@ -89,91 +89,93 @@
             <div class="modal-content">
                 <div class="modal-header">
                     {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
+                    <h5 class="modal-title" id="addPayrollPaymentLabel">Add New Payroll Payment</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form id="payrollPaymentForm">
+                <form id="payrollPaymentForm">
+                    <div class="modal-body">
+                        @csrf
                         <div class="row">
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
                                 <label for="employee">Employee</label>
                                 <select id="employee" name="employee" class="form-control" required>
                                     <option value="">Select Employee</option>
                                     @foreach ($employees as $employee)
-                                        <option value="{{ $employee->id }}">{{ $employee->first_name }}</option>
+                                        <option value="{{ $employee->id }}">{{ $employee->first_name }} {{ $employee->last_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
                                 <label for="payrollDate">Payroll Month</label>
-                                <input id="payrollDate" class="form-control" type="date" name="payroll_date" required>
+                                <input id="payrollDate" class="form-control" type="month" name="payroll_date" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="paymentType">Payment Type</label>
+                                <select id="paymentType" name="payment_type" class="form-control" required>
+                                    <option value="1">Final Month Payment</option>
+                                    <option value="2">Advance Payment</option>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Table Section -->
+                        <!-- Payroll Details Section -->
                         <div id="payrollDetails" class="table-responsive d-none">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Payroll Month</th>
-                                        <th>Salary</th>
+                                        <th>Base Salary</th>
                                         <th>Present Days</th>
+                                        <th>Bonus</th>
                                         <th>Additional Payments</th>
                                         <th>Tax</th>
-                                        <th>Bonus</th>
-                                        <th>Payable</th>
-                                        <th>Paid</th>
+                                        <th>Gross Salary</th>
+                                        <th>Net Payable</th>
                                         <th>Balance</th>
-                                        <th>Remarks</th>
+                                        {{-- <th>Remarks</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td id="payrollMonthDisplay"></td>
-                                        <td id="salary"></td>
+                                        <td id="baseSalary"></td>
                                         <td id="presentDays"></td>
+                                        <td id="bonus"></td>
                                         <td id="additionalPayments"></td>
                                         <td id="tax"></td>
-                                        <td id="bonus"></td>
-                                        <td id="payable"></td>
-                                        <td id="paid"></td>
+                                        <td id="grossSalary"></td>
+                                        <td id="netPayable"></td>
                                         <td id="balance"></td>
-                                        <td id="remarks"></td>
+                                        {{-- <td id="remarks"></td> --}}
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <!-- Payment Details Section -->
-                        <h5>Payment Details:</h5>
+                        <h5 class="mb-4">Payment Details:</h5>
                         <div class="row">
                             <div class="form-group col-md-4">
-                                <label for="paymentType">Type</label>
-                                <select id="paymentType" name="paymentType" class="form-control" required>
-                                    <option value="1">Final Month Payment</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label for="payment">Payment</label>
-                                <input type="text" id="payment" name="payment" class="form-control" readonly>
+                                <label for="payment">Payment Amount</label>
+                                <input type="number" id="payment" name="payment" class="form-control" readonly>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="paymentDate">Payment Date</label>
-                                {{-- <input type="text" id="paymentDate" name="paymentDate" class="form-control" required> --}}
-                                <input type="date" id="paymentDate" name="paymentDate" class="form-control" required>
+                                <input type="date" id="paymentDate" name="payment_date" class="form-control" required>
                             </div>
-                            <div class="form-group col-md-12">
+                            <div class="form-group col-md-4">
                                 <label for="paymentRemarks">Remarks</label>
-                                <textarea id="paymentRemarks" name="paymentRemarks" class="form-control"></textarea>
+                                <textarea id="paymentRemarks" name="remarks" class="form-control"></textarea>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-end">
-                            <button id="submitBtn" type="submit" class="btn btn-primary">Save</button>
+                            <button id="submitBtn" type="submit" class="btn btn-primary">Save Payment</button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -184,7 +186,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
+                    <h5 class="modal-title">Payroll Payment Details</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -198,13 +200,6 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
-    <script>
-        $('body').on('focus', ".persianDate", function() {
-            $(this).persianDatepicker();
-        });
-    </script>
-
     <script>
         $(document).ready(function() {
             $.ajaxSetup({
@@ -213,6 +208,7 @@
                 }
             });
 
+            // Fetch payroll details when employee and payroll month are selected
             $('#employee, #payrollDate').change(function() {
                 let employeeId = $('#employee').val();
                 let payrollDate = $('#payrollDate').val();
@@ -220,38 +216,52 @@
                 if (employeeId && payrollDate) {
                     // Make an AJAX call to fetch payroll details
                     $.ajax({
-                        url: '/getPayrollDetails',
+                        url: '{{ route("payroll_payments.getPayrollDetails") }}',
                         method: 'GET',
                         data: {
                             employee_id: employeeId,
                             payroll_date: payrollDate
                         },
                         success: function(response) {
-                            // Assuming response contains payroll details
-                            $('#payrollMonthDisplay').text(response.payroll_date);
-                            $('#salary').text(response.salary);
-                            $('#presentDays').text(response.present_days);
-                            $('#additionalPayments').text(response.additional_payments);
-                            $('#tax').text(response.tax);
-                            $('#bonus').text(response.bonus);
-                            $('#payable').text(response.payable);
-                            $('#paid').text(response.paid);
-                            $('#balance').text(response.balance);
-                            $('#remarks').text(response.remarks);
+                            if(response){
+                                let data = response;
 
-                            $('#payment').val(response.balance); // Set payment amount
-                            $('#payrollDetails').removeClass('d-none'); // Show table
-                            if (Number(response.balance) <= 0) {
-                                $('#submitBtn').hide()
+                                $('#payrollMonthDisplay').text(data.payroll_month);
+                                $('#baseSalary').text(formatNumber(data.gross_salary - data.bonus) + ' AF');
+                                $('#presentDays').text(data.present_days);
+                                $('#bonus').text(formatNumber(data.bonus) + ' AF');
+                                $('#additionalPayments').html(formatAdditionalPayments(data.additional_payments));
+                                $('#tax').text(formatNumber(data.tax) + ' AF');
+                                $('#grossSalary').text(formatNumber(data.gross_salary) + ' AF');
+                                $('#netPayable').text(formatNumber(data.net_salary) + ' AF');
+                                $('#balance').text(formatNumber(data.balance) + ' AF');
+                                // $('#remarks').text(data.remarks || '');
+
+                                $('#payment').val(data.balance);
+                                $('#payrollDetails').removeClass('d-none');
+
+                                if (Number(data.balance) <= 0) {
+                                    $('#submitBtn').hide();
+                                } else {
+                                    $('#submitBtn').show();
+                                }
                             } else {
-                                $('#submitBtn').show()
+                                alert('Failed to fetch payroll details.');
+                                $('#payrollDetails').addClass('d-none');
                             }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(error);
+                            alert('An error occurred while fetching payroll details.');
+                            $('#payrollDetails').addClass('d-none');
                         }
                     });
+                } else {
+                    $('#payrollDetails').addClass('d-none');
                 }
             });
 
-
+            // Handle form submission
             $('#payrollPaymentForm').submit(function(event) {
                 event.preventDefault();
                 // Get form data
@@ -265,35 +275,83 @@
                 };
 
                 if (Number(formData.payment_amount) <= 0) {
-                    alert('Unable to process payment!')
-                    return
+                    alert('Unable to process payment!');
+                    return;
                 }
 
-                // AJAX request
+                // AJAX request to store payment
                 $.ajax({
-                    url: '/payrolls/payments',
+                    url: '{{ route("payroll_payments.store") }}',
                     type: 'POST',
                     data: formData,
                     success: function(response) {
-                        // Display success message or update UI
-                        alert(response.message);
-                        // Optionally, you can close the modal and refresh the page or update the table with the new data
-                        $('#payrollPaymentModal').modal('hide');
-                        location.reload(); // Reload the page to reflect changes (optional)
+                        if(response.success){
+                            alert(response.message);
+                            $('#addPayrollPayment').modal('hide');
+                            location.reload(); // Reload to reflect changes
+                        } else {
+                            alert('Failed to save payment.');
+                        }
                     },
                     error: function(xhr, status, error) {
-                        // Handle errors and display them to the user
                         var errors = xhr.responseJSON.errors;
+                        var errorMessage = '';
                         $.each(errors, function(key, value) {
-                            $('#' + key + '-error').text(value[0]);
+                            errorMessage += value[0] + '\n';
                         });
+                        alert(errorMessage);
                     }
                 });
             });
         });
+
+        // Function to format additional payments into a table
+        function formatAdditionalPayments(additionalPayments) {
+            if (!additionalPayments || additionalPayments.length === 0) {
+                return 'N/A';
+            }
+
+            let table = '<table class="table table-bordered"><thead class="bg-light"><tr><th>Department</th><th>Tests</th><th>Total Price</th><th>Gross</th><th>Tax</th><th>Net Payable</th></tr></thead><tbody>';
+
+            additionalPayments.forEach(function(payment) {
+                table += '<tr>';
+                table += `<td>${payment.main_lab_department}</td>`;
+                table += `<td>${payment.number_of_tests}</td>`;
+                table += `<td>${formatNumber(payment.total_price)} AF</td>`;
+                table += `<td>${formatNumber(payment.payable)} AF</td>`;
+                table += `<td>${formatNumber(payment.tax)} AF</td>`;
+                table += `<td>${formatNumber(payment.payable - payment.tax)} AF</td>`;
+                table += '</tr>';
+            });
+
+            table += '</tbody></table>';
+            return table;
+        }
+
+        // Function to format numbers with commas and two decimal places
+        function formatNumber(num) {
+            return parseFloat(num).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
     </script>
 @endsection
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('assets/vendor/persianDatepicker/css/persianDatepicker-default.css') }}" />
+    <style>
+        table td {
+            vertical-align: top !important;
+        }
+
+        .modal-body input,
+        .modal-body select,
+        .modal-body textarea{
+            height: 35px !important;
+        }
+
+        .modal-body div.form-group {
+            margin-top: -10px !important;
+        }
+    </style>
 @endsection

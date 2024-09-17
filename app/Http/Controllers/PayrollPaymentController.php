@@ -52,7 +52,9 @@ class PayrollPaymentController extends Controller
 
             $last_slip = PayrollPayment::orderBy('id', 'desc')->first();
 
-            if ($last_slip) $data['slip_no'] = $last_slip->slip_no + 1;
+            if ($last_slip) {
+                $data['slip_no'] = $last_slip->slip_no + 1;
+            }
         }
 
         // Update or Create the payment
@@ -67,7 +69,7 @@ class PayrollPaymentController extends Controller
                 'payment_method' => $request->payment_type,
                 'payment_date' => $request->payroll_date,
                 'remarks' => $request->remarks,
-            ]
+            ],
         );
 
         return response()->json([
@@ -120,14 +122,14 @@ class PayrollPaymentController extends Controller
         [$year, $month] = explode('-', $payrollDate);
 
         // Find the payroll where the year and month match
-        $payroll = Payroll::whereYear('end_date', $year)
-            ->whereMonth('end_date', $month)
-            ->firstOrFail();
+        $payroll = Payroll::whereYear('end_date', $year)->whereMonth('end_date', $month)->firstOrFail();
 
         // Fetch the payroll item details based on employee ID and payroll ID
         $payrollItem = PayrollItem::where('payroll_id', $payroll->id)
             ->where('employee_id', $employeeId)
             ->firstOrFail();
+        
+        info($payrollItem);
 
         // Calculate total paid amount for this payroll and employee
         $totalPaid = PayrollPayment::where('payroll_id', $payroll->id)
@@ -141,9 +143,11 @@ class PayrollPaymentController extends Controller
             'payroll_date' => $payroll->end_date,
             'salary' => $payrollItem->gross_salary,
             'present_days' => $payrollItem->present_days,
-            'additional_payments' => $payrollItem->additional_payments,
+            'additional_payments' => json_decode($payrollItem->additional_payments),
             'tax' => $payrollItem->tax,
             'bonus' => $payrollItem->bonus,
+            'gross_salary' => $payrollItem->gross_salary,
+            'net_salary' => $payrollItem->net_salary,
             'payable' => $payrollItem->net_salary,
             'paid' => $totalPaid,
             'balance' => $balance,

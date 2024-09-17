@@ -251,9 +251,9 @@ Route::group(['middleware' => ['auth']], function () {
     // Payroll Payments
     Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll-payment.index');
 
-    Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails']);
+    Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails'])->name('payroll_payments.getPayrollDetails');
 
-    Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payrolls.payments.store');
+    Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payroll_payments.store');
 
     Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
 
