@@ -186,7 +186,7 @@
                                         <label>Date
                                             <x-general.required />
                                         </label>
-                                        <input class="form-control persianDate" type="text" name="date" readonly
+                                        <input class="form-control" type="date" name="date"
                                             required>
                                     </div>
                                 </div>

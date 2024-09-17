@@ -200,7 +200,7 @@
                                         <label>Date
                                             *
                                         </label>
-                                        <input class="form-control persianDate" type="text" name="date" readonly
+                                        <input class="form-control" type="text" name="date"
                                             required>
                                     </div>
                                 </div>
