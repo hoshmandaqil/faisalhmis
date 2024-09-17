@@ -43,10 +43,28 @@ class PayrollController extends Controller
                 });
 
                 $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('created_at', [$start_date, $end_date]);
+                    $query->where(function ($q) use ($start_date, $end_date) {
+                        $q->whereBetween('created_at', [$start_date, $end_date])
+                          ->orWhere(function ($q) use ($start_date, $end_date) {
+                              $q->where('created_at', '<', $start_date)
+                                ->where(function ($q) use ($end_date) {
+                                    $q->whereNull('discharge_date')
+                                      ->orWhere('discharge_date', '>', $end_date);
+                                });
+                          });
+                    });
                 }])
                 ->where('doctor_id', $employee->user->id)
-                ->whereBetween('created_at', [$start_date, $end_date])
+                ->where(function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('reg_date', [$start_date, $end_date])
+                          ->orWhereHas('ipds', function ($q) use ($start_date, $end_date) {
+                              $q->where('created_at', '<', $start_date)
+                                ->where(function ($q) use ($end_date) {
+                                    $q->whereNull('discharge_date')
+                                      ->orWhere('discharge_date', '>', $end_date);
+                                });
+                          });
+                })
                 ->get();
             }
 
@@ -82,7 +100,12 @@ class PayrollController extends Controller
             $ipd_percentage = $employee->ipd_percentage;
 
             $total_opd_price = $patients->sum('OPD_fee');
-            $total_ipd_price = $patients->flatMap->ipds->sum('price');
+            $total_ipd_price = $patients->flatMap->ipds->sum(function ($ipd) use ($start_date, $end_date) {
+                $ipd_start = max($ipd->created_at, $start_date);
+                $ipd_end = $ipd->discharge_date ? min($ipd->discharge_date, $end_date) : $end_date;
+                $days = max(1, $ipd_start->diffInDays($ipd_end) + 1);
+                return $ipd->price * $days;
+            });
 
             $opd_payable = $total_opd_price * ($opd_percentage / 100);
             $ipd_payable = $total_ipd_price * ($ipd_percentage / 100);
