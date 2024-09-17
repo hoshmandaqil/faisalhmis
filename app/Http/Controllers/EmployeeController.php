@@ -254,6 +254,8 @@ class EmployeeController extends Controller
             'ipd_percentage' => $request->ipd,
             'ipd_amount' => $request->ipd_amount,
             'opd_amount' => $request->opd_amount,
+            'opd_tax' => $request->opd_tax,
+            'ipd_tax' => $request->ipd_tax,
         ]);
 
         Employee::find($request->id)->labPercentage()->sync($labs);

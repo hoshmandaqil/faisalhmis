@@ -25,7 +25,7 @@ class PayrollController extends Controller
         $start_date = $request->start_date ? toMeladi($request->start_date) : date('Y-m-01');
         $end_date = $request->end_date ? toMeladi($request->end_date) : date('Y-m-t');
 
-        // Get all employees with their related laboratory tests within the date range
+        // Get all employees
         $allEmployees = Employee::with(['user.patients.laboratoryTests' => function ($query) use ($start_date, $end_date) {
             $query->whereBetween('created_at', [$start_date, $end_date]);
         }])->get();
@@ -34,9 +34,21 @@ class PayrollController extends Controller
 
         // Transform the data to include all employee fields and related laboratory tests
         $employees = $allEmployees->map(function ($employee) use ($mainLabDepartments, $start_date, $end_date) {
-            $labTests = $employee->user->patients->flatMap(function ($patient) {
-                return $patient->laboratoryTests;
-            });
+            $labTests = collect();
+            $patients = collect();
+
+            if ($employee->user) {
+                $labTests = $employee->user->patients->flatMap(function ($patient) {
+                    return $patient->laboratoryTests;
+                });
+
+                $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('created_at', [$start_date, $end_date]);
+                }])
+                ->where('doctor_id', $employee->user->id)
+                ->whereBetween('created_at', [$start_date, $end_date])
+                ->get();
+            }
 
             $employeeMainLabDepartments = EmployeeMainLabDepartment::where('employee_id', $employee->id)->get();
 
@@ -56,21 +68,15 @@ class PayrollController extends Controller
                 $payable = $totalPrice * ($employeePercentageAndTax->percentage / 100);
                 $tax = $payable * ($employeePercentageAndTax->tax / 100);
 
-                return [
+                // Only return the summary if payable is greater than 0
+                return $payable > 0 ? [
                     'main_lab_department' => $mainLabDepartment->dep_name,
                     'number_of_tests' => $testsForMainDepartment->count(),
                     'total_price' => $totalPrice,
                     'payable' => $payable,
                     'tax' => $tax,
-                ];
+                ] : null;
             })->filter()->values();
-
-            $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
-                $query->whereBetween('created_at', [$start_date, $end_date]);
-            }])
-            ->where('doctor_id', $employee->user->id)
-            ->whereBetween('created_at', [$start_date, $end_date])
-            ->get();
 
             $opd_percentage = $employee->opd_percentage;
             $ipd_percentage = $employee->ipd_percentage;
@@ -81,22 +87,26 @@ class PayrollController extends Controller
             $opd_payable = $total_opd_price * ($opd_percentage / 100);
             $ipd_payable = $total_ipd_price * ($ipd_percentage / 100);
 
-            $mainLabDepartmentSummary = collect([
+            $opdIpdSummary = collect([
                 [
                     'main_lab_department' => 'OPD',
                     'number_of_tests' => $patients->count(),
                     'total_price' => $total_opd_price,
                     'payable' => $opd_payable,
-                    'tax' => $opd_payable * 0.1,
+                    'tax' => $opd_payable * ($employee->opd_tax / 100),
                 ],
                 [
                     'main_lab_department' => 'IPD',
                     'number_of_tests' => $patients->flatMap->ipds->count(),
                     'total_price' => $total_ipd_price,
                     'payable' => $ipd_payable,
-                    'tax' => $ipd_payable * 0.1,
+                    'tax' => $ipd_payable * ($employee->ipd_tax / 100),
                 ]
-            ])->concat($mainLabDepartmentSummary);
+            ])->filter(function ($item) {
+                return $item['payable'] > 0;
+            });
+
+            $mainLabDepartmentSummary = $opdIpdSummary->concat($mainLabDepartmentSummary);
 
             $employee->lab_tests_summary = $mainLabDepartmentSummary;
             $employee->lab_tests_count = $labTests->count();
@@ -227,7 +237,7 @@ class PayrollController extends Controller
                     'present_days' => $employeeData['present_days'],
                     'bonus' => $employeeData['bonus'] ?? 0,
                     'tax' => $employeeData['tax'],
-                    'additional_payments' => json_encode($employeeData['additional_payments']),
+                    'additional_payments' => $employeeData['additional_payments'],
                     'gross_salary' => $employeeData['gross_salary'],
                     'net_salary' => $employeeData['net_payable'],
                     'amount' => $employeeData['grand_total'],

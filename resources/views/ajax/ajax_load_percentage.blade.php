@@ -16,36 +16,26 @@
         <div class="col-md-4">
             OPD
         </div>
-        <div class="form-group col-md-8">
+        <div class="form-group col-md-4">
             <input type="number" step="0.01" class="form-control" value="{{ $employee->opd_percentage }}"
-                name="opd" max="100" placeholder="Percentage">
+                name="opd" max="100" placeholder="0.00">
+        </div>
+        <div class="form-group col-md-4">
+            <input type="number" step="0.01" class="form-control" value="{{ $employee->opd_tax }}"
+                name="opd_tax" max="100" placeholder="0.00">
         </div>
     </div>
     <div class="row">
         <div class="col-md-4">
             IPD
         </div>
-        <div class="form-group col-md-8">
+        <div class="form-group col-md-4">
             <input type="number" step="0.01" class="form-control" value="{{ $employee->ipd_percentage }}"
-                name="ipd" max="100" placeholder="Percentage">
+                name="ipd" max="100" placeholder="0.00">
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            OPD (Amount)
-        </div>
-        <div class="form-group col-md-8">
-            <input type="number" step="0.01" class="form-control" value="{{ $employee->opd_amount }}"
-                name="opd_amount" placeholder="Amount">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            IPD (Amount)
-        </div>
-        <div class="form-group col-md-8">
-            <input type="number" step="0.01" class="form-control" value="{{ $employee->ipd_amount }}"
-                name="ipd_amount" placeholder="Amount">
+        <div class="form-group col-md-4">
+            <input type="number" step="0.01" class="form-control" value="{{ $employee->ipd_tax }}"
+                name="ipd_tax" max="100" placeholder="0.00">
         </div>
     </div>
     @foreach ($mainLabs as $lab)
