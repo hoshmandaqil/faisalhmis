@@ -258,6 +258,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
 
     Route::get('data-migration', [DataMigrationController::class, 'index']);
+
+    Route::post('/payroll_status', [PayrollController::class, 'status'])->name('payroll.status');
 });
 
 Auth::routes(['register' => true]);

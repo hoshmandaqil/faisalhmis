@@ -277,4 +277,44 @@ class PayrollController extends Controller
         $payroll->delete();
         return redirect()->route('payrolls.index')->with('success', 'Payroll deleted successfully.');
     }
+
+    public function status(Request $request)
+    {
+        $request->validate([
+            'payroll_id' => 'required',
+            'status' => 'required|in:check,verify,approve,reject'
+        ]);
+
+        $payroll = Payroll::findOrFail($request->payroll_id);
+        
+        // Check user permissions here if needed
+
+        switch ($request->status) {
+            case 'check':
+                $payroll->checked_by = auth()->id();
+                $payroll->checked_date = now();
+                $payroll->status = 'checked';
+                break;
+            case 'verify':
+                $payroll->verified_by = auth()->id();
+                $payroll->verified_date = now();
+                $payroll->status = 'verified';
+                break;
+            case 'approve':
+                $payroll->approved_by = auth()->id();
+                $payroll->approved_date = now();
+                $payroll->status = 'approved';
+                break;
+            case 'reject':
+                $payroll->rejected_by = auth()->id();
+                $payroll->rejected_date = now();
+                $payroll->reject_comment = $request->reject_comment;
+                $payroll->status = 'rejected';
+                break;
+        }
+
+        $payroll->save();
+
+        return response()->json(['success' => 'Status updated successfully'], 200);
+    }
 }
