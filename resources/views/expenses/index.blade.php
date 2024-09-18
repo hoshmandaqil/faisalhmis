@@ -22,17 +22,15 @@
         <!-- Row start -->
         <div class="row justify-content-center">
             <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12">
-
                 <div class="search-box">
-                    <form action="{{ url('searchPO') }}" method="post">
-                        @csrf
-                        <input type="text" name="search" class="search-query" value="{{ request('search') }}"
+                    <form action="{{ route('expenses.search') }}" method="GET">
+                        <input type="text" name="searchTerm" class="search-query" value="{{ request('searchTerm') }}"
                             placeholder="Search Expense ...">
-                        <i class="icon-search1" onclick="$(this).closest('form').submit();"></i>
+                        <button type="submit" style="background:none; border:none;">
+                            <i class="icon-search1"></i>
+                        </button>
                     </form>
-
                 </div>
-
             </div>
         </div>
         <!-- Row end -->
@@ -200,7 +198,7 @@
                                         <label>Date
                                             *
                                         </label>
-                                        <input class="form-control" type="text" name="date"
+                                        <input class="form-control" type="date" name="date"  value="{{ date('Y-m-d') }}"
                                             required>
                                     </div>
                                 </div>

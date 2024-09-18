@@ -18,11 +18,15 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $searchTerm = request()->input('search', null);
+        $searchTerm = request()->input('searchTerm', null);
 
-        $expensesQuery = ExpenseSlip::with('expenseItems', 'expenseCategory', 'cashierUser')
+        $expensesQuery = ExpenseSlip::with(['expenses', 'expenseCategory', 'cashierUser'])
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                $query->where('remarks', 'like', "%$searchTerm%");
+                $query->where('remarks', 'like', "%$searchTerm%")
+                    ->orWhereHas('expenses', function ($q) use ($searchTerm) {
+                        $q->where('po_id', 'like', "%$searchTerm%")
+                            ->orWhereRaw("CAST(amount AS CHAR) like ?", ["%$searchTerm%"]);
+                    });
             })
             ->orderByDesc('id');
 

@@ -153,6 +153,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Expenses
     Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store', 'destroy']);
+    Route::get('/expenses/search', [\App\Http\Controllers\ExpenseController::class, 'index'])->name('expenses.search');
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
     Route::delete('expenses/files', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
 
@@ -163,7 +164,7 @@ Route::group(['middleware' => ['auth']], function () {
     });
 
     // Incomes
-    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store','destroy']);
+    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store', 'destroy']);
 
     Route::prefix('income-categories')->group(function () {
         Route::get('/', [IncomeCategoryController::class, 'index'])->name('income_categories.index');

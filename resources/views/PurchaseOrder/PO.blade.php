@@ -204,7 +204,7 @@
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Date <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="date" id="date"
+                                        <input class="form-control" type="date" id="date" value="{{ date('Y-m-d') }}"
                                             name="date" required>
                                     </div>
                                 </div>

@@ -184,11 +184,12 @@
                                     </div>
                                     <div class="form-group col-md-3">
                                         <label>Date
-                                            <x-general.required />
+                                            *
                                         </label>
                                         <input class="form-control" type="date" name="date"
-                                            required>
+                                            value="{{ date('Y-m-d') }}" required>
                                     </div>
+
                                 </div>
 
                                 <div class="row mb-4">
