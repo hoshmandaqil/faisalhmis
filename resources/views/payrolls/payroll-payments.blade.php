@@ -198,7 +198,10 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <example-component></example-component>
+                    <!-- Content will be loaded via AJAX -->
+                    <div id="paymentDetails">
+                        <p class="text-center">Loading...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -309,6 +312,80 @@
                             errorMessage += value[0] + '\n';
                         });
                         alert(errorMessage);
+                    }
+                });
+            });
+
+            // Handle View Payment Modal
+            $('#viewPayrollPayment').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget); // Button that triggered the modal
+                var paymentId = button.data('id'); // Extract info from data-id attribute
+
+                var modal = $(this);
+                var paymentDetailsDiv = modal.find('#paymentDetails');
+
+                // Show loading state
+                paymentDetailsDiv.html('<p class="text-center">Loading...</p>');
+
+                // Make AJAX request to fetch payment details
+                $.ajax({
+                    url: '{{ route("payroll_payments.show") }}', // Update with your actual route
+                    method: 'GET',
+                    data: { id: paymentId },
+                    success: function(response) {
+                        if (response.success) {
+                            var data = response.data;
+
+                            // Construct the HTML to display payment details
+                            var detailsHtml = `
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th>Slip No</th>
+                                        <td>${data.slip_no}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Month/Year</th>
+                                        <td>${data.payroll_date}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fullname</th>
+                                        <td>${data.employee.first_name} ${data.employee.last_name}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Position</th>
+                                        <td>${data.employee.position || 'Unknown'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Status</th>
+                                        <td>${data.employee.status ? 'Active' : 'Inactive'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Amount</th>
+                                        <td>${parseFloat(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date</th>
+                                        <td>${data.payment_date}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Type</th>
+                                        <td>${data.payment_method ? 'Full Payment' : 'Advance'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Remarks</th>
+                                        <td>${data.remarks || 'N/A'}</td>
+                                    </tr>
+                                </table>
+                            `;
+
+                            paymentDetailsDiv.html(detailsHtml);
+                        } else {
+                            paymentDetailsDiv.html('<p class="text-center">Unable to fetch payment details.</p>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                        paymentDetailsDiv.html('<p class="text-center text-danger">An error occurred while fetching payment details.</p>');
                     }
                 });
             });

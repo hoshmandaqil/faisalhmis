@@ -78,9 +78,28 @@ class PayrollPaymentController extends Controller
         ]);
     }
 
-    public function show(PayrollPayment $payrollPayment)
+    public function show(Request $request)
     {
-        return view('payroll_payments.show', compact('payrollPayment'));
+        $paymentId = $request->input('id');
+
+        // Fetch the payroll payment along with related employee and payroll data
+        $payment = PayrollPayment::with(['employee', 'payroll'])
+            ->find($paymentId);
+
+        if ($payment) {
+            // Format the payroll date
+            $payment->payroll_date = $payment->payroll ? \Carbon\Carbon::parse($payment->payroll->payroll_date)->format('m/Y') : 'N/A';
+
+            return response()->json([
+                'success' => true,
+                'data' => $payment
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payroll payment not found.'
+            ]);
+        }
     }
 
     public function edit(PayrollPayment $payrollPayment)

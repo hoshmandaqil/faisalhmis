@@ -261,6 +261,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('data-migration', [DataMigrationController::class, 'index']);
 
     Route::post('/payroll_status', [PayrollController::class, 'status'])->name('payroll.status');
+
+    Route::get('/payroll_payments/show', [PayrollPaymentController::class, 'show'])->name('payroll_payments.show');
 });
 
 Auth::routes(['register' => true]);
