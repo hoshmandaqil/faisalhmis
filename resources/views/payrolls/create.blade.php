@@ -12,12 +12,12 @@
         <div class="row align-items-end">
             <div class="form-group col-md-4">
                 <label for="start_date">Start of Month</label>
-                <input type="text" name="start_date" id="start_date" class="form-control persianDate" required
+                <input type="date" name="start_date" id="start_date" class="form-control" required
                     value="{{ request('start_date') }}">
             </div>
             <div class="form-group col-md-4">
                 <label for="end_date">End of Month</label>
-                <input type="text" name="end_date" id="end_date" class="form-control persianDate" required
+                <input type="date" name="end_date" id="end_date" class="form-control" required
                     value="{{ request('end_date') }}">
             </div>
             <div class="col-md-4 mb-3">
@@ -167,12 +167,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
     <script>
-        $(document).ready(function() {
-            $(".persianDate").persianDatepicker();
-        });
-
         function calculateTax(salary) {
             let tax = 0;
             if (salary > 5000 && salary <= 12500) {

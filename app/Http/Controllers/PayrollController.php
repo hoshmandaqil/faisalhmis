@@ -22,8 +22,8 @@ class PayrollController extends Controller
 
     public function create(Request $request)
     {
-        $start_date = $request->start_date ? toMeladi($request->start_date) : date('Y-m-01');
-        $end_date = $request->end_date ? toMeladi($request->end_date) : date('Y-m-t');
+        $start_date = $request->start_date ? $request->start_date : date('Y-m-01');
+        $end_date = $request->end_date ? $request->end_date : date('Y-m-t');
 
         // Get all employees
         $allEmployees = Employee::with(['user.patients.laboratoryTests' => function ($query) use ($start_date, $end_date) {
@@ -43,10 +43,28 @@ class PayrollController extends Controller
                 });
 
                 $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('created_at', [$start_date, $end_date]);
+                    $query->where(function ($q) use ($start_date, $end_date) {
+                        $q->whereBetween('created_at', [$start_date, $end_date])
+                          ->orWhere(function ($q) use ($start_date, $end_date) {
+                              $q->where('created_at', '<', $start_date)
+                                ->where(function ($q) use ($end_date) {
+                                    $q->whereNull('discharge_date')
+                                      ->orWhere('discharge_date', '>', $end_date);
+                                });
+                          });
+                    });
                 }])
                 ->where('doctor_id', $employee->user->id)
-                ->whereBetween('created_at', [$start_date, $end_date])
+                ->where(function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('reg_date', [$start_date, $end_date])
+                          ->orWhereHas('ipds', function ($q) use ($start_date, $end_date) {
+                              $q->where('created_at', '<', $start_date)
+                                ->where(function ($q) use ($end_date) {
+                                    $q->whereNull('discharge_date')
+                                      ->orWhere('discharge_date', '>', $end_date);
+                                });
+                          });
+                })
                 ->get();
             }
 
@@ -82,7 +100,12 @@ class PayrollController extends Controller
             $ipd_percentage = $employee->ipd_percentage;
 
             $total_opd_price = $patients->sum('OPD_fee');
-            $total_ipd_price = $patients->flatMap->ipds->sum('price');
+            $total_ipd_price = $patients->flatMap->ipds->sum(function ($ipd) use ($start_date, $end_date) {
+                $ipd_start = max($ipd->created_at, $start_date);
+                $ipd_end = $ipd->discharge_date ? min($ipd->discharge_date, $end_date) : $end_date;
+                $days = max(1, $ipd_start->diffInDays($ipd_end) + 1);
+                return $ipd->price * $days;
+            });
 
             $opd_payable = $total_opd_price * ($opd_percentage / 100);
             $ipd_payable = $total_ipd_price * ($ipd_percentage / 100);
@@ -143,8 +166,8 @@ class PayrollController extends Controller
             'employees.*.grand_total' => 'required|numeric',
         ]);
 
-        $start_date = toMeladi($request->input('start_date'));
-        $end_date = toMeladi($request->input('end_date'));
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
 
         DB::transaction(function () use ($request, $start_date, $end_date) {
             // Create the payroll
@@ -213,8 +236,8 @@ class PayrollController extends Controller
             'employees.*.grand_total' => 'required|numeric',
         ]);
 
-        $start_date = toMeladi($request->input('start_date'));
-        $end_date = toMeladi($request->input('end_date'));
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
 
         DB::transaction(function () use ($request, $id, $start_date, $end_date) {
             // Update the payroll
@@ -253,5 +276,45 @@ class PayrollController extends Controller
     {
         $payroll->delete();
         return redirect()->route('payrolls.index')->with('success', 'Payroll deleted successfully.');
+    }
+
+    public function status(Request $request)
+    {
+        $request->validate([
+            'payroll_id' => 'required',
+            'status' => 'required|in:check,verify,approve,reject'
+        ]);
+
+        $payroll = Payroll::findOrFail($request->payroll_id);
+        
+        // Check user permissions here if needed
+
+        switch ($request->status) {
+            case 'check':
+                $payroll->checked_by = auth()->id();
+                $payroll->checked_date = now();
+                $payroll->status = 'checked';
+                break;
+            case 'verify':
+                $payroll->verified_by = auth()->id();
+                $payroll->verified_date = now();
+                $payroll->status = 'verified';
+                break;
+            case 'approve':
+                $payroll->approved_by = auth()->id();
+                $payroll->approved_date = now();
+                $payroll->status = 'approved';
+                break;
+            case 'reject':
+                $payroll->rejected_by = auth()->id();
+                $payroll->rejected_date = now();
+                $payroll->reject_comment = $request->reject_comment;
+                $payroll->status = 'rejected';
+                break;
+        }
+
+        $payroll->save();
+
+        return response()->json(['success' => 'Status updated successfully'], 200);
     }
 }
