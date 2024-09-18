@@ -13,9 +13,10 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Payroll Date</th>
+                <th>Payroll Month</th>
                 <th>Official Days</th>
                 <th>Total Amount</th>
+                <th>Tax</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -24,9 +25,10 @@
             @foreach ($payrolls as $payroll)
                 <tr>
                     <td>{{ $payroll->id }}</td>
-                    <td>{{ $payroll->payroll_date }}</td>
+                    <td>{{ date('m/Y', strtotime($payroll->end_date)) }}</td>
                     <td>{{ $payroll->official_days }}</td>
-                    <td>{{ number_format($payroll->total_amount) }}</td>
+                    <td><strong>{{ number_format($payroll->total_amount) }}</strong></td>
+                    <td><strong>{{ number_format($payroll->items->sum('tax')) }}</strong></td>
                     <td>
                         <span class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
                             {{ ucfirst($payroll->status) }}

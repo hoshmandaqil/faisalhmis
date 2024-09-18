@@ -16,7 +16,8 @@ class PayrollController extends Controller
 {
     public function index()
     {
-        $payrolls = Payroll::all();
+        $payrolls = Payroll::with('items')->get();
+        
         return view('payrolls.index', compact('payrolls'));
     }
 
@@ -203,7 +204,6 @@ class PayrollController extends Controller
     public function show(Payroll $payroll)
     {
         $payrollItems = $payroll->items;
-        info($payrollItems);
         return view('payrolls.show', compact('payroll', 'payrollItems'));
     }
 

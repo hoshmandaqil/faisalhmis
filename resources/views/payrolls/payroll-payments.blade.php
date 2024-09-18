@@ -120,8 +120,8 @@
                             <div class="form-group col-md-4">
                                 <label for="paymentType">Payment Type</label>
                                 <select id="paymentType" name="payment_type" class="form-control" required>
-                                    <option value="1">Final Month Payment</option>
-                                    <option value="2">Advance Payment</option>
+                                    <option value="1">Full Payment</option>
+                                    {{-- <option value="2">Advance Payment</option> --}}
                                 </select>
                             </div>
                         </div>
