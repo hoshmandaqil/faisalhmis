@@ -198,7 +198,7 @@
                                         <label>Date
                                             *
                                         </label>
-                                        <input class="form-control" type="text" name="date"
+                                        <input class="form-control" type="date" name="date"  value="{{ date('Y-m-d') }}"
                                             required>
                                     </div>
                                 </div>
