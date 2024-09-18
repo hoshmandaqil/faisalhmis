@@ -18,8 +18,8 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $searchTerm = request()->input('search', null);
-        
+        $searchTerm = request()->input('searchTerm', null);
+
         $expensesQuery = ExpenseSlip::with(['expenses', 'expenseCategory', 'cashierUser'])
             ->when($searchTerm, function ($query) use ($searchTerm) {
                 $query->where('remarks', 'like', "%$searchTerm%")
@@ -29,8 +29,6 @@ class ExpenseController extends Controller
                     });
             })
             ->orderByDesc('id');
-
-
 
         $expenses = $expensesQuery->paginate(10);
         $expenses->appends(request()->query());
