@@ -24,6 +24,7 @@ use Psr\Log\NullLogger;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Util\Json;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Collection;
 
 class ReportController extends Controller
 {
@@ -1243,5 +1244,33 @@ class ReportController extends Controller
         }
 
         return view('report.employees_percentage_report', compact('employees', 'from', 'to', 'labMainDepartments', 'department_id', 'labMainDepartmentName', 'doctors', 'doctor_id'));
+    }
+
+    public function overview_report()
+    {
+        $report = new Collection();
+
+        $report->total_income = 100;
+        $report->total_payroll_payment = 100;
+        $report->total_income = 100;
+        $report->total_in = 100;
+        $report->total_out = 100;
+        $report->ins_by_reference = [];
+        $report->ins_by_cashier = [];
+        $report->total_income = 100;
+        $report->miscellaneous_income = 100;
+        $report->total_expense = 100;
+        $report->total_payroll_payment = 100;
+        $report->income_by_category = [];
+        $report->income_by_cashier = [];
+        $report->income_by_program = [];
+        $report->expense_by_category = [];
+        $report->expense_by_cashier = [];
+        $report->cashbook = 100;
+        $report->outs_by_reference = [];
+        $report->outs_by_cashier = [];
+
+
+        return  view('report.overview_report', compact('report'));
     }
 }

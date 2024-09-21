@@ -409,6 +409,11 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="submenuDropdown">
                                 <li>
+                                    <a class="dropdown-item" href="{{ url('overview_report') }}">
+                                        Overview Report
+                                    </a>
+                                </li>
+                                <li>
                                     <a class="dropdown-item" href="{{ url('general_profits_report') }}">
                                         General Report
                                     </a>

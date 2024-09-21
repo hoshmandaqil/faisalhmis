@@ -80,6 +80,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('laboratory_sale_report/', [\App\Http\Controllers\ReportController::class, 'laboratory_sale_report']);
     Route::get('laboratory_tests_report/', [\App\Http\Controllers\ReportController::class, 'laboratory_tests_report']);
     Route::get('ipd_patient_report/', [\App\Http\Controllers\ReportController::class, 'ipd_patient_report']);
+    Route::get('overview_report/', [\App\Http\Controllers\ReportController::class, 'overview_report']);
     Route::get('general_profits_report/', [\App\Http\Controllers\ReportController::class, 'general_profits_report']);
     Route::get('new_general_profits_report/', [\App\Http\Controllers\ReportController::class, 'new_general_profits_report']);
     Route::get('cumulative_report/', [\App\Http\Controllers\ReportController::class, 'cumulative_report']);
