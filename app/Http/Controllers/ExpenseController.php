@@ -53,14 +53,6 @@ class ExpenseController extends Controller
         $id = $request->id;
 
         $request->validate([
-            'paid_by' => 'required',
-            'paid_to' => 'required',
-            'date' => 'required',
-            'category' => 'required',
-            'expenses' => 'required',
-            'expenses.*.expense_description' => 'required',
-            'expenses.*.amount' => 'required',
-            'expenses.*.quantity' => 'required',
             'po_id' => 'required'
         ]);
 
