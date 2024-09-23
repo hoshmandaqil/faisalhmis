@@ -223,13 +223,15 @@ class EmployeeController extends Controller
 
         $labPercentage = [];
         $labTax = [];
+        $labExpense = [];
 
         foreach ($employee->labPercentage as $percentage) {
             $labPercentage[$percentage->pivot->main_lab_department_id] = $percentage->pivot->percentage;
             $labTax[$percentage->pivot->main_lab_department_id] = $percentage->pivot->tax;
+            $labExpense[$percentage->pivot->main_lab_department_id] = $percentage->pivot->expense;
         }
 
-        return view('ajax.ajax_load_percentage', compact('employee', 'mainLabs', 'labPercentage', 'labTax'));
+        return view('ajax.ajax_load_percentage', compact('employee', 'mainLabs', 'labPercentage', 'labTax', 'labExpense'));
     }
 
     public function setPercentage(Request $request)
@@ -244,7 +246,8 @@ class EmployeeController extends Controller
             if ($request->percentage[$key] != NULL) {
                 $labs[$lab] = [
                     'percentage' => $request->percentage[$key],
-                    'tax' => $request->tax[$key] ?? 0
+                    'tax' => $request->tax[$key] ?? 0,
+                    'expense' => $request->expense[$key] ?? 0
                 ];
             }
         }

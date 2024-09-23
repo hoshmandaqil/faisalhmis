@@ -72,10 +72,10 @@ class PayrollController extends Controller
             $employeeMainLabDepartments = EmployeeMainLabDepartment::where('employee_id', $employee->id)->get();
 
             $mainLabDepartmentSummary = $mainLabDepartments->map(function ($mainLabDepartment) use ($labTests, $employeeMainLabDepartments) {
-                $employeePercentageAndTax = $employeeMainLabDepartments->where('main_lab_department_id', $mainLabDepartment->id)->first();
+                $mainLabDepartmentDetails = $employeeMainLabDepartments->where('main_lab_department_id', $mainLabDepartment->id)->first();
                 
                 // Skip if employee has zero percentage for this department
-                if (!$employeePercentageAndTax || $employeePercentageAndTax->percentage == 0) {
+                if (!$mainLabDepartmentDetails || $mainLabDepartmentDetails->percentage == 0) {
                     return null;
                 }
 
@@ -83,9 +83,11 @@ class PayrollController extends Controller
                     return $test->testName->mainDepartment->id === $mainLabDepartment->id;
                 });
 
-                $totalPrice = $testsForMainDepartment->sum('price');
-                $payable = $totalPrice * ($employeePercentageAndTax->percentage / 100);
-                $tax = $payable * ($employeePercentageAndTax->tax / 100);
+                $totalPrice = $testsForMainDepartment->sum(function ($test) use ($mainLabDepartmentDetails) {
+                    return $test->price - $mainLabDepartmentDetails->expense;
+                });
+                $payable = $totalPrice * ($mainLabDepartmentDetails->percentage / 100);
+                $tax = $payable * ($mainLabDepartmentDetails->tax / 100);
 
                 // Only return the summary if payable is greater than 0
                 return $payable > 0 ? [
