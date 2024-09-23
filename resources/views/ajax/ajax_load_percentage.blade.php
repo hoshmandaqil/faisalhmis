@@ -59,7 +59,7 @@
             </div>
             <div class="form-group col-md-3">
                 <input type="number" step="0.01" class="form-control"
-                    value="{{ isset($labExpense[$lab->id]) ? $labExpense[$lab->id] : '' }}" name="expense[]" max="100"
+                    value="{{ isset($labExpense[$lab->id]) ? $labExpense[$lab->id] : '' }}" name="expense[]"
                     placeholder="0.00">
             </div>
         </div>
