@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DataMigrationController;
+use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\PayrollController;
@@ -264,6 +265,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/payroll_status', [PayrollController::class, 'status'])->name('payroll.status');
 
     Route::get('/payroll_payments/show', [PayrollPaymentController::class, 'show'])->name('payroll_payments.show');
+
+    Route::prefix('employee-attendance')->controller(EmployeeAttendanceController::class)->group(function () {
+        Route::get('/', 'index')->name('attendance.index');
+        Route::post('/import', 'import')->name('attendance.import');
+        Route::post('/adjust', 'adjust')->name('attendance.adjust');
+    });
 });
 
 Auth::routes(['register' => true]);

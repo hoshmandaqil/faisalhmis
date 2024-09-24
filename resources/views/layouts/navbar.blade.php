@@ -134,6 +134,9 @@
                         <li>
                             <a class="dropdown-item" href="{{ route('employee.index') }}">Employees Management</a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('attendance.index') }}">Employees Attendance</a>
+                        </li>
                     </ul>
                 </li>
             @endif
