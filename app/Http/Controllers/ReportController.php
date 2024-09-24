@@ -1292,7 +1292,10 @@ class ReportController extends Controller
         $totalIncome += $miscIncome;
 
         // Calculate total expenses
-        $totalExpenses = ExpenseItem::whereBetween('created_at', [$from, $to])->sum('amount');
+        // $totalExpenses = ExpenseItem::whereHas('expenseSlip')->whereBetween('created_at', [$from, $to])->sum('amount');
+        $totalExpenses = ExpenseSlip::whereBetween('created_at', [$from, $to])->get()->sum(function ($expenseSlip) {
+            return $expenseSlip->expenses->sum('amount');
+        });
 
         // Calculate total payroll payment
         $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [$from, $to])->sum('amount');
