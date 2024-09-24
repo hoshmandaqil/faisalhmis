@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 //use App\Models\Pharmacy;
 use App\Models\Employee;
 use App\Models\Expense\ExpenseItem;
+use App\Models\Expense\ExpenseSlip;
 use App\Models\LabDepartment;
 use App\Models\LaboratoryPatientLab;
 use App\Models\MainLabDepartment;
@@ -1286,12 +1287,37 @@ class ReportController extends Controller
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
         $totalIncome += $ipdIncome;
 
+        // Miscellaneous Income
+        $miscIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->sum('amount');
+        $totalIncome += $miscIncome;
+
         // Calculate total expenses
         $totalExpenses = ExpenseItem::whereBetween('created_at', [$from, $to])->sum('amount');
 
+        // Calculate total payroll payment
         $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [$from, $to])->sum('amount');
 
-        // return response()->json(['totalIncome' => $totalIncome, 'totalExpenses' => $totalExpenses]);
-        return view('report.overview_report', compact('from', 'to', 'totalIncome', 'totalExpenses', 'totalPayrollPayment'));
+        // Calculate income by categories
+        $incomeCategories = [
+            'OPD' => $opdIncome,
+            'Pharmacy' => $pharmacyIncome,
+            'Laboratory' => $labIncome,
+            'IPD' => $ipdIncome,
+            'Miscellaneous Income' => $miscIncome,
+        ];
+
+        // Calculate expenses by categories
+        $expenseCategories = ExpenseSlip::whereBetween('created_at', [$from, $to])
+            ->get()
+            ->groupBy(function ($expenseSlip) {
+                return $expenseSlip->expenseCategory->name;
+            })
+            ->mapWithKeys(function ($expenseSlips, $category) {
+                return [$category => $expenseSlips->sum(function ($expenseSlip) {
+                    return $expenseSlip->expenseItems->sum('amount');
+                })];
+            });
+
+        return view('report.overview_report', compact('from', 'to', 'totalIncome', 'totalExpenses', 'totalPayrollPayment', 'incomeCategories', 'expenseCategories'));
     }
 }

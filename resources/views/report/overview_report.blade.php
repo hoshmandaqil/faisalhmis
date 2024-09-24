@@ -94,42 +94,38 @@
             </div> --}}
         </div>
 
-        @if (false)
+        <div class="row align-items-start">
             {{-- Income --}}
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h3 class="card-title">Income by Category</h3>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered table-sm striped">
-                                <tbody>
-                                    {{-- @if ($report->income_by_category->count() <= 0) --}}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="card-title">Income by Category</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-sm striped">
+                            <tbody>
+                                @if (count($incomeCategories) <= 0)
                                     <tr>
                                         <td class="text-danger fw-bold" colspan="100%">*No Records Found</td>
                                     </tr>
-                                    {{-- @endif --}}
-                                    @foreach ($report->income_by_category as $income)
-                                        <tr>
-                                            <td class="fw-bold">{{ $income->getType()->type }}:</td>
-                                            <td>{{ number_format($income->sum_payment) }} AFN</td>
-                                        </tr>
-                                    @endforeach
+                                @endif
+                                @foreach ($incomeCategories as $category => $amount)
                                     <tr>
-                                        <td class="fw-bold">Miscellaneous Income:</td>
-                                        <td>{{ number_format($report->miscellaneous_income) }} AFN</td>
+                                        <td class="fw-bold">{{ $category }}</td>
+                                        <td>{{ number_format($amount) }} AFN</td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="card-footer">
-                            <strong>Total: </strong>
-                            {{-- {{ number_format($report->income_by_category->sum('sum_payment') + $report->miscellaneous_income) }} --}}
-                            AFN
-                        </div>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <strong>Total: </strong>
+                        {{ number_format(array_sum($incomeCategories)) }}
+                        AFN
                     </div>
                 </div>
+            </div>
+            @if (false)
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
@@ -186,49 +182,49 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
             {{-- Expenses --}}
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h3 class="card-title">Expense by Category</h3>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered table-sm striped">
-                                <tbody>
-                                    {{-- @if ($report->expense_by_category->count() <= 0 && $report->total_payroll_payment <= 0) --}}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="card-title">Expense by Category</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-sm striped">
+                            <tbody>
+                                @if (count($expenseCategories) <= 0 && $totalPayrollPayment <= 0)
                                     <tr>
                                         <td class="text-danger fw-bold" colspan="100%">*No Records Found</td>
                                     </tr>
-                                    {{-- @endif --}}
-                                    @foreach ($report->expense_by_category as $category_expense)
-                                        <tr>
-                                            <td class="fw-bold">{{ $category_expense->expenseCategory->name ?? '' }}:</td>
-                                            <td>{{ number_format($category_expense->sum_payment) }} AFN</td>
-                                            <td>
-                                                <a href="#" target="__blank"
-                                                    onclick="redirectToExpense('{{ $category_expense->expenseCategory->id ?? '' }}')">View</a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                    @if ($report->total_payroll_payment > 0)
-                                        <tr>
-                                            <td class="fw-bold">Payroll:</td>
-                                            <td>{{ number_format($report->total_payroll_payment) }} AFN</td>
-                                        </tr>
-                                    @endif
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="card-footer">
-                            <strong>Total: </strong>
-                            {{-- {{ number_format($report->expense_by_category->sum('sum_payment') + $report->total_payroll_payment) }} --}}
-                            AFN
-                        </div>
+                                @endif
+                                @foreach ($expenseCategories as $category => $amount)
+                                    <tr>
+                                        <td class="fw-bold">{{ $category ?? '' }}</td>
+                                        <td>{{ number_format($amount) }} AFN</td>
+                                        {{-- <td>
+                                            <a href="#" target="__blank"
+                                                onclick="redirectToExpense('{{ $category_expense->expenseCategory->id ?? '' }}')">View</a>
+                                        </td> --}}
+                                    </tr>
+                                @endforeach
+                                @if ($totalPayrollPayment > 0)
+                                    <tr>
+                                        <td class="fw-bold">Payroll:</td>
+                                        <td>{{ number_format($totalPayrollPayment) }} AFN</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <strong>Total: </strong>
+                        {{ number_format($expenseCategories->sum()) }}
+                        AFN
                     </div>
                 </div>
+            </div>
+            @if (false)
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
@@ -257,61 +253,39 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 
-        <!-- Modal -->
-        <div class="modal fade"
-        id="exampleModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog"
-            role="document">
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Date Wise General income Report</h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Date Wise General income Report</h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="medicineForm"
-                        action="{{ url()->current() }}"
-                        method="GET"
+                    <form id="medicineForm" action="{{ url()->current() }}" method="GET"
                         enctype="multipart/form-data">
                         <div class="form-group">
                             <label class="label">From:</label>
-                            <input class="form-control"
-                                name="from"
-                                type="date"
-                                value="{{ $from != null ? $from : date('Y-m-d') }}"
-                                required>
+                            <input class="form-control" name="from" type="date"
+                                value="{{ $from != null ? $from : date('Y-m-d') }}" required>
                         </div>
                         <div class="form-group">
                             <label class="label">To:</label>
-                            <input class="form-control"
-                                name="to"
-                                type="date"
-                                value="{{ $to != null ? $to : date('Y-m-d') }}"
-                                required>
+                            <input class="form-control" name="to" type="date"
+                                value="{{ $to != null ? $to : date('Y-m-d') }}" required>
                         </div>
-                       
-                        <div class="submit-section">
-                            <button class="btn btn-secondary"
-                                data-dismiss="modal"
-                                type="button">Close</button>
 
-                            <button class="btn btn-primary submit-btn"
-                                type="submit">Submit</button>
+                        <div class="submit-section">
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+
+                            <button class="btn btn-primary submit-btn" type="submit">Submit</button>
                         </div>
                     </form>
                 </div>
