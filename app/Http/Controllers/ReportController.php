@@ -1264,6 +1264,13 @@ class ReportController extends Controller
         $from = request('from') ?? now()->startOfMonth()->toDateString();
         $to = request('to') ?? now()->endOfMonth()->toDateString();
 
+        
+        // Adjust the to date to include the entire day
+        if($from == $to) {
+            $from = $from . ' 00:00:00';
+            $to = $to . ' 23:59:59';
+        }
+
         // Calculate total income
         $totalIncome = 0;
 
