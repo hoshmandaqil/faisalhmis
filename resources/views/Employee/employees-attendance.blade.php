@@ -95,7 +95,7 @@
                         @click="$store.global.printElement($refs.employeeAttendancePrint)" x-cloak>Print</button>
                 </div>
             </div> --}}
-            <div class="mt-8 d-print-block" x-ref="employeeAttendancePrint">
+            <div class="mt-5 d-print-block" x-ref="employeeAttendancePrint">
 
                 @forelse($attendanceRecords as $employeeName => $records)
                     <div class="mb-4">
@@ -132,7 +132,7 @@
                                     }
                                 @endphp
                                 <div class="col-2">
-                                    <div class="card attendance-card">
+                                    <div class="card attendance-card shadow">
                                         <div class="card-header d-flex justify-content-between align-items-center py-1 px-2"
                                             style="min-height: 5px; {{ 'background: ' . $color }}">
                                             <h5 class="card-title print-text-xs mb-1" style="font-size: 12px">
