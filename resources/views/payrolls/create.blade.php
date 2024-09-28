@@ -59,7 +59,7 @@
                         <input type="hidden" name="employees[{{ $employee->id }}][employee_id]"
                             class="form-control present-days" required value="{{ $employee->id }}">
                         <tr>
-                            <td>{{ $employee->first_name }}</td>
+                            <td>{{ $employee->first_name }} {{ $employee->last_name }}</td>
                             <td>{{ $employee->employeeCurrentSalary->salary_amount }} AF</td>
                             <td>
                                 <input type="number" name="employees[{{ $employee->id }}][present_days]"
