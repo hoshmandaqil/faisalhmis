@@ -220,7 +220,7 @@
             $('#total-bonus').text(formatNumber(totalBonus));
             $('#total-payable').text(formatNumber(totalPayable));
             $('#total-grand-total').text(formatNumber(totalGrandTotal));
-            $('#total-gross-salary').text(formatNumber(totalGrossSalary));
+            $('#total-gross-salary').text(formatNumber(totalGrossSalary - totalBonus));
         }
 
         // Call updateTotals() when the page loads and when relevant inputs change
