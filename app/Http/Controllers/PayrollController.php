@@ -153,7 +153,6 @@ class PayrollController extends Controller
 
     public function store(Request $request)
     {
-        info($request->all());
         $request->validate([
             'start_date' => 'required',
             'end_date' => 'required',

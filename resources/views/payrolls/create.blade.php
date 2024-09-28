@@ -198,7 +198,7 @@
 
                 const adjustedSalary = (baseSalary / officialDays) * presentDays;
                 const grossSalary = adjustedSalary + bonus;
-                const tax = calculateTax(grossSalary);
+                const tax = calculateTax(grossSalary - bonus);
                 const netPayable = grossSalary - tax;
                 const grandTotal = netPayable + testsNetPayable;
 

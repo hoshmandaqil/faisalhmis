@@ -23,7 +23,7 @@
             <div class="form-group col-md-4">
                 <label for="official_days">Official Days</label>
                 <input type="number" name="official_days" id="official_days" class="form-control" required
-                    value="{{ $payroll->official_days }}" step="0.1">
+                    value="{{ $payroll->official_days }}">
             </div>
         </div>
 
@@ -33,7 +33,7 @@
                     <th>Employee</th>
                     <th class="text-nowrap">Base Salary</th>
                     <th class="text-nowrap">Present Days</th>
-                    <th>Night Duty/Monibox</th>
+                    <th>Bonus</th>
                     <th class="text-nowrap">Additional Payments</th>
                     <th>Tax</th>
                     <th class="text-nowrap">Gross Salary</th>
@@ -49,11 +49,11 @@
                         <td>{{ $item->employee->employeeCurrentSalary->salary_amount }} AF</td>
                         <td>
                             <input type="number" name="employees[{{ $item->employee_id }}][present_days]"
-                                class="form-control present-days" required value="{{ $item->present_days }}" style="max-width: 100px" step="0.1">
+                                class="form-control present-days" required value="{{ $item->present_days }}" style="max-width: 100px">
                         </td>
                         <td>
                             <input type="number" name="employees[{{ $item->employee_id }}][bonus]"
-                                class="form-control bonus" value="{{ $item->bonus }}" step="0.1">
+                                class="form-control bonus" value="{{ $item->bonus }}">
                         </td>
                         <td>
                             <table class="table table-bordered">
@@ -175,7 +175,7 @@
 
                     const adjustedSalary = (baseSalary / officialDays) * presentDays;
                     const grossSalary = adjustedSalary + bonus;
-                    const tax = calculateTax(grossSalary);
+                    const tax = calculateTax(grossSalary - bonus);
                     const netPayable = grossSalary - tax;
                     const grandTotal = netPayable + testsNetPayable;
 
