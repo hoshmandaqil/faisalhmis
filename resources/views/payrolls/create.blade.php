@@ -37,7 +37,7 @@
                 <div class="form-group col-md-4">
                     <label for="official_days">Official Days</label>
                     <input type="number" name="official_days" id="official_days" class="form-control" required
-                        value="30">
+                        value="30" step="0.1">
                 </div>
             </div>
             <table class="table table-bordered">
@@ -63,11 +63,11 @@
                             <td>{{ $employee->employeeCurrentSalary->salary_amount }} AF</td>
                             <td>
                                 <input type="number" name="employees[{{ $employee->id }}][present_days]"
-                                    class="form-control present-days" required style="max-width: 100px">
+                                    class="form-control present-days" required style="max-width: 100px" step="0.1">
                             </td>
                             <td>
                                 <input type="number" name="employees[{{ $employee->id }}][bonus]"
-                                    class="form-control bonus">
+                                    class="form-control bonus" step="0.1">
                             </td>
                             <td>
                                 <table class="table table-bordered">

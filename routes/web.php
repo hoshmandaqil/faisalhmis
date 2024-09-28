@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DataMigrationController;
+use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\PayrollController;
@@ -80,6 +81,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('laboratory_sale_report/', [\App\Http\Controllers\ReportController::class, 'laboratory_sale_report']);
     Route::get('laboratory_tests_report/', [\App\Http\Controllers\ReportController::class, 'laboratory_tests_report']);
     Route::get('ipd_patient_report/', [\App\Http\Controllers\ReportController::class, 'ipd_patient_report']);
+    Route::get('overview_report/', [\App\Http\Controllers\ReportController::class, 'overview_report']);
     Route::get('general_profits_report/', [\App\Http\Controllers\ReportController::class, 'general_profits_report']);
     Route::get('new_general_profits_report/', [\App\Http\Controllers\ReportController::class, 'new_general_profits_report']);
     Route::get('cumulative_report/', [\App\Http\Controllers\ReportController::class, 'cumulative_report']);
@@ -261,6 +263,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('data-migration', [DataMigrationController::class, 'index']);
 
     Route::post('/payroll_status', [PayrollController::class, 'status'])->name('payroll.status');
+
+    Route::get('/payroll_payments/show', [PayrollPaymentController::class, 'show'])->name('payroll_payments.show');
+
+    Route::prefix('employee-attendance')->controller(EmployeeAttendanceController::class)->group(function () {
+        Route::get('/', 'index')->name('attendance.index');
+        Route::post('/import', 'import')->name('attendance.import');
+        Route::post('/adjust', 'adjust')->name('attendance.adjust');
+    });
 });
 
 Auth::routes(['register' => true]);

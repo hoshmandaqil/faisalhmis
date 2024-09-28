@@ -134,6 +134,9 @@
                         <li>
                             <a class="dropdown-item" href="{{ route('employee.index') }}">Employees Management</a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('attendance.index') }}">Employees Attendance</a>
+                        </li>
                     </ul>
                 </li>
             @endif
@@ -408,6 +411,11 @@
                                 General Reports
                             </a>
                             <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="submenuDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url('overview_report') }}">
+                                        Overview Report
+                                    </a>
+                                </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ url('general_profits_report') }}">
                                         General Report

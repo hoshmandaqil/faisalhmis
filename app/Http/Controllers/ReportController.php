@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 //use App\Models\Pharmacy;
 use App\Models\Employee;
 use App\Models\Expense\ExpenseItem;
+use App\Models\Expense\ExpenseSlip;
 use App\Models\LabDepartment;
 use App\Models\LaboratoryPatientLab;
 use App\Models\MainLabDepartment;
@@ -12,6 +13,7 @@ use App\Models\MiscellaneousIncome;
 use App\Models\Patient;
 use App\Models\PatientIPD;
 use App\Models\PatientPharmacyMedicine;
+use App\Models\PayrollPayment;
 use App\Models\Pharmacy;
 use App\Models\RequestedMedicine;
 use App\Models\User;
@@ -24,6 +26,7 @@ use Psr\Log\NullLogger;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Util\Json;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Collection;
 
 class ReportController extends Controller
 {
@@ -563,7 +566,7 @@ class ReportController extends Controller
 
     public function new_general_profits_report()
     {
-        return 'We’re temporarily offline for maintenance. We’ll be back soon. Thank you for your patience!';
+        return "We're temporarily offline for maintenance. We'll be back soon. Thank you for your patience!";
 
         $from = $_GET['from'] ?? '';
         $to = $_GET['to'] ?? '';
@@ -610,12 +613,23 @@ class ReportController extends Controller
             $allIncomes += $allLabQuery->labProfit;
 
             // Get sum IPD income
-            $allIPDQuery = PatientIPD::where('status', 1)->whereNotNull('discharge_date')
-                ->select(DB::raw('SUM(DATEDIFF(discharge_date, created_at)*(price-(price*discount/100))) as total_inc'))->first();
+            $allIPDQuery = PatientIPD::where('status', 1)->whereNotNull('discharge_date')->select('price', 'discount', 'discharge_date', 'created_at')->lazy();
+            foreach ($allIPDQuery  as $ipdProfit) {
+                $totalPrice = 0;
+                $totalDiscount = 0;
+                $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($ipdProfit->created_at)));
+                $discharge_date = $ipdProfit->discharge_date;
+                $ipdDays = $register_date->diffInDays($discharge_date);
 
-            $allIncomes += $allIPDQuery->total_inc;
+                for ($i = 1; $i <= $ipdDays; $i++) {
+                    $totalPrice += $ipdProfit->price;
+                    $discountForTest = ($ipdProfit->discount * $ipdProfit->price) / 100;
+                    $totalDiscount += $discountForTest;
+                }
+                $allIncomes += $totalPrice - $totalDiscount;
+            }
 
-            $labMainDepartments = MainLabDepartment::select('id', 'dep_name')->with('thisDepTests')->get();
+            $labMainDepartments = MainLabDepartment::select('id', 'dep_name')->with('thisDepTests')->lazy();
 
             /// This is Datewise Profit and expenses Codes.
 
@@ -1243,5 +1257,77 @@ class ReportController extends Controller
         }
 
         return view('report.employees_percentage_report', compact('employees', 'from', 'to', 'labMainDepartments', 'department_id', 'labMainDepartmentName', 'doctors', 'doctor_id'));
+    }
+
+    public function overview_report()
+    {
+        $from = request('from') ?? now()->startOfMonth()->toDateString();
+        $to = request('to') ?? now()->endOfMonth()->toDateString();
+
+        
+        // Adjust the to date to include the entire day
+        if($from == $to) {
+            $from = $from . ' 00:00:00';
+            $to = $to . ' 23:59:59';
+        }
+
+        // Calculate total income
+        $totalIncome = 0;
+
+        // OPD Income
+        $opdIncome = Patient::whereBetween('created_at', [$from, $to])->sum('OPD_fee');
+        $totalIncome += $opdIncome;
+
+        // Pharmacy Income
+        $pharmacyIncome = PatientPharmacyMedicine::whereBetween('created_at', [$from, $to])
+            ->sum(DB::raw('quantity * unit_price'));
+        $totalIncome += $pharmacyIncome;
+
+        // Laboratory Income
+        $labIncome = LaboratoryPatientLab::whereBetween('created_at', [$from, $to])
+            ->sum(DB::raw('price - (price * discount / 100)'));
+        $totalIncome += $labIncome;
+
+        // IPD Income
+        $ipdIncome = PatientIPD::where('status', 1)
+            ->whereBetween('discharge_date', [$from, $to])
+            ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
+        $totalIncome += $ipdIncome;
+
+        // Miscellaneous Income
+        $miscIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->sum('amount');
+        $totalIncome += $miscIncome;
+
+        // Calculate total expenses
+        // $totalExpenses = ExpenseItem::whereHas('expenseSlip')->whereBetween('created_at', [$from, $to])->sum('amount');
+        $totalExpenses = ExpenseSlip::whereBetween('created_at', [$from, $to])->get()->sum(function ($expenseSlip) {
+            return $expenseSlip->expenses->sum('amount');
+        });
+
+        // Calculate total payroll payment
+        $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [$from, $to])->sum('amount');
+
+        // Calculate income by categories
+        $incomeCategories = [
+            'OPD' => $opdIncome,
+            'Pharmacy' => $pharmacyIncome,
+            'Laboratory' => $labIncome,
+            'IPD' => $ipdIncome,
+            'Miscellaneous Income' => $miscIncome,
+        ];
+
+        // Calculate expenses by categories
+        $expenseCategories = ExpenseSlip::whereBetween('created_at', [$from, $to])
+            ->get()
+            ->groupBy(function ($expenseSlip) {
+                return $expenseSlip->expenseCategory->name;
+            })
+            ->mapWithKeys(function ($expenseSlips, $category) {
+                return [$category => $expenseSlips->sum(function ($expenseSlip) {
+                    return $expenseSlip->expenseItems->sum('amount');
+                })];
+            });
+
+        return view('report.overview_report', compact('from', 'to', 'totalIncome', 'totalExpenses', 'totalPayrollPayment', 'incomeCategories', 'expenseCategories'));
     }
 }

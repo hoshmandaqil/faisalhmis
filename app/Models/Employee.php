@@ -23,7 +23,7 @@ class Employee extends Model
 
     public function labPercentage()
     {
-        return $this->belongsToMany(MainLabDepartment::class)->withPivot('percentage', 'tax');
+        return $this->belongsToMany(MainLabDepartment::class)->withPivot('percentage', 'tax', 'expense');
     }
 
     public function patients()
