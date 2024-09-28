@@ -15,7 +15,7 @@
                 <th>ID</th>
                 <th>Payroll Month</th>
                 <th>Official Days</th>
-                <th>Total Amount</th>
+                <th>Total(Salary + %age)</th>
                 <th>Tax</th>
                 <th>Status</th>
                 <th>Actions</th>
