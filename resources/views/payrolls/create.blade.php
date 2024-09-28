@@ -146,7 +146,7 @@
                         <th style="vertical-align: middle">Totals</th>
                         <th colspan="2"><strong class="mb-2 d-inline-block">Base Salary:</strong><br><span
                                 id="total-salary">0</span> AF
-                        <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span id="total-bonus">0</span> AF</th>
+                        <th><strong class="mb-2 d-inline-block">Night Duty:</strong><br><span id="total-bonus">0</span> AF</th>
                         </th>
                         <th></th>
                         <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span id="total-tax">0</span> AF</th>
