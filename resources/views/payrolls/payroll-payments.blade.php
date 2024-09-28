@@ -134,7 +134,7 @@
                                         <th>Payroll Month</th>
                                         <th>Base Salary</th>
                                         <th>Present Days</th>
-                                        <th>Bonus</th>
+                                        <th>Night Duty/Monibox</th>
                                         <th>Additional Payments</th>
                                         <th>Tax</th>
                                         <th>Gross Salary</th>

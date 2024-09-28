@@ -33,7 +33,7 @@
                     <th>Employee</th>
                     <th class="text-nowrap">Base Salary</th>
                     <th class="text-nowrap">Present Days</th>
-                    <th>Bonus</th>
+                    <th>Night Duty/Monibox</th>
                     <th class="text-nowrap">Additional Payments</th>
                     <th>Tax</th>
                     <th class="text-nowrap">Gross Salary</th>
