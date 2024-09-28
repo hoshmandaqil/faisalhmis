@@ -50,11 +50,11 @@
                                         onclick="openManageStatusModal({{ $payroll }}, '{{ $payroll->status }}')">
                                         Manage Status
                                     </a>
-                                    @if ($payroll->status == 'pending')
+                                    {{-- @if ($payroll->status == 'pending') --}}
                                         <a class="dropdown-item px-3" href="{{ route('payrolls.edit', $payroll->id) }}">
                                             Edit
                                         </a>
-                                    @endif
+                                    {{-- @endif --}}
                                     <form action="{{ route('payrolls.destroy', $payroll->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
