@@ -70,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            {{-- <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4">
                 <div class="card text-white bg-success border-0 mb-0">
                     <div class="card-body text-center">
                         <h3> <span class="text-info">
@@ -80,7 +80,7 @@
                         <h5>Available Cash</h5>
                     </div>
                 </div>
-            </div> --}}
+            </div>
             {{-- <div class="col-md-4 mb-4">
                 <div class="card text-white bg-success border-0 mb-0">
                     <div class="card-body text-center">
