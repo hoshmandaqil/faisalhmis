@@ -1339,9 +1339,9 @@ class ReportController extends Controller
             LaboratoryPatientLab::sum(DB::raw('price - (price * discount / 100)')) +
             PatientIPD::where('status', 1)
                 ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))')) +
-            MiscellaneousIncome::whereNotNull('deleted_At')->sum('amount');
+            MiscellaneousIncome::whereNull('deleted_At')->sum('amount');
     
-        $totalExpensesAllTime = ExpenseSlip::whereNotNull('deleted_at')->get()->sum(function ($expenseSlip) {
+        $totalExpensesAllTime = ExpenseSlip::whereNull('deleted_at')->get()->sum(function ($expenseSlip) {
             return $expenseSlip->expenses->sum('amount');
         });
     
