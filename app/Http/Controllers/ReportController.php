@@ -354,8 +354,8 @@ class ReportController extends Controller
             // // Get all expenses from kblhms
             // $client = new \GuzzleHttp\Client(['verify' => false]);
             // $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
-            $kblAllExpenses = ExpenseItem::sum('amount');
-            $otherIncome = MiscellaneousIncome::sum('amount');
+            $kblAllExpenses = ExpenseItem::whereNull('deleted_at')->sum('amount');
+            $otherIncome = MiscellaneousIncome::whereNull('deleted_at')->sum('amount');
             $allExpenses += $kblAllExpenses;
 
             // Get all income from kblhms
