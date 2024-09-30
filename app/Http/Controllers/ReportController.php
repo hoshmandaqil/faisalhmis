@@ -1263,51 +1263,56 @@ class ReportController extends Controller
     {
         $from = request('from') ?? now()->startOfMonth()->toDateString();
         $to = request('to') ?? now()->endOfMonth()->toDateString();
-
-        
+    
+        $selectedReportType = request('report_type');
+        $selectedIncomeCategory = request('income_category');
+        $selectedExpenseCategory = request('expense_category');
+    
         // Adjust the to date to include the entire day
-        if($from == $to) {
+        if ($from == $to) {
             $from = $from . ' 00:00:00';
             $to = $to . ' 23:59:59';
         }
-
-        // Calculate total income
+    
+        // Calculate total income within the date range
         $totalIncome = 0;
-
+    
         // OPD Income
         $opdIncome = Patient::whereBetween('created_at', [$from, $to])->sum('OPD_fee');
         $totalIncome += $opdIncome;
-
+    
         // Pharmacy Income
         $pharmacyIncome = PatientPharmacyMedicine::whereBetween('created_at', [$from, $to])
             ->sum(DB::raw('quantity * unit_price'));
         $totalIncome += $pharmacyIncome;
-
+    
         // Laboratory Income
         $labIncome = LaboratoryPatientLab::whereBetween('created_at', [$from, $to])
             ->sum(DB::raw('price - (price * discount / 100)'));
         $totalIncome += $labIncome;
-
+    
         // IPD Income
         $ipdIncome = PatientIPD::where('status', 1)
             ->whereBetween('discharge_date', [$from, $to])
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
         $totalIncome += $ipdIncome;
-
+    
         // Miscellaneous Income
         $miscIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->sum('amount');
         $totalIncome += $miscIncome;
-
-        // Calculate total expenses
-        // $totalExpenses = ExpenseItem::whereHas('expenseSlip')->whereBetween('created_at', [$from, $to])->sum('amount');
+    
+        // Calculate total expenses within the date range
         $totalExpenses = ExpenseSlip::whereBetween('created_at', [$from, $to])->get()->sum(function ($expenseSlip) {
             return $expenseSlip->expenses->sum('amount');
         });
-
-        // Calculate total payroll payment
+    
+        // Calculate total payroll payment within the date range
         $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [$from, $to])->sum('amount');
-
-        // Calculate income by categories
+    
+        // Calculate available cash (Total Income - Total Expenses - Payroll Payment for the date range)
+        $availableCash = $totalIncome - ($totalExpenses + $totalPayrollPayment);
+    
+        // Calculate income by categories within the date range
         $incomeCategories = [
             'OPD' => $opdIncome,
             'Pharmacy' => $pharmacyIncome,
@@ -1315,8 +1320,8 @@ class ReportController extends Controller
             'IPD' => $ipdIncome,
             'Miscellaneous Income' => $miscIncome,
         ];
-
-        // Calculate expenses by categories
+    
+        // Calculate expenses by categories within the date range
         $expenseCategories = ExpenseSlip::whereBetween('created_at', [$from, $to])
             ->get()
             ->groupBy(function ($expenseSlip) {
@@ -1327,7 +1332,30 @@ class ReportController extends Controller
                     return $expenseSlip->expenseItems->sum('amount');
                 })];
             });
-
-        return view('report.overview_report', compact('from', 'to', 'totalIncome', 'totalExpenses', 'totalPayrollPayment', 'incomeCategories', 'expenseCategories'));
+    
+        // Calculate total available cash across all records (not limited by date)
+        $totalIncomeAllTime = Patient::sum('OPD_fee') +
+            PatientPharmacyMedicine::sum(DB::raw('quantity * unit_price')) +
+            LaboratoryPatientLab::sum(DB::raw('price - (price * discount / 100)')) +
+            PatientIPD::where('status', 1)
+                ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))')) +
+            MiscellaneousIncome::sum('amount');
+    
+        $totalExpensesAllTime = ExpenseSlip::get()->sum(function ($expenseSlip) {
+            return $expenseSlip->expenses->sum('amount');
+        });
+    
+        $totalPayrollAllTime = PayrollPayment::sum('amount');
+    
+        $totalAvailableCash = $totalIncomeAllTime - ($totalExpensesAllTime + $totalPayrollAllTime);
+    
+        return view('report.overview_report', compact(
+            'from', 'to', 
+            'totalIncome', 'totalExpenses', 'totalPayrollPayment', 
+            'incomeCategories', 'expenseCategories', 
+            'availableCash', 'totalAvailableCash'
+        ));
     }
+    
+    
 }
