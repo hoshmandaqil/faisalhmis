@@ -354,8 +354,8 @@ class ReportController extends Controller
             // // Get all expenses from kblhms
             // $client = new \GuzzleHttp\Client(['verify' => false]);
             // $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
-            $kblAllExpenses = ExpenseItem::sum('amount');
-            $otherIncome = MiscellaneousIncome::sum('amount');
+            $kblAllExpenses = ExpenseItem::whereNull('deleted_at')->sum('amount');
+            $otherIncome = MiscellaneousIncome::whereNull('deleted_at')->sum('amount');
             $allExpenses += $kblAllExpenses;
 
             // Get all income from kblhms
@@ -1277,37 +1277,64 @@ class ReportController extends Controller
         // Calculate total income within the date range
         $totalIncome = 0;
 
-        // OPD Income
-        $opdIncome = Patient::whereBetween('created_at', [$from, $to])->sum('OPD_fee');
+        // OPD Income / correct 
+        $opdIncome = Patient::whereBetween('reg_date', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])->sum('OPD_fee');
+
         $totalIncome += $opdIncome;
 
-        // Pharmacy Income
-        $pharmacyIncome = PatientPharmacyMedicine::whereBetween('created_at', [$from, $to])
+        // IPD Income / correct
+        $ipdIncome = PatientIPD::where('status', 1)
+            ->whereBetween('discharge_date', [
+                Carbon::parse($from)->startOfDay(),
+                Carbon::parse($to)->endOfDay()
+            ])
+            ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
+
+        $totalIncome += $ipdIncome;
+
+        // Pharmacy Income / correct 
+        $pharmacyIncome = PatientPharmacyMedicine::whereBetween('created_at', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])
             ->sum(DB::raw('quantity * unit_price'));
         $totalIncome += $pharmacyIncome;
 
         // Laboratory Income
-        $labIncome = LaboratoryPatientLab::whereBetween('created_at', [$from, $to])
+        $labIncome = LaboratoryPatientLab::whereBetween('created_at', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])
             ->sum(DB::raw('price - (price * discount / 100)'));
+        info($labIncome);
         $totalIncome += $labIncome;
 
-        // IPD Income
-        $ipdIncome = PatientIPD::where('status', 1)
-            ->whereBetween('discharge_date', [$from, $to])
-            ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
-        $totalIncome += $ipdIncome;
+
 
         // Miscellaneous Income
-        $miscIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->sum('amount');
+        $miscIncome = MiscellaneousIncome::whereBetween('date', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])->sum('amount');
         $totalIncome += $miscIncome;
 
         // Calculate total expenses within the date range
-        $totalExpenses = ExpenseSlip::whereBetween('created_at', [$from, $to])->get()->sum(function ($expenseSlip) {
+        $totalExpenses = ExpenseSlip::whereBetween('created_at', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])->get()->sum(function ($expenseSlip) {
             return $expenseSlip->expenses->sum('amount');
         });
 
+
         // Calculate total payroll payment within the date range
-        $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [$from, $to])->sum('amount');
+        $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])->sum('amount');
 
         // Calculate available cash (Total Income - Total Expenses - Payroll Payment for the date range)
         $availableCash = $totalIncome - ($totalExpenses + $totalPayrollPayment);
@@ -1322,7 +1349,10 @@ class ReportController extends Controller
         ];
 
         // Calculate expenses by categories within the date range
-        $expenseCategories = ExpenseSlip::whereBetween('created_at', [$from, $to])
+        $expenseCategories = ExpenseSlip::whereBetween('created_at', [
+            Carbon::parse($from)->startOfDay(),
+            Carbon::parse($to)->endOfDay()
+        ])
             ->get()
             ->groupBy(function ($expenseSlip) {
                 return $expenseSlip->expenseCategory->name;

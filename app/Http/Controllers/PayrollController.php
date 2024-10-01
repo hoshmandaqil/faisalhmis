@@ -246,7 +246,7 @@ class PayrollController extends Controller
             $payroll->update([
                 'start_date' => $start_date,
                 'end_date' => $end_date,
-                'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
+                'total_amount' => array_sum(array_column($request->input('employees'), 'grand_total')),
                 'official_days' => $request->input('official_days'),
                 'description' => $request->input('description'),
             ]);
