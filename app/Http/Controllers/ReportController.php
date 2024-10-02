@@ -339,6 +339,7 @@ class ReportController extends Controller
         $allIncomes = 0;
         $allExpenses = 0;
         $otherIncome = 0;
+        $totalPayrollPayment =0;
 
         // Extract registered by list
         $patientsRegisteredBy = Patient::where('created_by', '!=', 'NULL')->groupBy('created_by')->with('createdBy')->get()->pluck('createdBy.name', 'created_by');
@@ -545,6 +546,8 @@ class ReportController extends Controller
                 if ($kblTotalExpense == NULL) {
                     $kblTotalExpense = 0;
                 }
+
+                $totalPayrollPayment = PayrollPayment::sum('amount');
             }
         }
         return view('report.general_profits_report', compact(
@@ -560,7 +563,8 @@ class ReportController extends Controller
             'doctors',
             'allExpenses',
             'allIncomes',
-            'otherIncome'
+            'otherIncome',
+            'totalPayrollPayment'
         ));
     }
 
@@ -1309,10 +1313,7 @@ class ReportController extends Controller
             Carbon::parse($to)->endOfDay()
         ])
             ->sum(DB::raw('price - (price * discount / 100)'));
-        info($labIncome);
         $totalIncome += $labIncome;
-
-
 
         // Miscellaneous Income
         $miscIncome = MiscellaneousIncome::whereBetween('date', [
