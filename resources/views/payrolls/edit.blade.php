@@ -43,13 +43,15 @@
             </thead>
             <tbody>
                 @foreach ($payroll->items as $item)
-                    <input type="hidden" name="employees[{{ $item->employee_id }}][employee_id]" value="{{ $item->employee_id }}">
+                    <input type="hidden" name="employees[{{ $item->employee_id }}][employee_id]"
+                        value="{{ $item->employee_id }}">
                     <tr>
                         <td>{{ $item->employee->first_name }} {{ $item->employee->last_name }}</td>
                         <td>{{ $item->employee->employeeCurrentSalary->salary_amount }} AF</td>
                         <td>
                             <input type="number" name="employees[{{ $item->employee_id }}][present_days]"
-                                class="form-control present-days" required value="{{ $item->present_days }}" style="max-width: 100px">
+                                class="form-control present-days" required value="{{ $item->present_days }}"
+                                style="max-width: 100px">
                         </td>
                         <td>
                             <input type="number" name="employees[{{ $item->employee_id }}][bonus]"
@@ -68,23 +70,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($item->additional_payments as $summary)
-                                        <tr>
-                                            <td class="pt-2 pb-2">{{ $summary['main_lab_department'] }}</td>
-                                            <td class="pt-2 pb-2 text-nowrap">{{ $summary['number_of_tests'] }}</td>
-                                            <td class="pt-2 pb-2 text-nowrap">{{ $summary['total_price'] }} AF</td>
-                                            <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] }} AF</td>
-                                            <td class="pt-2 pb-2 text-nowrap">{{ $summary['tax'] }} AF</td>
-                                            <td class="pt-2 pb-2 text-nowrap">
-                                                {{ $summary['payable'] - $summary['tax'] }} AF</td>
-                                        </tr>
-                                    @endforeach
+                                    @if ($item->additional_payments)
+                                        @foreach ($item->additional_payments as $summary)
+                                            <tr>
+                                                <td class="pt-2 pb-2">{{ $summary['main_lab_department'] }}</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['number_of_tests'] }}</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['total_price'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['payable'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">{{ $summary['tax'] }} AF</td>
+                                                <td class="pt-2 pb-2 text-nowrap">
+                                                    {{ $summary['payable'] - $summary['tax'] }} AF</td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
                                 </tbody>
                                 <tfoot>
                                     <tr class="bg-light">
                                         <td class="pb-2 pt-2" colspan="2"><strong>Total</strong></td>
                                         <td class="pb-2 pt-2 text-nowrap">
-                                            <strong>{{ collect($item->additional_payments)->sum('total_price') }} AF</strong>
+                                            <strong>{{ collect($item->additional_payments)->sum('total_price') }}
+                                                AF</strong>
                                         </td>
                                         <td class="pb-2 pt-2 text-nowrap">
                                             <strong>{{ collect($item->additional_payments)->sum('payable') }} AF</strong>
@@ -93,7 +98,9 @@
                                             <strong>{{ collect($item->additional_payments)->sum('tax') }} AF</strong>
                                         </td>
                                         <td class="pb-2 pt-2 text-nowrap">
-                                            <strong class="tests-net-payable">{{ collect($item->additional_payments)->sum('payable') - collect($item->additional_payments)->sum('tax') }} AF</strong>
+                                            <strong
+                                                class="tests-net-payable">{{ collect($item->additional_payments)->sum('payable') - collect($item->additional_payments)->sum('tax') }}
+                                                AF</strong>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -124,13 +131,22 @@
             <tfoot class="bg-dark text-white">
                 <tr>
                     <th style="vertical-align: middle">Totals</th>
-                    <th colspan="2"><strong class="mb-2 d-inline-block">Base Salary:</strong><br><span id="total-salary">{{ number_format($payroll->items->sum('gross_salary') - $payroll->items->sum('bonus'), 2) }}</span> AF</th>
-                    <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span id="total-bonus">{{ number_format($payroll->items->sum('bonus'), 2) }}</span> AF</th>
+                    <th colspan="2"><strong class="mb-2 d-inline-block">Base Salary:</strong><br><span
+                            id="total-salary">{{ number_format($payroll->items->sum('gross_salary') - $payroll->items->sum('bonus'), 2) }}</span>
+                        AF</th>
+                    <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span
+                            id="total-bonus">{{ number_format($payroll->items->sum('bonus'), 2) }}</span> AF</th>
                     <th></th>
-                    <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span id="total-tax">{{ number_format($payroll->items->sum('tax'), 2) }}</span> AF</th>
-                    <th><strong class="mb-2 d-inline-block">Gross Salary:</strong><br><span id="total-gross-salary">{{ number_format($payroll->items->sum('gross_salary'), 2) }}</span> AF</th>
-                    <th><strong class="mb-2 d-inline-block">Net Payable:</strong><br><span id="total-payable">{{ number_format($payroll->items->sum('net_salary'), 2) }}</span> AF</th>
-                    <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span id="total-grand-total">{{ number_format($payroll->items->sum('grand_total'), 2) }}</span> AF</th>
+                    <th><strong class="mb-2 d-inline-block">Tax:</strong><br><span
+                            id="total-tax">{{ number_format($payroll->items->sum('tax'), 2) }}</span> AF</th>
+                    <th><strong class="mb-2 d-inline-block">Gross Salary:</strong><br><span
+                            id="total-gross-salary">{{ number_format($payroll->items->sum('gross_salary'), 2) }}</span> AF
+                    </th>
+                    <th><strong class="mb-2 d-inline-block">Net Payable:</strong><br><span
+                            id="total-payable">{{ number_format($payroll->items->sum('net_salary'), 2) }}</span> AF</th>
+                    <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
+                            id="total-grand-total">{{ number_format($payroll->items->sum('grand_total'), 2) }}</span> AF
+                    </th>
                 </tr>
             </tfoot>
         </table>
@@ -168,10 +184,12 @@
                 const officialDays = parseFloat($('#official_days').val()) || 30;
 
                 $('tbody > tr').each(function() {
-                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g, '')) || 0;
+                    const baseSalary = parseFloat($(this).find('td').eq(1).text().replace(/[^\d.-]/g,
+                        '')) || 0;
                     const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
                     const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
-                    const testsNetPayable = parseFloat($(this).find('.tests-net-payable').text().replace(/[^\d.-]/g, '')) || 0;
+                    const testsNetPayable = parseFloat($(this).find('.tests-net-payable').text().replace(
+                        /[^\d.-]/g, '')) || 0;
 
                     const adjustedSalary = (baseSalary / officialDays) * presentDays;
                     const grossSalary = adjustedSalary + bonus;
