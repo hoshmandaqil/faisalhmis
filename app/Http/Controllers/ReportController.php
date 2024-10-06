@@ -1275,8 +1275,16 @@ class ReportController extends Controller
             // dd('i am here');
             $expenseData = $this->expense_report($from, $to);
 
-            // Return a different view for expense reports
             return view('report.expense_report', $expenseData);
+        }
+
+
+        if ($selectedReportType == 'income') {
+            // dd('i am here');
+            $otherIncomeData = $this->other_income_report($from, $to);
+
+            // Return a different view for expense reports
+            return view('report.other_income', $otherIncomeData);
         }
 
         // Adjust the to date to include the entire day
@@ -1405,12 +1413,24 @@ class ReportController extends Controller
     public function expense_report($from, $to)
     {
         $expenses = ExpenseSlip::whereBetween('date', [$from, $to])
-            ->with('expenseCategory') // Assuming there's a relationship
+            ->with('expenseCategory') 
             ->paginate(3000);
 
         // Debugging the results
         return [
             'expenses' => $expenses,
+        ];
+    }
+
+    public function other_income_report($from, $to)
+    {
+        $incomes = MiscellaneousIncome::whereBetween('date', [$from, $to])
+            ->with('incomeCategory') 
+            ->paginate(3000);
+
+        // Debugging the results
+        return [
+            'incomes' => $incomes,
         ];
     }
 }
