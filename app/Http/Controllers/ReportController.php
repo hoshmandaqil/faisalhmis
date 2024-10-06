@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-//use App\Models\Pharmacy;
 use App\Models\Employee;
 use App\Models\Expense\ExpenseItem;
 use App\Models\Expense\ExpenseSlip;
@@ -339,7 +338,7 @@ class ReportController extends Controller
         $allIncomes = 0;
         $allExpenses = 0;
         $otherIncome = 0;
-        $totalPayrollPayment =0;
+        $totalPayrollPayment = 0;
 
         // Extract registered by list
         $patientsRegisteredBy = Patient::where('created_by', '!=', 'NULL')->groupBy('created_by')->with('createdBy')->get()->pluck('createdBy.name', 'created_by');
@@ -1272,6 +1271,14 @@ class ReportController extends Controller
         $selectedIncomeCategory = request('income_category');
         $selectedExpenseCategory = request('expense_category');
 
+        if ($selectedReportType == 'expense') {
+            // dd('i am here');
+            $expenseData = $this->expense_report($from, $to);
+
+            // Return a different view for expense reports
+            return view('report.expense_report', $expenseData);
+        }
+
         // Adjust the to date to include the entire day
         if ($from == $to) {
             $from = $from . ' 00:00:00';
@@ -1392,5 +1399,18 @@ class ReportController extends Controller
             'availableCash',
             'totalAvailableCash'
         ));
+    }
+
+
+    public function expense_report($from, $to)
+    {
+        $expenses = ExpenseSlip::whereBetween('date', [$from, $to])
+            ->with('expenseCategory') // Assuming there's a relationship
+            ->paginate(3000);
+
+        // Debugging the results
+        return [
+            'expenses' => $expenses,
+        ];
     }
 }
