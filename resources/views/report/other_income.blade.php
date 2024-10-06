@@ -49,7 +49,6 @@
                             <th>Amount</th>
                             <th>Paid By</th>
                             <th>Paid To</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,7 +62,7 @@
                                 <td>{{ $income->slip_no }}</td>
                                 <td>{{ $income->date }}</td>
                                 <td>{{ $income->incomeCategory ? $income->incomeCategory->name : 'N/A' }}</td>
-                                <td>{{ $income->remarks }}</td>
+                                <td>{{ $income->income_description }}</td>
                                 <td>{{ number_format($income->amount) }} AF</td>
                                 <td>{{ $income->paid_by }}</td>
                                 <td>{{ $income->paid_to }}</td>
@@ -84,25 +83,3 @@
         </div>
     </div>
 @endsection
-
-$(document).ready(function() {
-$('#viewIncome').on('show.bs.modal', function(event) {
-var button = $(event.relatedTarget);
-var income = button.data('income');
-var incomeCategory = button.data('category');
-var incomeCashir = button.data('cashier');
-
-// Populate modal fields with income details
-$('#viewIncome #slipNo').text(income.slip_no);
-$('#viewIncome #incomeDate').text(income.date);
-$('#viewIncome #paidBy').text(income.paid_by);
-$('#viewIncome #paidTo').text(income.paid_to);
-$('#viewIncome #incomeCategory').text(incomeCategory);
-$('#viewIncome #remarks').text(income.remarks);
-$('#viewIncome #cashier').text(incomeCashir);
-$('#viewIncome #amount').text(income.amount);
-
-// Clear previous income items
-$('#incomeItems').empty();
-});
-});
