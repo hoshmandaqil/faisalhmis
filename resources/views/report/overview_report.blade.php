@@ -285,34 +285,12 @@
                             <label class="label">Report Type:</label>
                             <select class="form-control" name="report_type">
                                 <option value="0"></option>
-                                <option value="income" {{ request('report_type') == 'income' ? 'selected' : '' }}>Income
-                                    Only</option>
+                                <option value="income" {{ request('report_type') == 'income' ? 'selected' : '' }}>
+                                    Other Income Only</option>
                                 <option value="expense" {{ request('report_type') == 'expense' ? 'selected' : '' }}>
                                     Expense Only</option>
                             </select>
                         </div>
-                        @if (request('report_type'))
-                            @if (request('report_type') == 'income')
-                                <div class="form-group">
-                                    <label class="label">Income Category:</label>
-                                    <select class="form-control" name="income_category">
-                                        <option value="0"></option>
-                                        <option value="income">Income Only</option>
-                                        <option value="expense">Expense Only</option>
-                                    </select>
-                                </div>
-                            @else
-                                <div class="form-group">
-                                    <label class="label">Expense Category:</label>
-                                    <select class="form-control" name="expense_category">
-                                        <option value="0"></option>
-                                        <option value="income">Income Only</option>
-                                        <option value="expense">Expense Only</option>
-                                    </select>
-                                </div>
-                            @endif
-                        @endif
-
                         <div class="submit-section">
                             <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
 
