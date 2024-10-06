@@ -13,7 +13,12 @@ class PayrollPaymentController extends Controller
 {
     public function index()
     {
-        $payrollPayments = PayrollPayment::with('employee')->get();
+        $payrollPayments = PayrollPayment::join('employees', 'payroll_payments.employee_id', '=', 'employees.id')
+            ->select('payroll_payments.*') // Select only the columns from PayrollPayment
+            ->orderBy('employees.first_name', 'asc') // Order by employee's first_name
+            ->with('employee') // Eager load the employee relationship
+            ->get();
+
         $employees = Employee::all();
 
         return view('payrolls.payroll-payments', compact('payrollPayments', 'employees'));
