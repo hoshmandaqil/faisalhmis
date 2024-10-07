@@ -30,7 +30,8 @@
                     <td><strong>{{ number_format($payroll->total_amount) }}</strong></td>
                     <td><strong>{{ number_format($payroll->items->sum('tax')) }}</strong></td>
                     <td>
-                        <span class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
+                        <span
+                            class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
                             {{ ucfirst($payroll->status) }}
                         </span>
                     </td>
@@ -38,8 +39,7 @@
                         <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
                             <div class="btn-group" role="group">
                                 <button class="btn btn-warning btn-sm dropdown-toggle" id="btnGroupDrop1"
-                                    data-toggle="dropdown" type="button" aria-haspopup="true"
-                                    aria-expanded="false">
+                                    data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false">
                                     Actions
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
@@ -50,16 +50,16 @@
                                         onclick="openManageStatusModal({{ $payroll }}, '{{ $payroll->status }}')">
                                         Manage Status
                                     </a>
-                                    {{-- @if ($payroll->status == 'pending') --}}
+                                    @if (!$payroll->approved_date)
                                         <a class="dropdown-item px-3" href="{{ route('payrolls.edit', $payroll->id) }}">
                                             Edit
                                         </a>
-                                    {{-- @endif --}}
-                                    <form action="{{ route('payrolls.destroy', $payroll->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="dropdown-item px-3">Delete</button>
-                                    </form>
+                                        <form action="{{ route('payrolls.destroy', $payroll->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item px-3">Delete</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -70,7 +70,8 @@
     </table>
 
     <!-- Manage Status Modal -->
-    <div class="modal fade" id="manageStatusModal" tabindex="-1" role="dialog" aria-labelledby="manageStatusModalLabel" aria-hidden="true">
+    <div class="modal fade" id="manageStatusModal" tabindex="-1" role="dialog" aria-labelledby="manageStatusModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -166,77 +167,77 @@
 @endsection
 
 @section('scripts')
-<script>
-    function openManageStatusModal(payroll, status) {
-        // Populate modal with payroll data
-        $('#modal-payroll-id').text(payroll.id);
-        $('#modal-payroll-date').text(payroll.end_date);
-        $('#modal-payroll-total-amount').text(payroll.total_amount);
-        $('#modal-payroll-status').text(status);
+    <script>
+        function openManageStatusModal(payroll, status) {
+            // Populate modal with payroll data
+            $('#modal-payroll-id').text(payroll.id);
+            $('#modal-payroll-date').text(payroll.end_date);
+            $('#modal-payroll-total-amount').text(payroll.total_amount);
+            $('#modal-payroll-status').text(status);
 
-        // Populate status data
-        $('#checked-by').text(payroll.checked_by || 'X');
-        $('#checked-date').text(payroll.checked_date || 'X');
-        $('#verified-by').text(payroll.verified_by || 'X');
-        $('#verified-date').text(payroll.verified_date || 'X');            
-        $('#approved-by').text(payroll.approved_by || 'X');
-        $('#approved-date').text(payroll.approved_date || 'X');
-        $('#rejected-by').text(payroll.rejected_by || 'X');
-        $('#rejected-date').text(payroll.rejected_date || 'X');
-        $('#reject-comment').text(payroll.reject_comment || '');
+            // Populate status data
+            $('#checked-by').text(payroll.checked_by || 'X');
+            $('#checked-date').text(payroll.checked_date || 'X');
+            $('#verified-by').text(payroll.verified_by || 'X');
+            $('#verified-date').text(payroll.verified_date || 'X');
+            $('#approved-by').text(payroll.approved_by || 'X');
+            $('#approved-date').text(payroll.approved_date || 'X');
+            $('#rejected-by').text(payroll.rejected_by || 'X');
+            $('#rejected-date').text(payroll.rejected_date || 'X');
+            $('#reject-comment').text(payroll.reject_comment || '');
 
-        // Show/hide buttons based on current status
-        updateStatusButtons(status);
+            // Show/hide buttons based on current status
+            updateStatusButtons(status);
 
-        // Open the modal
-        $('#manageStatusModal').modal('show');
-    }
-
-    function updateStatusButtons(currentStatus) {
-        // Hide all buttons first
-        $('#check-button, #verify-button, #approve-button, #reject-button').hide();
-
-        // Show appropriate buttons based on current status
-        switch (currentStatus) {
-            case 'pending':
-                $('#check-button').show();
-                break;
-            case 'checked':
-                $('#verify-button').show();
-                break;
-            case 'verified':
-                $('#approve-button').show();
-                $('#reject-button').show();
-                break;
+            // Open the modal
+            $('#manageStatusModal').modal('show');
         }
-    }
 
-    // Add click handlers for status buttons
-    $('#check-button, #verify-button, #approve-button, #reject-button').click(function() {
-        let action = $(this).text().toLowerCase();
-        let payrollId = $('#modal-payroll-id').text();
-        updatePayrollStatus(payrollId, action);
-    });
+        function updateStatusButtons(currentStatus) {
+            // Hide all buttons first
+            $('#check-button, #verify-button, #approve-button, #reject-button').hide();
 
-    function updatePayrollStatus(payrollId, status) {
-        $.ajax({
-            url: '/payroll_status',
-            type: 'POST',
-            data: {
-                payroll_id: payrollId,
-                status: status,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                alert('Status updated successfully');
-                $('#manageStatusModal').modal('hide');
-                location.reload(); // Reload the page to reflect changes
-            },
-            error: function(xhr, status, error) {
-                console.error('Error updating payroll status:', error);
-                alert('Error updating payroll status. Please try again.');
+            // Show appropriate buttons based on current status
+            switch (currentStatus) {
+                case 'pending':
+                    $('#check-button').show();
+                    break;
+                case 'checked':
+                    $('#verify-button').show();
+                    break;
+                case 'verified':
+                    $('#approve-button').show();
+                    $('#reject-button').show();
+                    break;
             }
+        }
+
+        // Add click handlers for status buttons
+        $('#check-button, #verify-button, #approve-button, #reject-button').click(function() {
+            let action = $(this).text().toLowerCase();
+            let payrollId = $('#modal-payroll-id').text();
+            updatePayrollStatus(payrollId, action);
         });
-    }
-</script>
+
+        function updatePayrollStatus(payrollId, status) {
+            $.ajax({
+                url: '/payroll_status',
+                type: 'POST',
+                data: {
+                    payroll_id: payrollId,
+                    status: status,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    alert('Status updated successfully');
+                    $('#manageStatusModal').modal('hide');
+                    location.reload(); // Reload the page to reflect changes
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating payroll status:', error);
+                    alert('Error updating payroll status. Please try again.');
+                }
+            });
+        }
+    </script>
 @endsection
