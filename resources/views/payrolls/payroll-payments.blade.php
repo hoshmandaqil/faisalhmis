@@ -51,32 +51,38 @@
                             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
                                 <div class="btn-group" role="group">
                                     <button class="btn btn-warning btn-sm dropdown-toggle" id="btnGroupDrop1"
-                                        data-toggle="dropdown" type="button" aria-haspopup="true"
-                                        aria-expanded="false">
+                                        data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false">
                                         Actions
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                        <a class="dropdown-item px-3" href="#" data-toggle="modal"
-                                            data-target="#viewPayrollPayment" data-id="{{ $payment->id }}">
-                                            View
-                                        </a>
-                                        <a class="dropdown-item px-3 edit-btn" href="#" 
-                                            data-id="{{ $payment->id }}"
-                                            data-employee="{{ $payment->employee->first_name }}"
-                                            data-amount="{{ $payment->amount }}" 
-                                            data-date="{{ $payment->payment_date }}"
-                                            data-type="{{ $payment->payment_method }}" 
-                                            data-remarks="{{ $payment->remarks }}">
-                                            Edit
-                                        </a>
-                                        <form action="{{ route('payroll_payments.destroy', $payment->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item px-3" 
-                                                onclick="return confirm('Are you sure you want to delete this payment?');">
-                                                Delete
-                                            </button>
-                                        </form>
+                                        @if (in_array('payment_view', $user_permissions))
+                                            <a class="dropdown-item px-3" href="#" data-toggle="modal"
+                                                data-target="#viewPayrollPayment" data-id="{{ $payment->id }}">
+                                                View
+                                            </a>
+                                        @endif
+                                        @if (in_array('payment_edit', $user_permissions))
+                                            <a class="dropdown-item px-3 edit-btn" href="#"
+                                                data-id="{{ $payment->id }}"
+                                                data-employee="{{ $payment->employee->first_name }}"
+                                                data-amount="{{ $payment->amount }}"
+                                                data-date="{{ $payment->payment_date }}"
+                                                data-type="{{ $payment->payment_method }}"
+                                                data-remarks="{{ $payment->remarks }}">
+                                                Edit
+                                            </a>
+                                        @endif
+                                        @if (in_array('payment_delete', $user_permissions))
+                                            <form action="{{ route('payroll_payments.destroy', $payment->id) }}"
+                                                method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item px-3"
+                                                    onclick="return confirm('Are you sure you want to delete this payment?');">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -169,7 +175,8 @@
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="paymentDate">Payment Date</label>
-                                <input type="date" id="paymentDate" name="payment_date" class="form-control" required value="{{ date('Y-m-d') }}">
+                                <input type="date" id="paymentDate" name="payment_date" class="form-control" required
+                                    value="{{ date('Y-m-d') }}">
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="paymentRemarks">Remarks</label>
@@ -300,7 +307,7 @@
                         if (response) {
                             alert(response.message);
                             $('#addPayrollPayment').modal('hide');
-                            location.reload(); 
+                            location.reload();
                         } else {
                             alert('Failed to save payment.');
                         }
@@ -329,9 +336,11 @@
 
                 // Make AJAX request to fetch payment details
                 $.ajax({
-                    url: '{{ route("payroll_payments.show") }}', // Update with your actual route
+                    url: '{{ route('payroll_payments.show') }}', // Update with your actual route
                     method: 'GET',
-                    data: { id: paymentId },
+                    data: {
+                        id: paymentId
+                    },
                     success: function(response) {
                         if (response.success) {
                             var data = response.data;
@@ -380,12 +389,16 @@
 
                             paymentDetailsDiv.html(detailsHtml);
                         } else {
-                            paymentDetailsDiv.html('<p class="text-center">Unable to fetch payment details.</p>');
+                            paymentDetailsDiv.html(
+                                '<p class="text-center">Unable to fetch payment details.</p>'
+                            );
                         }
                     },
                     error: function(xhr, status, error) {
                         console.error(error);
-                        paymentDetailsDiv.html('<p class="text-center text-danger">An error occurred while fetching payment details.</p>');
+                        paymentDetailsDiv.html(
+                            '<p class="text-center text-danger">An error occurred while fetching payment details.</p>'
+                        );
                     }
                 });
             });
