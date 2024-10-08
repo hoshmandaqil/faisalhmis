@@ -14,7 +14,7 @@ class PayrollPaymentController extends Controller
     public function index()
     {
         $payrollPayments = PayrollPayment::with('employee')
-            ->orderBy('id','desc')
+            ->orderBy('id', 'desc')
             ->get();
 
         $employees = Employee::all();
@@ -89,13 +89,19 @@ class PayrollPaymentController extends Controller
         $payment = PayrollPayment::with(['employee', 'payroll'])
             ->find($paymentId);
 
+        $payrollItems = PayrollItem::where('payroll_id', $payment->payroll_id)
+            ->where('employee_id', $payment->employee_id)
+            ->select('gross_salary','net_salary','grand_total','bonus','tax','present_days','additional_payments')
+            ->first();
+            
         if ($payment) {
             // Format the payroll date
             $payment->payroll_date = $payment->payroll ? \Carbon\Carbon::parse($payment->payroll->payroll_date)->format('m/Y') : 'N/A';
 
             return response()->json([
                 'success' => true,
-                'data' => $payment
+                'data' => $payment,
+                'payrollItems' => $payrollItems
             ]);
         } else {
             return response()->json([
