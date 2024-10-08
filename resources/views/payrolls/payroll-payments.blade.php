@@ -197,17 +197,48 @@
     <div class="modal fade" id="viewPayrollPayment" tabindex="-1" role="dialog"
         aria-labelledby="viewPayrollPaymentLabel" aria-hidden="true">
         <div class="modal-dialog modal-wide" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Payroll Payment Details</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+            <div class="modal-content" id="printPayment">
+                <div class="modal-header d-none d-print-block">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="mr-auto">
+                            <img src="{{ asset('assets/img/logo/logo.png') }}" alt="" style="height: 50px"
+                                class="mb-4">
+                        </div>
+                        <div class="text-center mx-auto">
+                            <h5 class="modal-title">Ministry of Public Health</h5>
+                            <h5 class="modal-title">Bayazid Rokhan Curative Hospital</h5>
+                            <h5 class="modal-title">Finance Department</h5>
+                            <h5 class="modal-title">Employee Payment Slip</h5>
+                        </div>
+                        <div class="ml-auto">
+                            <img src="{{ asset('assets/img/logo/mlogo.png') }}" alt="" style="height: 50px"
+                                class="mb-4">
+                        </div>
+                    </div>
                 </div>
+
                 <div class="modal-body">
                     <!-- Content will be loaded via AJAX -->
                     <div id="paymentDetails">
                         <p class="text-center">Loading...</p>
+                    </div>
+                </div>
+                <div class="d-print-none">
+                    <div class="d-flex justify-content-between m-4">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button onclick="printDiv('printPayment')" type="button" class="btn btn-primary">Print</button>
+                    </div>
+                </div>
+                <div class="modal-footer d-none d-print-block">
+                    <div style="flex-grow: 1; text-align: left;">
+                        <div class="signature" style="display: inline-block; width: 200px;">
+                            Finance Officer: ____________________
+                        </div>
+                    </div>
+                    <div style="flex-grow: 1; text-align: right;">
+                        <div class="signature" style="display: inline-block; width: 200px;">
+                            Employee: ____________________
+                        </div>
                     </div>
                 </div>
             </div>
@@ -344,47 +375,65 @@
                     success: function(response) {
                         if (response.success) {
                             var data = response.data;
-
-                            // Construct the HTML to display payment details
+                            var payrollPayments = response.payrollItems;
+                            // Construct the HTML to display payment details in cards
                             var detailsHtml = `
-                                <table class="table table-bordered">
-                                    <tr>
-                                        <th>Slip No</th>
-                                        <td>${data.slip_no}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Month/Year</th>
-                                        <td>${data.payroll_date}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fullname</th>
-                                        <td>${data.employee.first_name} ${data.employee.last_name}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Position</th>
-                                        <td>${data.employee.position || 'Unknown'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Status</th>
-                                        <td>${data.employee.status ? 'Active' : 'Inactive'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Amount</th>
-                                        <td>${parseFloat(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Date</th>
-                                        <td>${data.payment_date}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Type</th>
-                                        <td>${data.payment_method ? 'Full Payment' : 'Advance'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Remarks</th>
-                                        <td>${data.remarks || 'N/A'}</td>
-                                    </tr>
-                                </table>
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center p-3 rounded">
+                                            <div>
+                                                <h6>${data.employee.first_name} ${data.employee.last_name}</h6>
+                                                <h6><strong>Father Name:</strong> ${data.employee.father_name || 'N/A'}</h6>
+                                            </div>
+                                            <div>
+                                                <h6><strong>Position:</strong> ${data.employee.position || 'Unknown'}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Payment Details</h5>
+                                                <p class="card-text"><strong>Slip No:</strong> ${data.slip_no}</p>
+                                                <p class="card-text"><strong>Month/Year:</strong> ${data.payroll_date}</p>
+                                                <p class="card-text"><strong>Payment Date:</strong> ${data.payment_date}</p>
+                                                <p class="card-text"><strong>Remarks:</strong> ${data.remarks || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Salary Details</h5>
+                                                <p class="card-text"><strong>Gross Salary:</strong> ${parseFloat(payrollPayments.gross_salary - payrollPayments.bonus).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AFN</p>
+                                                <p class="card-text"><strong>Bonus:</strong> ${parseFloat(payrollPayments.bonus).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AFN</p>
+                                                <p class="card-text"><strong>Tax:</strong> ${parseFloat(payrollPayments.tax).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AFN</p>
+                                                <p class="card-text"><strong>Net Salary:</strong> ${parseFloat(payrollPayments.net_salary).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Additional Information</h5>
+                                                <p class="card-text"><strong>Paid Amount:</strong> ${parseFloat(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</p>
+                                                <p class="card-text"><strong>Balance Amount:</strong> ${parseFloat(payrollPayments.net_salary - data.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</p>
+                                                <p class="card-text"><strong>Type:</strong> ${data.payment_method ? 'Full Payment' : 'Advance'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                 <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center p-3 rounded">
+                                            <div>
+                                                <h6><strong>Grand Total:</strong> ${data.amount || '0'} AFN</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             `;
 
                             paymentDetailsDiv.html(detailsHtml);
@@ -401,6 +450,7 @@
                         );
                     }
                 });
+
             });
         });
 
