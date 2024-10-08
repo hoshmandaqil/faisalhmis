@@ -18,8 +18,11 @@ class ExpenseController extends Controller
      */
     public function index()
     {
+        // Get the search term and category from the request
         $searchTerm = request()->input('searchTerm', null);
-
+        $category = request()->input('category', null);
+    
+        // Build the expenses query
         $expensesQuery = ExpenseSlip::with(['expenses', 'expenseCategory', 'cashierUser'])
             ->when($searchTerm, function ($query) use ($searchTerm) {
                 $query->where('remarks', 'like', "%$searchTerm%")
@@ -28,20 +31,28 @@ class ExpenseController extends Controller
                             ->orWhereRaw("CAST(amount AS CHAR) like ?", ["%$searchTerm%"]);
                     });
             })
+            ->when($category, function ($query) use ($category) {
+                // Filter by category if it's selected
+                $query->where('category', $category);
+            })
             ->orderByDesc('id');
-
+    
+        // Paginate the result
         $expenses = $expensesQuery->paginate(10);
+    
+        // Append search and category filters to the pagination links
         $expenses->appends(request()->query());
-
+    
+        // Fetch categories and subcategories
         $categories = ExpenseCategory::whereNull('parent')->with('subCategories')->get();
-
+    
+        // Fetch all purchase orders
         $pos = PurchaseOrder::orderBy('id', 'desc')->get();
-
-        return view(
-            'expenses.index',
-            compact('expenses', 'categories', 'pos')
-        );
+    
+        // Return view with filtered expenses, categories, and purchase orders
+        return view('expenses.index', compact('expenses', 'categories', 'pos'));
     }
+    
 
     /**
      * Store a newly created resource in storage.
