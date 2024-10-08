@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Expense\ExpenseCategory;
 use App\Models\Expense\ExpenseItem;
 use App\Models\Expense\ExpenseSlip;
 use App\Models\LabDepartment;
@@ -1270,10 +1271,12 @@ class ReportController extends Controller
         $selectedReportType = request('report_type');
         $selectedIncomeCategory = request('income_category');
         $selectedExpenseCategory = request('expense_category');
+        $categoryId = request('category');
+        $searchTerm = request('searchTerm');
 
         if ($selectedReportType == 'expense') {
             // dd('i am here');
-            $expenseData = $this->expense_report($from, $to);
+            $expenseData = $this->expense_report($from, $to ,$selectedReportType ,$categoryId,$searchTerm);
 
             return view('report.expense_report', $expenseData);
         }
@@ -1410,15 +1413,25 @@ class ReportController extends Controller
     }
 
 
-    public function expense_report($from, $to)
+    public function expense_report($from, $to ,$reportType ,$categoryId = null ,$searchTerm)
     {
-        $expenses = ExpenseSlip::whereBetween('date', [$from, $to])
-            ->with('expenseCategory') 
-            ->paginate(3000);
+        $query = ExpenseSlip::whereBetween('date', [$from, $to])
+            ->with('expenseCategory');
 
-        // Debugging the results
+        if($categoryId){
+            $query->where('category',$categoryId);
+        }
+
+        $expenses = $query->paginate(3000);
+
+        $categories = ExpenseCategory::all();
+
         return [
             'expenses' => $expenses,
+            'from' => $from,
+            'to' => $to,
+            'reportType' => $reportType,
+            'categories' => $categories
         ];
     }
 
