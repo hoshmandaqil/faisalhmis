@@ -18,22 +18,45 @@
 @endsection
 
 @section('search_bar')
-    <div class="search-container">
-        <!-- Row start -->
+    <div class="search-container my-4">
         <div class="row justify-content-center">
-            <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12">
-                <div class="search-box">
-                    <form action="{{ route('expenses.search') }}" method="GET">
-                        <input type="text" name="searchTerm" class="search-query" value="{{ request('searchTerm') }}"
-                            placeholder="Search Expense ...">
-                        <button type="submit" style="background:none; border:none;">
-                            <i class="icon-search1"></i>
-                        </button>
-                    </form>
-                </div>
+            <!-- Search Bar Section -->
+            <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12 mb-3">
+                <form action="{{ route('expenses.search') }}" method="GET">
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" class="form-control" value="{{ request('searchTerm') }}"
+                            placeholder="Search Expense...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="icon-search1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Category Filter Section -->
+            <div class="col-xl-3 col-lg-4 col-md-5 col-sm-6 col-12 mb-3">
+                <form action="{{ route('expenses.search') }}" method="GET">
+                    <div class="input-group">
+                        <select class="form-control" name="category" id="category" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}"
+                                    {{ request('category') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="input-group-append">
+                            <button class="btn btn-secondary" type="submit">
+                                <i class="icon-filter mr-2"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
-        <!-- Row end -->
     </div>
 @endsection
 @section('content')
@@ -65,6 +88,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $totalAmount = 0;
+                        @endphp
                         @foreach ($expenses as $expense)
                             <tr>
                                 <td>{{ ($expenses->currentpage() - 1) * $expenses->perpage() + $loop->index + 1 }}</td>
@@ -119,11 +145,20 @@
                                         </div>
                                     </div>
                                 </td>
-
                             </tr>
+                            @php
+                                $totalAmount += $expense->sum_paid;
+                            @endphp
                         @endforeach
 
                     </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <td colspan="7" class="text-right"><strong>Total Amount:</strong></td>
+                            <td><strong>{{ number_format($totalAmount, 2) }} AF</strong></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
                 </table>
                 {{ $expenses->links() }}
             </div>
@@ -198,8 +233,8 @@
                                         <label>Date
                                             *
                                         </label>
-                                        <input class="form-control" type="date" name="date"  value="{{ date('Y-m-d') }}"
-                                            required>
+                                        <input class="form-control" type="date" name="date"
+                                            value="{{ date('Y-m-d') }}" required>
                                     </div>
                                 </div>
 
