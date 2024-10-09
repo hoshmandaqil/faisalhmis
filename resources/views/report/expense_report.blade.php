@@ -4,6 +4,13 @@
     Expenses Report
 @endsection
 
+
+@section('page-action')
+    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal" type="button">
+        Create Report
+    </button>
+@endsection
+
 @section('search_bar')
     <div class="search-container my-4">
         <div class="row justify-content-center">
@@ -116,6 +123,50 @@
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Date Wise Expense Report</h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="medicineForm" action="{{ url()->current() }}" method="GET" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label class="label">From:</label>
+                            <input class="form-control" name="from" type="date"
+                                value="{{ $from != null ? $from : date('Y-m-d') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">To:</label>
+                            <input class="form-control" name="to" type="date"
+                                value="{{ $to != null ? $to : date('Y-m-d') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Report Type:</label>
+                            <select class="form-control" name="report_type">
+                                <option value="0"></option>
+                                <option value="income" {{ request('report_type') == 'income' ? 'selected' : '' }}>
+                                    Other Income Only</option>
+                                <option value="expense" {{ request('report_type') == 'expense' ? 'selected' : '' }}>
+                                    Expense Only</option>
+                            </select>
+                        </div>
+                        <div class="submit-section">
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+
+                            <button class="btn btn-primary submit-btn" type="submit">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
