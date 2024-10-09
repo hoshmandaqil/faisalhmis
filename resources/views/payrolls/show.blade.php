@@ -122,8 +122,13 @@
                     <th style="vertical-align: middle">Totals</th>
                     <th><strong class="mb-2 d-inline-block">Gross Salary:</strong><br>
                         <span
-                            id="total-salary">{{ number_format($payroll->items->sum(fn($item) => $item->employee->employeeCurrentSalary->salary_amount), 2) }}</span>
-                        AF
+                            id="total-salary">{{ number_format(
+                                $payroll->items->sum(function ($item) {
+                                    return $item->employee->employeeCurrentSalary->salary_amount;
+                                }),
+                                2,
+                            ) }}</span>
+
                     </th>
                     <th><strong class="mb-2 d-inline-block">Bonus:</strong><br><span
                             id="total-bonus">{{ number_format($payroll->items->sum('bonus'), 2) }}</span> AF</th>
