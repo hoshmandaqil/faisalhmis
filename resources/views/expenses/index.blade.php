@@ -616,9 +616,13 @@
                                 <table class="table table-sm table-rounded border gs-7 gy-3">
                                     <tr>
                                         <td class="mx-auto text-start w-25" rowspan="100%">
-                                            <img class="h-50px" src="" alt="Logo" />
-                                        </td>
+                                            <img src="{{ asset('assets/img/logo/logo.png') }}" alt="" style="height: 50px"
+                                            class="mb-4">
+                                       </td>
                                         <td class="text-center fw-bold">
+                                            <h4>Ministry of Health</h4>
+                                            <h6>Bayazid Rokhan Curative Hospital KBL</h6>
+                                            <h6>Finance Department</h6>
                                             <h6>Expense Voucher</h6>
                                         </td>
                                         <td class="text-end w-25">
