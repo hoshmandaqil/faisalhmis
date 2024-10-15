@@ -204,8 +204,8 @@
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Date <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="date" id="date" value="{{ date('Y-m-d') }}"
-                                            name="date" required>
+                                        <input class="form-control" type="date" id="date"
+                                            value="{{ date('Y-m-d') }}" name="date" required>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -398,8 +398,8 @@
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Date <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="text" id="edit_date"
-                                            name="date" required>
+                                        <input class="form-control" type="text" id="edit_date" name="date"
+                                            required>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -435,8 +435,26 @@
     <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content" id="printPayment">
+                <div class="modal-header d-none d-print-block">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="mr-auto">
+                            <img src="{{ asset('assets/img/logo/logo.png') }}" alt="" style="height: 50px"
+                                class="mb-4">
+                        </div>
+                        <div class="text-center mx-auto">
+                            <h5 class="modal-title">Ministry of Public Health</h5>
+                            <h5 class="modal-title">Bayazid Rokhan Curative Hospital</h5>
+                            <h5 class="modal-title">Finance Department</h5>
+                            <h5 class="modal-title">Purchase Order Voucher</h5>
+                        </div>
+                        <div class="ml-auto">
+                            <img src="{{ asset('assets/img/logo/mlogo.png') }}" alt="" style="height: 50px"
+                                class="mb-4">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-header d-print-none">
                     <h5 class="modal-title" id="viewModalLabel">View Purchase Order</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -445,8 +463,13 @@
                 <div class="modal-body">
                     <!-- PO details will be loaded here -->
                 </div>
+                <div class=" modal-footer d-print-none">
+                    <div class="d-flex justify-content-between m-4">
+                        <button type="button" class="btn btn-secondary mr-4" data-dismiss="modal">Close</button>
+                        <button onclick="printDiv('printPayment')" type="button" class="btn btn-primary">Print</button>
+                    </div>
+                </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -818,7 +841,7 @@
             $('#checked-by').text(po.checked_by || 'X');
             $('#checked-date').text(po.checked_date || 'X');
             $('#verified-by').text(po.verified_by || 'X');
-            $('#verified-date').text(po.verified_date || 'X');            
+            $('#verified-date').text(po.verified_date || 'X');
             $('#approved-by').text(po.approved_by || 'X');
             $('#approved-date').text(po.approved_date || 'X');
             $('#rejected-by').text(po.rejected_by || 'X');
