@@ -1,5 +1,5 @@
 <div class="container">
-    <h2>Purchase Order Details</h2>
+    <h6>Purchase Order Details</h6>
     <div class="row">
         <div class="col-md-6">
             <p><strong>PO Number:</strong> {{ $po->id }}</p>
@@ -14,7 +14,7 @@
             </div>
         </div>
     </div>
-    <h3>Items</h3>
+    <h6>Items</h6>
     <table class="table table-bordered">
         <thead>
             <tr>
