@@ -148,16 +148,20 @@
                         Payrolls
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="payrollsDropdown">
-                        <li class="nav-item">
-                            <a class="dropdown-item" href="{{ route('payrolls.index') }}">
-                                Payrolls
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="dropdown-item" href="{{ route('payroll_payments.index') }}">
-                                Payroll Payments
-                            </a>
-                        </li>
+                        @if (in_array('payroll_view', $user_permissions))
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="{{ route('payrolls.index') }}">
+                                    Payrolls
+                                </a>
+                            </li>
+                        @endif
+                        @if (in_array('payroll_payment', $user_permissions))
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="{{ route('payroll_payments.index') }}">
+                                    Payroll Payments
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
             @endif
