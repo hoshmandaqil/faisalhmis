@@ -425,11 +425,11 @@
                                         General Report
                                     </a>
                                 </li>
-                                <li>
+                                {{-- <li>
                                     <a class="dropdown-item" href="{{ url('new_general_profits_report') }}">
                                         Optimized General Report
                                     </a>
-                                </li>
+                                </li> --}}
                                 <li>
                                     <a class="dropdown-item" href="{{ url('cumulative_report') }}">
                                         Cumulative Report
