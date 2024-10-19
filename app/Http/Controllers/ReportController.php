@@ -1383,7 +1383,7 @@ class ReportController extends Controller
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))')) +
             MiscellaneousIncome::whereNull('deleted_At')->sum('amount');
         
-        $totalIncomeAllTime +=3000;
+        // $totalIncomeAllTime +=3000;
         
         $totalExpensesAllTime = ExpenseItem::whereHas('slip', function ($q) {
             $q->whereNull('deleted_at');
