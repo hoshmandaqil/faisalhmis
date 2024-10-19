@@ -187,11 +187,13 @@
                             Expenses
                         </a>
                     @endif
+                    @if (in_array('other_income_view', $user_permissions))
                     <li class="nav-item">
                         <a class="dropdown-item" href="{{ route('incomes.index') }}">
                             Miscellaneous Income
                         </a>
                     </li>
+                    @endif
                 </ul>
             </li>
 
