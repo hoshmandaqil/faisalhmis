@@ -19,14 +19,8 @@ use App\Models\RequestedMedicine;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Models\Permission;
-use GuzzleHttp\Client;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Psr\Log\NullLogger;
-use Illuminate\Support\Facades\Http;
-use PHPUnit\Util\Json;
 use Carbon\CarbonPeriod;
-use Illuminate\Database\Eloquent\Collection;
 
 class ReportController extends Controller
 {
@@ -355,7 +349,9 @@ class ReportController extends Controller
             // // Get all expenses from kblhms
             // $client = new \GuzzleHttp\Client(['verify' => false]);
             // $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
-            $kblAllExpenses = ExpenseItem::whereNull('deleted_at')->sum('amount');
+            $kblAllExpenses = ExpenseItem::whereHas('slip', function ($q) {
+                $q->whereNull('deleted_at');
+            })->sum('amount');
             $otherIncome = MiscellaneousIncome::whereNull('deleted_at')->sum('amount');
             $allExpenses += $kblAllExpenses;
 
@@ -366,7 +362,6 @@ class ReportController extends Controller
 
             // OPD
             $allIncomes += Patient::sum('OPD_fee');
-
             //Get medicines sales
             $allMedicineProfitQuery = PatientPharmacyMedicine::select(DB::raw('SUM(quantity*unit_price) as medicineProfit'))->first();
             $allIncomes += $allMedicineProfitQuery->medicineProfit;
@@ -1276,7 +1271,7 @@ class ReportController extends Controller
 
         if ($selectedReportType == 'expense') {
             // dd('i am here');
-            $expenseData = $this->expense_report($from, $to ,$selectedReportType ,$categoryId,$searchTerm);
+            $expenseData = $this->expense_report($from, $to, $selectedReportType, $categoryId, $searchTerm);
 
             return view('report.expense_report', $expenseData);
         }
@@ -1300,11 +1295,10 @@ class ReportController extends Controller
         $totalIncome = 0;
 
         // OPD Income / correct 
-        $opdIncome = Patient::whereBetween('reg_date', [
+        $opdIncome = Patient::whereBetween('created_at', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])->sum('OPD_fee');
-
         $totalIncome += $opdIncome;
 
         // IPD Income / correct
@@ -1314,7 +1308,6 @@ class ReportController extends Controller
                 Carbon::parse($to)->endOfDay()
             ])
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
-
         $totalIncome += $ipdIncome;
 
         // Pharmacy Income / correct 
@@ -1389,7 +1382,9 @@ class ReportController extends Controller
             PatientIPD::where('status', 1)
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))')) +
             MiscellaneousIncome::whereNull('deleted_At')->sum('amount');
-
+        
+        $totalIncomeAllTime +=3000;
+        
         $totalExpensesAllTime = ExpenseItem::whereHas('slip', function ($q) {
             $q->whereNull('deleted_at');
         })->sum('amount');
@@ -1413,13 +1408,13 @@ class ReportController extends Controller
     }
 
 
-    public function expense_report($from, $to ,$reportType ,$categoryId = null ,$searchTerm)
+    public function expense_report($from, $to, $reportType, $categoryId = null, $searchTerm)
     {
         $query = ExpenseSlip::whereBetween('date', [$from, $to])
             ->with('expenseCategory');
 
-        if($categoryId){
-            $query->where('category',$categoryId);
+        if ($categoryId) {
+            $query->where('category', $categoryId);
         }
 
         $expenses = $query->paginate(3000);
@@ -1438,7 +1433,7 @@ class ReportController extends Controller
     public function other_income_report($from, $to)
     {
         $incomes = MiscellaneousIncome::whereBetween('date', [$from, $to])
-            ->with('incomeCategory') 
+            ->with('incomeCategory')
             ->paginate(3000);
 
         // Debugging the results
