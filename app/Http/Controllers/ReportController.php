@@ -1417,7 +1417,7 @@ class ReportController extends Controller
             $query->where('category', $categoryId);
         }
 
-        $expenses = $query->paginate(3000);
+        $expenses = $query->orderByDesc('id')->paginate(3000);
 
         $categories = ExpenseCategory::all();
 
@@ -1434,6 +1434,7 @@ class ReportController extends Controller
     {
         $incomes = MiscellaneousIncome::whereBetween('date', [$from, $to])
             ->with('incomeCategory')
+            ->orderByDesc('id')
             ->paginate(3000);
 
         // Debugging the results
