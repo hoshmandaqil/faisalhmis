@@ -77,6 +77,7 @@
                         <tr>
                             <th>No.</th>
                             <th>Slip No.</th>
+                            <th>PO No.</th>
                             <th>Paid By</th>
                             <th>Paid To</th>
                             <th>Expense Date</th>
@@ -95,6 +96,7 @@
                             <tr>
                                 <td>{{ ($expenses->currentpage() - 1) * $expenses->perpage() + $loop->index + 1 }}</td>
                                 <td>{{ $expense->slip_no }}</td>
+                                <td>{{ $expense->po_id }}</td>
                                 <td>{{ $expense->paid_by }}</td>
                                 <td>{{ $expense->paid_to }}</td>
                                 <td>{{ $expense->date }}</td>
