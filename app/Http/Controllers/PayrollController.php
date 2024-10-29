@@ -9,6 +9,7 @@ use App\Models\LabDepartment;
 use App\Models\MainLabDepartment;
 use App\Models\Patient;
 use App\Models\PayrollItem;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +18,7 @@ class PayrollController extends Controller
     public function index()
     {
         $payrolls = Payroll::with('items')->get();
-        
+
         return view('payrolls.index', compact('payrolls'));
     }
 
@@ -30,7 +31,7 @@ class PayrollController extends Controller
         $allEmployees = Employee::with(['user.patients.laboratoryTests' => function ($query) use ($start_date, $end_date) {
             $query->whereBetween('created_at', [$start_date, $end_date]);
         }])->get();
-        
+
         $mainLabDepartments = MainLabDepartment::all();
 
         // Transform the data to include all employee fields and related laboratory tests
@@ -46,34 +47,34 @@ class PayrollController extends Controller
                 $patients = Patient::with(['ipds' => function ($query) use ($start_date, $end_date) {
                     $query->where(function ($q) use ($start_date, $end_date) {
                         $q->whereBetween('created_at', [$start_date, $end_date])
-                          ->orWhere(function ($q) use ($start_date, $end_date) {
-                              $q->where('created_at', '<', $start_date)
-                                ->where(function ($q) use ($end_date) {
-                                    $q->whereNull('discharge_date')
-                                      ->orWhere('discharge_date', '>', $end_date);
-                                });
-                          });
+                            ->orWhere(function ($q) use ($start_date, $end_date) {
+                                $q->where('created_at', '<', $start_date)
+                                    ->where(function ($q) use ($end_date) {
+                                        $q->whereNull('discharge_date')
+                                            ->orWhere('discharge_date', '>', $end_date);
+                                    });
+                            });
                     });
                 }])
-                ->where('doctor_id', $employee->user->id)
-                ->where(function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('reg_date', [$start_date, $end_date])
-                          ->orWhereHas('ipds', function ($q) use ($start_date, $end_date) {
-                              $q->where('created_at', '<', $start_date)
-                                ->where(function ($q) use ($end_date) {
-                                    $q->whereNull('discharge_date')
-                                      ->orWhere('discharge_date', '>', $end_date);
-                                });
-                          });
-                })
-                ->get();
+                    ->where('doctor_id', $employee->user->id)
+                    ->where(function ($query) use ($start_date, $end_date) {
+                        $query->whereBetween('reg_date', [$start_date, $end_date])
+                            ->orWhereHas('ipds', function ($q) use ($start_date, $end_date) {
+                                $q->where('created_at', '<', $start_date)
+                                    ->where(function ($q) use ($end_date) {
+                                        $q->whereNull('discharge_date')
+                                            ->orWhere('discharge_date', '>', $end_date);
+                                    });
+                            });
+                    })
+                    ->get();
             }
 
             $employeeMainLabDepartments = EmployeeMainLabDepartment::where('employee_id', $employee->id)->get();
 
             $mainLabDepartmentSummary = $mainLabDepartments->map(function ($mainLabDepartment) use ($labTests, $employeeMainLabDepartments) {
                 $mainLabDepartmentDetails = $employeeMainLabDepartments->where('main_lab_department_id', $mainLabDepartment->id)->first();
-                
+
                 // Skip if employee has zero percentage for this department
                 if (!$mainLabDepartmentDetails || $mainLabDepartmentDetails->percentage == 0) {
                     return null;
@@ -106,6 +107,8 @@ class PayrollController extends Controller
             $total_ipd_price = $patients->flatMap->ipds->sum(function ($ipd) use ($start_date, $end_date) {
                 $ipd_start = max($ipd->created_at, $start_date);
                 $ipd_end = $ipd->discharge_date ? min($ipd->discharge_date, $end_date) : $end_date;
+                $ipd_start = Carbon::parse($ipd_start);
+                $ipd_end = Carbon::parse($ipd_end);
                 $days = max(1, $ipd_start->diffInDays($ipd_end) + 1);
                 return $ipd->price * $days;
             });
@@ -211,7 +214,7 @@ class PayrollController extends Controller
     public function edit($id)
     {
         $payroll = Payroll::with('items.employee')->findOrFail($id);
-        
+
         // Decode additional_payments for each payroll item
         foreach ($payroll->items as $item) {
             $item->additional_payments = json_decode($item->additional_payments, true);
@@ -287,7 +290,7 @@ class PayrollController extends Controller
         ]);
 
         $payroll = Payroll::findOrFail($request->payroll_id);
-        
+
         // Check user permissions here if needed
 
         switch ($request->status) {
