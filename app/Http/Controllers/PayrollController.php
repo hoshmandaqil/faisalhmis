@@ -30,7 +30,9 @@ class PayrollController extends Controller
         // Get all employees
         $allEmployees = Employee::with(['user.patients.laboratoryTests' => function ($query) use ($start_date, $end_date) {
             $query->whereBetween('created_at', [$start_date, $end_date]);
-        }])->get();
+        }])
+        ->where('status',1)
+        ->get();
 
         $mainLabDepartments = MainLabDepartment::all();
 
