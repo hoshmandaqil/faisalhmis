@@ -44,8 +44,8 @@
                         $totalTax = $itemsTax + $additionalPaymentsTax;
                     @endphp
                     <td><strong>{{ number_format($totalTax, 2) }}</strong></td>
-                    <td>{{number_format($payroll->payments->sum('amount'))}} AF</td>
-                    <td>{{number_format($payroll->total_amount - $payroll->payments->sum('amount') - $totalTax)}} AF</td>
+                    <td><strong>{{number_format($payroll->payments->sum('amount'))}} AF</strong></td>
+                    <td><strong>{{number_format($payroll->total_amount - $payroll->payments->sum('amount') - $totalTax)}} AF </strong></td>
                     <td>
                         <span
                             class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
