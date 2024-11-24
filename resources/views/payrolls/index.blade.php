@@ -28,7 +28,21 @@
                     <td>{{ date('m/Y', strtotime($payroll->end_date)) }}</td>
                     <td>{{ $payroll->official_days }}</td>
                     <td><strong>{{ number_format($payroll->total_amount) }}</strong></td>
-                    <td><strong>{{ number_format($payroll->items->sum('tax')) }}</strong></td>
+                    @php
+                        // Initialize total tax
+                        $itemsTax = $payroll->items->sum('tax');
+                        $additionalPaymentsTax = 0;
+
+                        // Iterate through items and decode additional_payments
+                        foreach ($payroll->items as $item) {
+                                $additionalPayments = json_decode($item->additional_payments, true) ?? [];
+
+                                $additionalPaymentsTax += collect($additionalPayments)->sum('tax');
+                        }
+                        $totalTax = $itemsTax + $additionalPaymentsTax;
+                    @endphp
+
+                    <td><strong>{{ number_format($totalTax, 2) }}</strong></td>
                     <td>
                         <span
                             class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
