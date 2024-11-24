@@ -17,7 +17,7 @@ class PayrollController extends Controller
 {
     public function index()
     {
-        $payrolls = Payroll::with('items')->get();
+        $payrolls = Payroll::with('items')->orderByDesc('id')->get();
 
         return view('payrolls.index', compact('payrolls'));
     }
