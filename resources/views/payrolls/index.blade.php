@@ -17,6 +17,8 @@
                 <th>Official Days</th>
                 <th>Total(Salary + %age)</th>
                 <th>Tax</th>
+                <th>Paid</th>
+                <th>Balance</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -35,14 +37,15 @@
 
                         // Iterate through items and decode additional_payments
                         foreach ($payroll->items as $item) {
-                                $additionalPayments = json_decode($item->additional_payments, true) ?? [];
+                            $additionalPayments = json_decode($item->additional_payments, true) ?? [];
 
-                                $additionalPaymentsTax += collect($additionalPayments)->sum('tax');
+                            $additionalPaymentsTax += collect($additionalPayments)->sum('tax');
                         }
                         $totalTax = $itemsTax + $additionalPaymentsTax;
                     @endphp
-
                     <td><strong>{{ number_format($totalTax, 2) }}</strong></td>
+                    <td>{{number_format($payroll->payments->sum('amount'))}} AF</td>
+                    <td>{{number_format($payroll->total_amount - $payroll->payments->sum('amount') - $totalTax)}} AF</td>
                     <td>
                         <span
                             class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
