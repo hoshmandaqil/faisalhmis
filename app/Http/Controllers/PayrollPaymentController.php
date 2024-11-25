@@ -15,7 +15,7 @@ class PayrollPaymentController extends Controller
     {
         $payrollPayments = PayrollPayment::with('employee')
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate(20);
 
         $employees = Employee::all();
 
