@@ -36,7 +36,7 @@
                     <th>Tax</th>
                     {{-- <th class="text-nowrap">Gross Salary</th> --}}
                     <th class="text-nowrap">Net Salary Payable</th>
-                    <th class="text-nowrap">Grand Total</th>
+                    {{-- <th class="text-nowrap">Grand Total</th> --}}
                 </tr>
             </thead>
             <tbody>
@@ -111,16 +111,10 @@
                             </table>
                         </td>
                         <td>
-                            @php
-                                $additionalTax = is_array($additionalPayments)
-                                    ? collect($additionalPayments)->sum('tax')
-                                    : 0;
-                                $totalTax = $item->tax + $additionalTax;
-                            @endphp
-                            {{ number_format($totalTax, 2) }} AF
+                            {{ number_format($payroll->items->sum('tax'), 2) }} AF
                         </td>
                         <td>{{ number_format($item->net_salary, 2) }} AF</td>
-                        <td>{{ number_format($item->grand_total, 2) }} AF</td>
+                        {{-- <td>{{ number_format($item->grand_total, 2) }} AF</td> --}}
                     </tr>
                 @endforeach
             </tbody>
@@ -141,36 +135,17 @@
                             id="total-bonus">{{ number_format($payroll->items->sum('bonus'), 2) }}</span> AF</th>
                     <th></th>
                     <th></th>
-                    @php
-                        // Calculate the main items tax
-                        $itemsTax = $payroll->items->sum('tax');
-                        $additionalPaymentsTax = 0;
-
-                        // Iterate through items and decode additional_payments
-                        foreach ($payroll->items as $item) {
-                            if (!empty($item->additional_payments)) {
-                                $additionalPayments = json_decode($item->additional_payments, true) ?? [];
-
-                                // Sum the tax values in additional_payments
-                                $additionalPaymentsTax += collect($additionalPayments)->sum('tax');
-                            }
-                        }
-
-                        // Calculate the total tax
-                        $totalTax = $itemsTax + $additionalPaymentsTax;
-                    @endphp
-
                     <th>
                         <strong class="mb-2 d-inline-block">Tax:</strong><br>
-                        <span id="total-tax">{{ number_format($totalTax, 2) }}</span> AF
+                        <span id="total-tax">{{ number_format($payroll->items->sum('tax'), 2) }}</span> AF
                     </th>
 
                     {{-- <th><strong class="mb-2 d-inline-block">Gross Salary:</strong><br><span id="total-gross-salary">{{ number_format($payroll->items->sum('gross_salary'), 2) }}</span> AF</th> --}}
                     <th><strong class="mb-2 d-inline-block">Payable:</strong><br><span
                             id="total-payable">{{ number_format($payroll->items->sum('net_salary'), 2) }}</span> AF</th>
-                    <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
+                    {{-- <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
                             id="total-grand-total">{{ number_format($payroll->items->sum('grand_total'), 2) }}</span> AF
-                    </th>
+                    </th> --}}
                 </tr>
             </tfoot>
         </table>
