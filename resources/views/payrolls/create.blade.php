@@ -51,7 +51,7 @@
                         <th>Tax</th>
                         <th class="text-nowrap">Gross Salary</th>
                         <th class="text-nowrap">Net Salary Payable</th>
-                        <th class="text-nowrap">Grand Total</th>
+                        {{-- <th class="text-nowrap">Grand Total</th> --}}
                     </tr>
                 </thead>
                 <tbody>
@@ -101,11 +101,11 @@
                                                 <strong>{{ $employee->lab_tests_summary->sum('total_price') }} AF</strong>
                                             </td>
                                             <td class="pb-2 pt-2 text-nowrap">
-                                                <strong>{{ $employee->lab_tests_summary->sum('payable') }}
+                                                <strong><span id="tests-gross">{{ $employee->lab_tests_summary->sum('payable') }}</span>
                                                     AF</strong>
                                             </td>
                                             <td class="pb-2 pt-2 text-nowrap">
-                                                <strong>{{ $employee->lab_tests_summary->sum('tax') }}
+                                                <strong id="tests-tax">{{ $employee->lab_tests_summary->sum('tax') }}
                                                     AF</strong>
                                             </td>
                                             <td class="pb-2 pt-2 text-nowrap">
@@ -134,10 +134,10 @@
                                 <input type="number" name="employees[{{ $employee->id }}][net_payable]"
                                     class="form-control net-payable" readonly>
                             </td>
-                            <td>
+                            {{-- <td>
                                 <input type="number" name="employees[{{ $employee->id }}][grand_total]"
                                     class="form-control grand-total" readonly>
-                            </td>
+                            </td> --}}
                         </tr>
                     @endforeach
                 </tbody>
@@ -153,8 +153,8 @@
                         <th><strong class="mb-2 d-inline-block">Gross Salary:</strong><br><span id="total-gross-salary">0</span> AF</th>
                         <th><strong class="mb-2 d-inline-block">Payable:</strong><br><span id="total-payable">0</span> AF
                         </th>
-                        <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
-                                id="total-grand-total">0</span> AF</th>
+                        {{-- <th><strong class="mb-2 d-inline-block">Grand Total:</strong><br><span
+                                id="total-grand-total">0</span> AF</th> --}}
                     </tr>
                 </tfoot>
             </table>
@@ -195,23 +195,26 @@
                 const presentDays = parseFloat($(this).find('input.present-days').val()) || 0;
                 const bonus = parseFloat($(this).find('input.bonus').val()) || 0;
                 const testsNetPayable = parseFloat($(this).find('input.tests-net-payable').val()) || 0;
+                const testsTax = parseFloat($(this).find('#tests-tax').text()) || 0;
+                const testsGross = parseFloat($(this).find('#tests-gross').text()) || 0;
 
                 const adjustedSalary = (baseSalary / officialDays) * presentDays;
-                const grossSalary = adjustedSalary + bonus;
-                const tax = calculateTax(grossSalary - bonus);
-                const netPayable = grossSalary - tax;
-                const grandTotal = netPayable + testsNetPayable;
+                let grossSalary = adjustedSalary + bonus;
+                const tax = calculateTax(grossSalary - bonus) + testsTax;
+                grossSalary += testsGross
+                const netPayable = (grossSalary - tax);
+                // const grandTotal = netPayable + testsNetPayable;
 
                 $(this).find('input.tax').val(tax.toFixed(2));
                 $(this).find('input.gross-salary').val(grossSalary.toFixed(2));
                 $(this).find('input.net-payable').val(netPayable.toFixed(2));
-                $(this).find('input.grand-total').val(grandTotal.toFixed(2));
+                // $(this).find('input.grand-total').val(grandTotal.toFixed(2));
 
                 totalSalary += adjustedSalary;
-                totalTax += tax;
+                totalTax += tax ;
                 totalBonus += bonus;
                 totalPayable += netPayable;
-                totalGrandTotal += grandTotal;
+                // totalGrandTotal += grandTotal;
                 totalGrossSalary += grossSalary;
             });
 
@@ -219,7 +222,7 @@
             $('#total-tax').text(formatNumber(totalTax));
             $('#total-bonus').text(formatNumber(totalBonus));
             $('#total-payable').text(formatNumber(totalPayable));
-            $('#total-grand-total').text(formatNumber(totalGrandTotal));
+            // $('#total-grand-total').text(formatNumber(totalGrandTotal));
             $('#total-gross-salary').text(formatNumber(totalGrossSalary - totalBonus));
         }
 
