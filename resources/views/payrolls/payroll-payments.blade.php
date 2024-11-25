@@ -91,6 +91,8 @@
                 @endforeach
             </tbody>
         </table>
+        <div>
+            {{ $payrollPayments->links() }} </div>
     </div>
 
     <!-- Add Payment Modal -->
