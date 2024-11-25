@@ -91,7 +91,7 @@ class PayrollPaymentController extends Controller
 
         $payrollItems = PayrollItem::where('payroll_id', $payment->payroll_id)
             ->where('employee_id', $payment->employee_id)
-            ->select('gross_salary','net_salary','grand_total','bonus','tax','present_days','additional_payments')
+            ->select('gross_salary','net_salary','net_salary','bonus','tax','present_days','additional_payments')
             ->first();
             
         if ($payment) {
@@ -164,7 +164,7 @@ class PayrollPaymentController extends Controller
             ->sum('amount');
 
         // Calculate the remaining balance
-        $balance = $payrollItem->grand_total - $totalPaid;
+        $balance = $payrollItem->net_salary - $totalPaid;
 
         return response()->json([
             'payroll_date' => $payroll->end_date,
