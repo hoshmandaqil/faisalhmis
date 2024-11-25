@@ -31,7 +31,7 @@
                 @foreach ($payrollPayments as $payment)
                     <tr class="text-center">
                         <td>{{ $payment->slip_no }}</td>
-                        <td>{{ $payment->payroll ? \Carbon\Carbon::parse($payment->payroll->payroll_date)->format('m/Y') : 'N/A' }}
+                        <td>{{ $payment->payroll ? \Carbon\Carbon::parse($payment->payment_date)->format('m/Y') : 'N/A' }}
                         </td>
                         <td>{{ $payment->employee->first_name }} {{ $payment->employee->last_name }}</td>
                         <td>{{ $payment->employee->position ?? 'Unknown' }}</td>
