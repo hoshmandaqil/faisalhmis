@@ -111,7 +111,7 @@
                             </table>
                         </td>
                         <td>
-                            {{ number_format($payroll->items->sum('tax'), 2) }} AF
+                            {{ number_format($item->tax, 2) }} AF
                         </td>
                         <td>{{ number_format($item->net_salary, 2) }} AF</td>
                         {{-- <td>{{ number_format($item->grand_total, 2) }} AF</td> --}}
