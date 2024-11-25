@@ -170,7 +170,6 @@ class PayrollController extends Controller
             'employees.*.tax' => 'required|numeric',
             'employees.*.net_payable' => 'required|numeric',
             'employees.*.gross_salary' => 'required|numeric',
-            'employees.*.grand_total' => 'required|numeric',
         ]);
 
         $start_date = $request->input('start_date');
@@ -181,7 +180,7 @@ class PayrollController extends Controller
             $payroll = Payroll::create([
                 'start_date' => $start_date,
                 'end_date' => $end_date,
-                'total_amount' => array_sum(array_column($request->input('employees'), 'grand_total')),
+                'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
                 'official_days' => $request->input('official_days'),
                 'status' => 'pending', // or any initial status
                 'description' => $request->input('description'),
@@ -198,8 +197,7 @@ class PayrollController extends Controller
                     'additional_payments' => $employeeData['additional_payments'],
                     'gross_salary' => $employeeData['gross_salary'],
                     'net_salary' => $employeeData['net_payable'],
-                    'amount' => $employeeData['grand_total'],
-                    'grand_total' => $employeeData['grand_total'],
+                    'amount' => $employeeData['net_payable'],
                 ]);
             }
         });
@@ -239,7 +237,7 @@ class PayrollController extends Controller
             'employees.*.tax' => 'required|numeric',
             'employees.*.net_payable' => 'required|numeric',
             'employees.*.gross_salary' => 'required|numeric',
-            'employees.*.grand_total' => 'required|numeric',
+            // 'employees.*.grand_total' => 'required|numeric',
         ]);
 
         $start_date = $request->input('start_date');
@@ -251,7 +249,7 @@ class PayrollController extends Controller
             $payroll->update([
                 'start_date' => $start_date,
                 'end_date' => $end_date,
-                'total_amount' => array_sum(array_column($request->input('employees'), 'grand_total')),
+                'total_amount' => array_sum(array_column($request->input('employees'), 'net_payable')),
                 'official_days' => $request->input('official_days'),
                 'description' => $request->input('description'),
             ]);
@@ -269,8 +267,8 @@ class PayrollController extends Controller
                     'additional_payments' => $employeeData['additional_payments'],
                     'gross_salary' => $employeeData['gross_salary'],
                     'net_salary' => $employeeData['net_payable'],
-                    'amount' => $employeeData['grand_total'],
-                    'grand_total' => $employeeData['grand_total'],
+                    'amount' => $employeeData['net_payable'],
+                    // 'grand_total' => $employeeData['grand_total'],
                 ]);
             }
         });
