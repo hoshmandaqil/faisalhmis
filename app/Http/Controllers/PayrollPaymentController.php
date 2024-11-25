@@ -96,7 +96,7 @@ class PayrollPaymentController extends Controller
             
         if ($payment) {
             // Format the payroll date
-            $payment->payroll_date = $payment->payroll ? \Carbon\Carbon::parse($payment->payroll->payroll_date)->format('m/Y') : 'N/A';
+            $payment->payroll_date = $payment->payroll ? \Carbon\Carbon::parse($payment->payment_date)->format('m/Y') : 'N/A';
 
             return response()->json([
                 'success' => true,
