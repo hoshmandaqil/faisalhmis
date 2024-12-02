@@ -199,6 +199,11 @@ class PatientController extends Controller
 
         $medicine_dosage = DB::table('medicine_dosages')->get();
 
+        $doctors = User::where('type', 3)
+            ->where('status', 1)
+            ->latest()
+            ->get();
+
         return view(
             'patient.my_patients',
             compact(
@@ -209,7 +214,8 @@ class PatientController extends Controller
                 'rooms',
                 'beds',
                 'mainLabDepartments',
-                'medicine_dosage'
+                'medicine_dosage',
+                'doctors'
             )
         );
     }
@@ -241,6 +247,8 @@ class PatientController extends Controller
             })->lazy();
 
         $medicine_dosage = DB::table('medicine_dosages')->get();
+
+        
 
         return view(
             'patient.my_patients_medicines',
