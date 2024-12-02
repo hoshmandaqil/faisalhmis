@@ -6,8 +6,7 @@
 
 @section('styles')
     <!-- Bootstrap Select CSS -->
-    <link href="{{ asset('assets/vendor/bs-select/bs-select.css') }}"
-        rel="stylesheet" />
+    <link href="{{ asset('assets/vendor/bs-select/bs-select.css') }}" rel="stylesheet" />
     <style>
         .modal-body input,
         .modal-body select {
@@ -16,6 +15,11 @@
 
         .modal-body div.form-group {
             margin-top: -10px !important;
+        }
+
+        .readonly-dropdown {
+            pointer-events: none;
+            background-color: #e9ecef;
         }
     </style>
 @endsection
@@ -27,17 +31,12 @@
             <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12">
 
                 <div class="search-box">
-                    <form action="{{ url('search_my_patient') }}"
-                        method="post">
+                    <form action="{{ url('search_my_patient') }}" method="post">
                         @csrf
-                        <input class="search-query"
-                            name="search_patient"
-                            type="text"
+                        <input class="search-query" name="search_patient" type="text"
                             value="{{ Request::is('search_my_patient') ? $patientSearchDetail : '' }}"
-                            placeholder="Search Patient By Id, Name or Phone..."
-                            required>
-                        <i class="icon-search1"
-                            onclick="$(this).closest('form').submit();"></i>
+                            placeholder="Search Patient By Id, Name or Phone..." required>
+                        <i class="icon-search1" onclick="$(this).closest('form').submit();"></i>
                     </form>
                 </div>
 
@@ -48,9 +47,7 @@
 @endsection
 @section('page-action')
     @if (\Request::is('search_my_patient'))
-        <a class="btn btn-danger btn-sm"
-            type="button"
-            href="{{ route('my_patients') }}">
+        <a class="btn btn-danger btn-sm" type="button" href="{{ route('my_patients') }}">
             Clear Search
         </a>
     @endif
@@ -60,8 +57,7 @@
     <!-- Row start -->
     @if (session()->has('alert'))
         <div class="row gutters">
-            <div class="alert {{ session()->get('alert-type') }}"
-                role="alert">
+            <div class="alert {{ session()->get('alert-type') }}" role="alert">
                 {{ session()->get('alert') }}
             </div>
         </div>
@@ -69,8 +65,7 @@
     <div class="row gutters">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="table-responsive">
-                <table class="table"
-                    id="scrollVertical">
+                <table class="table" id="scrollVertical">
                     <thead>
                         <tr>
                             <th>S.NO</th>
@@ -83,6 +78,7 @@
                             <th>Register By</th>
                             <th>Doctor</th>
                             <th>Blood Group</th>
+                            <th>Diagnose</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -99,30 +95,25 @@
                                 <td>{{ $patient->created_by != null ? $patient->createdBy->name : 'Not Added' }}</td>
                                 <td>{{ $patient->doctor_id != null ? $patient->doctor->name : 'Not Added' }}</td>
                                 <td>{{ $patient->blood_group }}</td>
+                                <td>{{ $patient->medical_history ?? 'Not Added' }}</td>
                                 <td>
                                     @if (!$patient->medicines->isEmpty() && in_array('doctor_edit_sale_medicine', $user_permissions))
-                                        <button class="btn btn-sm btn-dark"
-                                            data-patient-id="{{ $patient->id }}"
-                                            data-toggle="modal"
-                                            data-target="#editPatientMedicine"
+                                        <button class="btn btn-sm btn-dark" data-patient-id="{{ $patient->id }}"
+                                            data-toggle="modal" data-target="#editPatientMedicine"
                                             data-patient-name="{{ $patient->patient_name }}"
                                             onclick="editMedicine({{ $patient->id }})">View Medicine
                                         </button>
                                     @else
                                         @if (in_array('doctor_sale_medicine', $user_permissions))
-                                            <button class="btn btn-sm btn-success"
-                                                data-toggle="modal"
-                                                data-target="#exampleModal"
-                                                data-patient-id="{{ $patient->id }}"
+                                            <button class="btn btn-sm btn-success" data-toggle="modal"
+                                                data-target="#exampleModal" data-patient-id="{{ $patient->id }}"
                                                 data-patient-name="{{ $patient->patient_name }}">Set Medicine
                                             </button>
                                         @endif
                                     @endif
 
                                     @if ($patient->ipd != null)
-                                        <button class="btn btn-sm btn-gplus"
-                                            data-toggle="modal"
-                                            data-target="#editIPDModal"
+                                        <button class="btn btn-sm btn-gplus" data-toggle="modal" data-target="#editIPDModal"
                                             data-patient-id="{{ $patient->id }}"
                                             data-patient-name="{{ $patient->patient_name }}"
                                             data-floor="{{ $patient->ipd->floor->floor_name }}"
@@ -133,60 +124,67 @@
                                     @endif
 
                                     @if (in_array('doctor_sale_ipd', $user_permissions))
-                                        <button class="btn btn-sm btn-info"
-                                            data-toggle="modal"
-                                            data-target="#IPDModal"
+                                        <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#IPDModal"
                                             data-patient-id="{{ $patient->id }}"
                                             data-patient-name="{{ $patient->patient_name }}">Set IPD
                                         </button>
                                     @endif
 
                                     @if (!$patient->labs->isEmpty())
-                                        <button class="btn btn-sm btn-secondary"
-                                            data-patient-id="{{ $patient->id }}"
-                                            data-toggle="modal"
-                                            data-target="#editPatientLab"
+                                        <button class="btn btn-sm btn-secondary" data-patient-id="{{ $patient->id }}"
+                                            data-toggle="modal" data-target="#editPatientLab"
                                             data-patient-name="{{ $patient->patient_name }}"
                                             onclick="editLab({{ $patient->id }})">View Lab
                                         </button>
                                     @else
                                         @if (in_array('doctor_set_lab', $user_permissions))
-                                            <button class="btn btn-sm btn-warning"
-                                                data-toggle="modal"
-                                                data-target="#labModal"
-                                                data-patient-id="{{ $patient->id }}"
+                                            <button class="btn btn-sm btn-warning" data-toggle="modal"
+                                                data-target="#labModal" data-patient-id="{{ $patient->id }}"
                                                 data-patient-name="{{ $patient->patient_name }}"
                                                 data-no-discount="{{ $patient->no_discount }}">Set Lab
                                             </button>
                                         @endif
                                     @endif
 
-                                    <button class="btn btn-sm btn-light mt-1"
-                                        data-toggle="modal"
-                                        data-target="#vitalSignsModal"
-                                        data-patient-id="{{ $patient->id }}"
+                                    <button class="btn btn-sm btn-light mt-1" data-toggle="modal"
+                                        data-target="#vitalSignsModal" data-patient-id="{{ $patient->id }}"
                                         data-patient-name="{{ $patient->patient_name }}"
                                         data-blood-pressure="{{ $patient->blood_pressure }}"
                                         data-respiration="{{ $patient->respiration_rate }}"
-                                        data-pulse="{{ $patient->pulse_rate }}"
-                                        data-heart="{{ $patient->heart_rate }}"
+                                        data-pulse="{{ $patient->pulse_rate }}" data-heart="{{ $patient->heart_rate }}"
                                         data-temperature="{{ $patient->temperature }}"
-                                        data-weight="{{ $patient->weight }}"
-                                        data-height="{{ $patient->height }}"
+                                        data-weight="{{ $patient->weight }}" data-height="{{ $patient->height }}"
                                         data-mental-state="{{ $patient->mental_state }}"
                                         data-medical-history="{{ $patient->medical_history }}"
-                                        data-va-1="{{ $patient->va_1 }}"
-                                        data-va-2="{{ $patient->va_2 }}"
-                                        data-iop-1="{{ $patient->iop_1 }}"
-                                        data-iop-2="{{ $patient->iop_2 }}"
+                                        data-va-1="{{ $patient->va_1 }}" data-va-2="{{ $patient->va_2 }}"
+                                        data-iop-1="{{ $patient->iop_1 }}" data-iop-2="{{ $patient->iop_2 }}"
                                         data-chief-complaint="{{ $patient->chief_complaint }}"
                                         data-dx="{{ $patient->dx }}">Vital Signs</button>
+
+                                    <button class="btn btn-sm btn-light mt-1" data-toggle="modal"
+                                        data-target="#editPatientModal" data-id="{{ $patient->id }}"
+                                        data-generate-id="{{ $patient->patient_generated_id }}"
+                                        data-name="{{ $patient->patient_name }}"
+                                        data-fname="{{ $patient->patient_fname }}"
+                                        data-mobile="{{ $patient->patient_phone }}"
+                                        data-doctor="{{ $patient->doctor_id }}" data-gender="{{ $patient->gender }}"
+                                        data-blood="{{ $patient->blood_group }}" data-age="{{ $patient->age }}"
+                                        data-marital-status="{{ $patient->marital_status }}"
+                                        data-advance="{{ $patient->advance_pay }}"
+                                        data-blood-pressure="{{ $patient->blood_pressure }}"
+                                        data-respiration="{{ $patient->respiration_rate }}"
+                                        data-pulse="{{ $patient->pulse_rate }}" data-heart="{{ $patient->heart_rate }}"
+                                        data-temperature="{{ $patient->temperature }}"
+                                        data-weight="{{ $patient->weight }}" data-height="{{ $patient->height }}"
+                                        data-mental-state="{{ $patient->mental_state }}"
+                                        data-medical-history="{{ $patient->medical_history }}"
+                                        data-default-discount="{{ $patient->no_discount }}" href="#">
+                                        Diagnose</button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td class="text-center font-weight-bold"
-                                    colspan="100%">
+                                <td class="text-center font-weight-bold" colspan="100%">
                                     <h5>No Data Available</h5>
                                 </td>
                             </tr>
@@ -200,24 +198,14 @@
     </div>
 
     {{-- Sell Medicine Modal --}}
-    <div class="modal fade"
-        id="exampleModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog modal-lg"
-            role="document">
+    <div class="modal fade" id="exampleModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Add Medicine to Patient<span id="medicine_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Medicine to Patient<span
+                            id="medicine_patient_name"></span></h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -229,26 +217,17 @@
                         @endforeach
                     </datalist>
 
-                    <form id="medicineForm"
-                        action="{{ route('patient_medicine.store') }}"
-                        method="post"
+                    <form id="medicineForm" action="{{ route('patient_medicine.store') }}" method="post"
                         enctype="multipart/form-data">
                         {!! csrf_field() !!}
-                        <input id="medicine_patient_id"
-                            name="patient_id"
-                            type="hidden">
+                        <input id="medicine_patient_id" name="patient_id" type="hidden">
 
                         <div class="form-group">
                             <label>Select Medicine</label>
                             <div class="input-group">
-                                <select class="form-control selectpicker medicineItems"
-                                    name="medicine_id[]"
-                                    data-live-search="true"
-                                    required>
-                                    <option value=""
-                                        selected
-                                        disabled
-                                        hidden>Please select</option>
+                                <select class="form-control selectpicker medicineItems" name="medicine_id[]"
+                                    data-live-search="true" required>
+                                    <option value="" selected disabled hidden>Please select</option>
                                     @foreach ($selectPharmacy as $key => $medicine)
                                         @if ($medicine->thisMedicinePharmacy->sum('quantity'))
                                             <?php
@@ -262,27 +241,17 @@
                                                 $i++;
                                             }
                                             ?>
-                                            <option value="{{ $medicine->id }}"
-                                                sale_price="{{ $maxSalePrice }}">{{ ucfirst($medicine->medicine_name) }}</option>
+                                            <option value="{{ $medicine->id }}" sale_price="{{ $maxSalePrice }}">
+                                                {{ ucfirst($medicine->medicine_name) }}</option>
                                         @endif
                                     @endforeach
                                 </select>
-                                <input class="form-control medicineQTY"
-                                    name="quantity[]"
-                                    type="number"
-                                    style="height: 38px !important;"
-                                    placeholder="Quantity">
-                                <input class="form-control"
-                                    name="remark[]"
-                                    data-ms-editor="true"
-                                    type="text"
-                                    style="height: 38px !important;"
-                                    placeholder="Remark"
-                                    list="datalist"
+                                <input class="form-control medicineQTY" name="quantity[]" type="number"
+                                    style="height: 38px !important;" placeholder="Quantity">
+                                <input class="form-control" name="remark[]" data-ms-editor="true" type="text"
+                                    style="height: 38px !important;" placeholder="Remark" list="datalist"
                                     spellcheck="false">
-                                <i class="icon-plus-circle ml-2 mt-2"
-                                    style="cursor: pointer"
-                                    onclick="addnew()"></i>
+                                <i class="icon-plus-circle ml-2 mt-2" style="cursor: pointer" onclick="addnew()"></i>
                             </div>
 
                         </div>
@@ -293,18 +262,13 @@
                         </div>
                         <div class="submit-section">
                             <br>
-                            <button class="btn btn-secondary btn-sm"
-                                data-dismiss="modal"
-                                type="button">Close</button>
+                            <button class="btn btn-secondary btn-sm" data-dismiss="modal" type="button">Close</button>
 
-                            <button class="btn btn-primary submit-btn btn-sm"
-                                type="submit">Submit</button>
+                            <button class="btn btn-primary submit-btn btn-sm" type="submit">Submit</button>
 
                             @if (in_array('doctor_request_medicine', $user_permissions))
-                                <a class="text text-right text-danger pull-right float-right"
-                                    data-toggle="modal"
-                                    data-target="#requestMedicineModal"
-                                    href=""
+                                <a class="text text-right text-danger pull-right float-right" data-toggle="modal"
+                                    data-target="#requestMedicineModal" href=""
                                     style="text-decoration: underline">
                                     Request New Medicine</a>
                             @endif
@@ -316,41 +280,25 @@
     </div>
 
     {{--    IPD Modal --}}
-    <div class="modal fade"
-        id="IPDModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog"
-            role="document">
+    <div class="modal fade" id="IPDModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Select Patient to IPD <span id="ipd_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Select Patient to IPD <span
+                            id="ipd_patient_name"></span></h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="medicineForm"
-                        action="{{ route('patient_ipd.store') }}"
-                        method="post"
+                    <form id="medicineForm" action="{{ route('patient_ipd.store') }}" method="post"
                         enctype="multipart/form-data">
                         {!! csrf_field() !!}
-                        <input id="ipd_patient_id"
-                            name="patient_id"
-                            type="hidden">
+                        <input id="ipd_patient_id" name="patient_id" type="hidden">
                         <div class="form-group">
                             <label>Select Floor</label>
-                            <select class="form-control selectpicker floor_id"
-                                name="floor_id"
-                                data-live-search="true"
+                            <select class="form-control selectpicker floor_id" name="floor_id" data-live-search="true"
                                 required>
                                 <option hidden>Please select</option>
                                 @foreach ($floors as $key => $floor)
@@ -362,10 +310,7 @@
 
                         <div class="form-group">
                             <label>Select Room</label>
-                            <select class="form-control"
-                                id="room_id"
-                                name="room_id"
-                                required>
+                            <select class="form-control" id="room_id" name="room_id" required>
                                 <option value="">Please select</option>
                             </select>
 
@@ -373,25 +318,18 @@
 
                         <div class="form-group">
                             <label>Select Bed</label>
-                            <select class="form-control"
-                                id="bed_id"
-                                name="bed_id"
-                                required>
+                            <select class="form-control" id="bed_id" name="bed_id" required>
                                 <option value="">Please select</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Remark</label>
-                            <textarea class="form-control"
-                                name="remark"></textarea>
+                            <textarea class="form-control" name="remark"></textarea>
                         </div>
                         <div class="submit-section">
-                            <button class="btn btn-secondary"
-                                data-dismiss="modal"
-                                type="button">Close</button>
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
 
-                            <button class="btn btn-primary submit-btn"
-                                type="submit">Submit</button>
+                            <button class="btn btn-primary submit-btn" type="submit">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -400,44 +338,25 @@
     </div>
 
     {{-- Edit IPD Modal --}}
-    <div class="modal fade"
-        id="editIPDModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog"
-            role="document">
+    <div class="modal fade" id="editIPDModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Edit Patient IPD Modal <span id="ipd_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Patient IPD Modal <span
+                            id="ipd_patient_name"></span></h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editIPDForm"
-                        action=""
-                        method="post"
-                        enctype="multipart/form-data">
+                    <form id="editIPDForm" action="" method="post" enctype="multipart/form-data">
                         {!! csrf_field() !!}
-                        <input name="_method"
-                            type="hidden"
-                            value="put">
-                        <input id="edit_ipd_patient_id"
-                            name="patient_id"
-                            type="hidden">
+                        <input name="_method" type="hidden" value="put">
+                        <input id="edit_ipd_patient_id" name="patient_id" type="hidden">
                         <div class="form-group">
                             <label>Select Floor</label>
-                            <select class="form-control selectpicker floor_id"
-                                name="floor_id"
-                                data-live-search="true"
+                            <select class="form-control selectpicker floor_id" name="floor_id" data-live-search="true"
                                 required>
                                 <option hidden>Please select</option>
                                 @foreach ($floors as $key => $floor)
@@ -448,10 +367,7 @@
 
                         <div class="form-group">
                             <label>Select Room</label>
-                            <select class="form-control"
-                                id="room_id"
-                                name="room_id"
-                                required>
+                            <select class="form-control" id="room_id" name="room_id" required>
                                 @foreach ($rooms as $key => $room)
                                     <option value="{{ $room }}">{{ ucfirst($room) }}</option>
                                 @endforeach
@@ -461,10 +377,7 @@
 
                         <div class="form-group">
                             <label>Select Bed</label>
-                            <select class="form-control"
-                                id="bed_id"
-                                name="bed_id"
-                                required>
+                            <select class="form-control" id="bed_id" name="bed_id" required>
                                 @foreach ($beds as $key => $bed)
                                     <option value="{{ $key }}">Bed-{{ ucfirst($bed) }}</option>
                                 @endforeach
@@ -472,16 +385,12 @@
                         </div>
                         <div class="form-group">
                             <label>Remark</label>
-                            <textarea class="form-control"
-                                name="remark"></textarea>
+                            <textarea class="form-control" name="remark"></textarea>
                         </div>
                         <div class="submit-section">
-                            <button class="btn btn-secondary"
-                                data-dismiss="modal"
-                                type="button">Close</button>
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
 
-                            <button class="btn btn-primary submit-btn"
-                                type="submit">Submit</button>
+                            <button class="btn btn-primary submit-btn" type="submit">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -490,36 +399,22 @@
     </div>
 
     {{-- Lab Modal --}}
-    <div class="modal fade"
-        id="labModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog modal-lg"
-            role="document">
+    <div class="modal fade" id="labModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content ">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Add Patient to Laboratory<span id="lab_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Patient to Laboratory<span
+                            id="lab_patient_name"></span></h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="medicineForm"
-                        action="{{ route('patient_lab.store') }}"
-                        method="post"
+                    <form id="medicineForm" action="{{ route('patient_lab.store') }}" method="post"
                         enctype="multipart/form-data">
                         {!! csrf_field() !!}
-                        <input id="lab_patient_id"
-                            name="patient_id"
-                            type="hidden">
+                        <input id="lab_patient_id" name="patient_id" type="hidden">
 
                         <div class="form-group">
                             <label>Select Department</label>
@@ -537,12 +432,9 @@
                             <div class="row gutters">
 
                                 <div class="col-6 offset-3 text-center">
-                                    <p class="title"
-                                        style="font-size: 1.3rem">Ministry of Health</p>
-                                    <p class="title"
-                                        style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
-                                    <p class="title"
-                                        style="font-size: 1rem">Patient Laboratory</p>
+                                    <p class="title" style="font-size: 1.3rem">Ministry of Health</p>
+                                    <p class="title" style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
+                                    <p class="title" style="font-size: 1rem">Patient Laboratory</p>
                                 </div>
 
                             </div>
@@ -554,35 +446,22 @@
                             <div class="form-group">
                                 <label>Select Test</label>
                                 <div class="input-group">
-                                    <select class="form-control selectpicker col-md-3 labTestsSelect"
-                                        name="labDeps[]"
-                                        data-live-search="true"
-                                        required>
-                                        <option value=""
-                                            selected
-                                            disabled
-                                            hidden>Please select</option>
+                                    <select class="form-control selectpicker col-md-3 labTestsSelect" name="labDeps[]"
+                                        data-live-search="true" required>
+                                        <option value="" selected disabled hidden>Please select</option>
                                         @foreach ($selectLab as $lab)
-                                            <option value="{{ $lab->id }}"
-                                                normal_range="{{ $lab->normal_range }}"
-                                                test_price="{{ $lab->price }}"
-                                                test_main_dep="{{ $lab->main_dep_id }}"
-                                                test_discount="{{ $lab->mainDepartment->discount }}">{{ ucfirst($lab->dep_name) }}</option>
+                                            <option value="{{ $lab->id }}" normal_range="{{ $lab->normal_range }}"
+                                                test_price="{{ $lab->price }}" test_main_dep="{{ $lab->main_dep_id }}"
+                                                test_discount="{{ $lab->mainDepartment->discount }}">
+                                                {{ ucfirst($lab->dep_name) }}</option>
                                         @endforeach
                                     </select>
-                                    <input class="form-control col-md-3 normal-range"
-                                        type="text"
-                                        style="height: 38px !important;"
-                                        placeholder="Normal Range"
-                                        readonly>
-                                    <input class="form-control col-md-6"
-                                        name="remark[]"
-                                        type="text"
-                                        style="height: 38px !important;"
-                                        placeholder="Remark">
+                                    <input class="form-control col-md-3 normal-range" type="text"
+                                        style="height: 38px !important;" placeholder="Normal Range" readonly>
+                                    <input class="form-control col-md-6" name="remark[]" type="text"
+                                        style="height: 38px !important;" placeholder="Remark">
 
-                                    <i class="icon-plus-circle ml-2 mt-2"
-                                        style="cursor: pointer"
+                                    <i class="icon-plus-circle ml-2 mt-2" style="cursor: pointer"
                                         onclick="addnewLabTest()"></i>
                                 </div>
 
@@ -601,16 +480,12 @@
                         </div>
                         <hr>
                         <div class="submit-section">
-                            <button class="btn btn-secondary btn-sm"
-                                data-dismiss="modal"
-                                type="button">Close</button>
+                            <button class="btn btn-secondary btn-sm" data-dismiss="modal" type="button">Close</button>
 
-                            <button class="btn btn-warning btn-sm"
-                                type="button"
+                            <button class="btn btn-warning btn-sm" type="button"
                                 onclick="printDiv('newLabDiv')">Print</button>
 
-                            <button class="btn btn-primary submit-btn btn-sm"
-                                type="submit">Submit</button>
+                            <button class="btn btn-primary submit-btn btn-sm" type="submit">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -619,42 +494,25 @@
     </div>
 
     {{-- Request Medicine Modal --}}
-    <div class="modal fade"
-        id="requestMedicineModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog modal-sm"
-            role="document">
+    <div class="modal fade" id="requestMedicineModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-danger"
-                        id="exampleModalLabel">Please add your requested Medicine Here:</h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title text-danger" id="exampleModalLabel">Please add your requested Medicine Here:
+                    </h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <form enctype="multipart/form-data">
-                        <input class="form-control"
-                            name="requestedMedicine[]"
-                            type="text">
-                        <input class="form-control mt-1"
-                            name="requestedMedicine[]"
-                            type="text">
-                        <input class="form-control mt-1"
-                            name="requestedMedicine[]"
-                            type="text">
+                        <input class="form-control" name="requestedMedicine[]" type="text">
+                        <input class="form-control mt-1" name="requestedMedicine[]" type="text">
+                        <input class="form-control mt-1" name="requestedMedicine[]" type="text">
                         <div class="submit-section">
                             <br>
-                            <button class="btn btn-primary btn-danger btn-sm float-right"
-                                id="requestedMedicineBtn"
+                            <button class="btn btn-primary btn-danger btn-sm float-right" id="requestedMedicineBtn"
                                 type="button">Save</button>
                         </div>
                     </form>
@@ -664,105 +522,68 @@
     </div>
 
     {{-- Edit Patient Medicine Modal --}}
-    <div class="modal fade"
-        id="editPatientMedicine"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog modal-lg"
-            role="document">
+    <div class="modal fade" id="editPatientMedicine" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Edit Medicine Patient <span id="medicine_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Medicine Patient <span
+                            id="medicine_patient_name"></span></h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body"
-                    id="editPatientMedicineBody">
+                <div class="modal-body" id="editPatientMedicineBody">
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Edit Patient Medicine Modal --}}
-    <div class="modal fade"
-        id="editPatientLab"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog modal-lg"
-            role="document">
+    <div class="modal fade" id="editPatientLab" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Edit Lab for Patient <span id="edit_lab_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Lab for Patient <span
+                            id="edit_lab_patient_name"></span></h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body"
-                    id="editPatientLabBody">
+                <div class="modal-body" id="editPatientLabBody">
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Vital Signs Modal --}}
-    <div class="modal fade"
-        id="vitalSignsModal"
-        data-backdrop="static"
-        data-keyboard="false"
-        role="dialog"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        tabindex="-1">
-        <div class="modal-dialog modal-md"
-            role="document">
+    <div class="modal fade" id="vitalSignsModal" data-backdrop="static" data-keyboard="false" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-md" role="document">
             <div class="modal-content ">
                 <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">Vital Signs of <span id="vital_patient_name"></span></h5>
-                    <button class="close"
-                        data-dismiss="modal"
-                        type="button"
-                        aria-label="Close">
+                    <h5 class="modal-title" id="exampleModalLabel">Vital Signs of <span id="vital_patient_name"></span>
+                    </h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="row gutters">
                         <div class="col-lg-12 col-md-12 col-sm-12 order-last">
-                            <form action="{{ route('patient_vital_sign') }}"
-                                method="POST">
+                            <form action="{{ route('patient_vital_sign') }}" method="POST">
                                 {!! csrf_field() !!}
-                                <input id="vital_signs_patient_id"
-                                    name="patient_id"
-                                    type="hidden">
+                                <input id="vital_signs_patient_id" name="patient_id" type="hidden">
                                 <table class=" no-border m-0">
                                     <tbody>
-                                        
+
                                         <tr>
                                             <td>
                                                 <p><b>Blood Pressure:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_blood_input"
-                                                    name="blood_pressure"
-                                                    type="text">
+                                                <input id="vital_blood_input" name="blood_pressure" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -770,8 +591,7 @@
                                                 <p><b>Respiration Rate:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_respiratin_input"
-                                                    name="respiration_rate"
+                                                <input id="vital_respiratin_input" name="respiration_rate"
                                                     type="text">
                                             </td>
                                         </tr>
@@ -780,9 +600,7 @@
                                                 <p><b>Pulse Rate:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_pulse_input"
-                                                    name="pulse_rate"
-                                                    type="text">
+                                                <input id="vital_pulse_input" name="pulse_rate" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -790,9 +608,7 @@
                                                 <p><b>PSO2:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_heart_input"
-                                                    name="heart_rate"
-                                                    type="text">
+                                                <input id="vital_heart_input" name="heart_rate" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -800,9 +616,7 @@
                                                 <p><b>Temperature:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_temperature_input"
-                                                    name="temperature"
-                                                    type="text">
+                                                <input id="vital_temperature_input" name="temperature" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -810,9 +624,7 @@
                                                 <p><b>Weight:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_weight_input"
-                                                    name="weight"
-                                                    type="text">
+                                                <input id="vital_weight_input" name="weight" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -820,9 +632,7 @@
                                                 <p><b>Height:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_height_input"
-                                                    name="height"
-                                                    type="text">
+                                                <input id="vital_height_input" name="height" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -830,9 +640,7 @@
                                                 <p><b>Mental State:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_mental_input"
-                                                    name="mental_state"
-                                                    type="text">
+                                                <input id="vital_mental_input" name="mental_state" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -840,9 +648,7 @@
                                                 <p><b>Medical History:</b></p>
                                             </td>
                                             <td>
-                                                <input id="vital_history_input"
-                                                    name="medical_history"
-                                                    type="text">
+                                                <input id="vital_history_input" name="medical_history" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -850,14 +656,10 @@
                                                 <p><b>VA:</b></p>
                                             </td>
                                             <td>
-                                                <input id="va1_input"
-                                                    name="va_1"
-                                                    type="text">
+                                                <input id="va1_input" name="va_1" type="text">
                                             </td>
                                             <td>
-                                                <input id="va2_input"
-                                                    name="va_2"
-                                                    type="text">
+                                                <input id="va2_input" name="va_2" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -865,14 +667,10 @@
                                                 <p><b>IOP:</b></p>
                                             </td>
                                             <td>
-                                                <input id="iop1_input"
-                                                    name="iop_1"
-                                                    type="text">
+                                                <input id="iop1_input" name="iop_1" type="text">
                                             </td>
                                             <td>
-                                                <input id="iop2_input"
-                                                    name="iop_2"
-                                                    type="text">
+                                                <input id="iop2_input" name="iop_2" type="text">
                                             </td>
                                         </tr>
                                         <tr>
@@ -880,11 +678,8 @@
                                                 <p><b>Chief Complaint:</b></p>
                                             </td>
                                             <td>
-                                                <input id="chiefComplaint_input"
-                                                    name="chief_complaint"
-                                                    data-ms-editor="true"
-                                                    type="text"
-                                                    list="chief_complaint_data"
+                                                <input id="chiefComplaint_input" name="chief_complaint"
+                                                    data-ms-editor="true" type="text" list="chief_complaint_data"
                                                     spellcheck="false">
                                             </td>
                                         </tr>
@@ -904,12 +699,8 @@
                                                 <p><b>DX:</b></p>
                                             </td>
                                             <td>
-                                                <input id="dx_input"
-                                                    name="dx"
-                                                    data-ms-editor="true"
-                                                    type="text"
-                                                    list="dx_data"
-                                                    spellcheck="false">
+                                                <input id="dx_input" name="dx" data-ms-editor="true"
+                                                    type="text" list="dx_data" spellcheck="false">
                                             </td>
                                         </tr>
 
@@ -932,14 +723,11 @@
 
                                         <tr>
                                             <td>
-                                                <button class="btn btn-primary"
-                                                    type="submit">Save</button>
+                                                <button class="btn btn-primary" type="submit">Save</button>
                                             </td>
                                             <td>
-                                                <a class="btn btn-warning"
-                                                    id="printPatientVitalSignButton"
-                                                    href="#"
-                                                    onclick="printPatientVitalSign(this)"
+                                                <a class="btn btn-warning" id="printPatientVitalSignButton"
+                                                    href="#" onclick="printPatientVitalSign(this)"
                                                     patient_id="0">Print</a>
                                             </td>
                                         </tr>
@@ -948,6 +736,150 @@
                             </form>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Edit  patient Modal -->
+    <div class="modal fade" id="editPatientModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+        tabindex="-1">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Patient</h5>
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPatientForm" action="" method="post" enctype="multipart/form-data">
+                        {!! csrf_field() !!}
+                        <input name="_method" type="hidden" value="PUT">
+
+                        <div class="row">
+
+                            <div class="form-group col-4">
+                                <label>Patient Name <span class="text-danger">*</span></label>
+                                <input class="form-control" name="patient_name" type="text" required readonly>
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Patient F/Name <span class="text-danger">*</span></label>
+                                <input class="form-control" name="patient_fname" type="text" required readonly>
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label>Patient Mobile</label>
+                                <input class="form-control" name="patient_phone" type="text" readonly>
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Select Doctor</label>
+                                <select class="form-control selectpicker readonly-dropdown" name="doctor_id"
+                                    data-live-search="true">
+                                    @foreach ($doctors as $key => $doctor)
+                                        <option value="{{ $doctor->id }}">{{ ucfirst($doctor->name) }}
+                                            <b>({{ $doctor->OPD_fee }})</b>
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Gender</label>
+                                <select class="form-control" id="" name="gender" disabled>
+                                    <option></option>
+                                    <option value="0">Male</option>
+                                    <option value="1">Female</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Marital Status</label>
+                                <select class="form-control" name="marital_status" disabled>
+                                    <option></option>
+                                    <option value="0">Single</option>
+                                    <option value="1">Married</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label>Blood Group</label>
+                                <select class="form-control" name="blood_group">
+                                    <option></option>
+                                    <option>A</option>
+                                    <option>B</option>
+                                    <option>AB</option>
+                                    <option>O</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Age</label>
+                                <input class="form-control" name="age" type="text">
+                            </div>
+
+                            {{-- <div class="form-group col-4">
+                                <label>Advance Payment?</label>
+                                <input class="form-control" name="advance_pay" type="number" value="0">
+                            </div> --}}
+                            <div class="form-group col-4">
+                                <label>Register Date</label>
+                                <input class="form-control" name="reg_date" type="date"
+                                    value="{{ date('Y-m-d') }}" readonly>
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Blood Pressure</label>
+                                <input class="form-control" name="blood_pressure" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Respiration Rate</label>
+                                <input class="form-control" name="respiration_rate" type="text">
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label>Pulse Rate</label>
+                                <input class="form-control" name="pulse_rate" type="text">
+                            </div>
+
+                            <div class="form-group col-4">
+                                <label>SPO2</label>
+                                <input class="form-control" name="heart_rate" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Temperature</label>
+                                <input class="form-control" name="temperature" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Weight</label>
+                                <input class="form-control" name="weight" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Height</label>
+                                <input class="form-control" name="height" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Mental State</label>
+                                <input class="form-control" name="mental_state" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Default Discount</label>
+                                <select class="form-control" name="default_discount"
+                                    @if (!in_array('Patient Default Discount', $user_permissions)) disabled @endif>
+                                    <option value="1">No</option>
+                                    <option value="0">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-12">
+                                <label>Medical History</label>
+                                <textarea class="form-control" name="medical_history"></textarea>
+                            </div>
+                        </div>
+                        <div class="submit-section">
+                            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+
+                            <button class="btn btn-primary submit-btn" type="submit">Save</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1011,11 +943,15 @@
         }
 
         function clearInput() {
-            $('#medicineForm').find('input[type=text], input[type=password], input[type=number], input[type=email], input[type=checkbox],textarea').val('');
+            $('#medicineForm').find(
+                'input[type=text], input[type=password], input[type=number], input[type=email], input[type=checkbox],textarea'
+            ).val('');
         };
 
         function clearInputOfRequestModal() {
-            $('#requestMedicineModal').find('input[type=text], input[type=password], input[type=number], input[type=email], input[type=checkbox],textarea').val('');
+            $('#requestMedicineModal').find(
+                'input[type=text], input[type=password], input[type=number], input[type=email], input[type=checkbox],textarea'
+            ).val('');
         };
 
         $('#exampleModal').on('hidden.bs.modal', function() {
@@ -1060,7 +996,8 @@
 
             // Set values in edit popup
             $("#medicine_patient_id").val(patient_id);
-            modal.find('.modal-content #medicine_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
+            modal.find('.modal-content #medicine_patient_name').html('<b class="text text-danger"> (' +
+                patient_name + ')</b>');
         })
 
 
@@ -1074,7 +1011,8 @@
 
             // Set values in edit popup
             $("#ipd_patient_id").val(patient_id);
-            modal.find('.modal-content #ipd_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
+            modal.find('.modal-content #ipd_patient_name').html('<b class="text text-danger"> (' + patient_name +
+                ')</b>');
         })
 
         $('#editIPDModal').on('show.bs.modal', function(event) {
@@ -1091,7 +1029,8 @@
 
             // Set values in edit popup
             $("#edit_ipd_patient_id").val(patient_id);
-            modal.find('.modal-content #ipd_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
+            modal.find('.modal-content #ipd_patient_name').html('<b class="text text-danger"> (' + patient_name +
+                ')</b>');
             modal.find('.modal-body [name=floor_id]').val(floor);
             modal.find('.modal-body [name=room_id]').val(room);
             modal.find('.modal-body [name=bed_id]').val(bed);
@@ -1121,8 +1060,10 @@
             //Call again for updating the value
             setTotalPriceOfLab()
 
-            modal.find('.modal-content #lab_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
-            modal.find('.modal-content #lab_patient_name_show').html('<b class="text text-danger"> (' + patient_name + ')</b>');
+            modal.find('.modal-content #lab_patient_name').html('<b class="text text-danger"> (' + patient_name +
+                ')</b>');
+            modal.find('.modal-content #lab_patient_name_show').html('<b class="text text-danger"> (' +
+                patient_name + ')</b>');
         });
 
         $('#editPatientLab').on('show.bs.modal', function(event) {
@@ -1133,7 +1074,8 @@
             var modal = $(this)
 
             // Set values in edit popup
-            modal.find('.modal-content #edit_lab_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
+            modal.find('.modal-content #edit_lab_patient_name').html('<b class="text text-danger"> (' +
+                patient_name + ')</b>');
         });
         $('#requestMedicineModal').on('show.bs.modal', function(event) {
             clearInputOfRequestModal();
@@ -1360,5 +1302,64 @@
                 }
             }, true);
         }
+    </script>
+
+    <script>
+        $('#editPatientModal').on('show.bs.modal', function(event) {
+
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            // Extract info from data-* attributes
+            var id = button.data('id');
+            // var generated_id = button.data('generated-id');
+            var name = button.data('name');
+            var fname = button.data('fname');
+            var mobile = button.data('mobile');
+            var doctor = button.data('doctor');
+            var gender = button.data('gender');
+            var blood = button.data('blood');
+            var age = button.data('age');
+            var marital_status = button.data('marital-status');
+            var advance = button.data('advance');
+            var blood_pressure = button.data('blood-pressure');
+            var respiration = button.data('respiration');
+            var pulse = button.data('pulse');
+            var heart = button.data('heart');
+            var temperature = button.data('temperature');
+            var weight = button.data('weight');
+            var height = button.data('height');
+            var mental_state = button.data('mental-state');
+            var medical_history = button.data('medical-history');
+            var default_discount = button.data('default-discount');
+
+            var modal = $(this)
+
+            // Set values in edit popup
+            var action = '/patient/' + id;
+
+            $("#editPatientForm").attr("action", action);
+
+
+            modal.find('.modal-body [name="patient_name"]').val(name);
+            modal.find('.modal-body [name="patient_fname"]').val(fname);
+            modal.find('.modal-body [name="patient_phone"]').val(mobile);
+            modal.find('.modal-body [name="doctor_id"]').val(doctor);
+            modal.find('.modal-body [name="gender"]').val(gender);
+            modal.find('.modal-body [name="marital_status"]').val(marital_status);
+            modal.find('.modal-body [name="blood_group"]').val(blood);
+            modal.find('.modal-body [name="age"]').val(age);
+            modal.find('.modal-body [name="advance_pay"]').val(advance);
+            modal.find('.modal-body [name="blood_pressure"]').val(blood_pressure);
+            modal.find('.modal-body [name="respiration_rate"]').val(respiration);
+            modal.find('.modal-body [name="pulse_rate"]').val(pulse);
+            modal.find('.modal-body [name="heart_rate"]').val(heart);
+            modal.find('.modal-body [name="temperature"]').val(temperature);
+            modal.find('.modal-body [name="weight"]').val(weight);
+            modal.find('.modal-body [name="height"]').val(height);
+            modal.find('.modal-body [name="mental_state"]').val(mental_state);
+            modal.find('.modal-body [name="medical_history"]').val(medical_history);
+            modal.find('.modal-body [name="default_discount"]').val(default_discount);
+
+            $('.selectpicker').selectpicker('refresh');
+        })
     </script>
 @endsection
