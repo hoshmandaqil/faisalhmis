@@ -420,6 +420,7 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Additional Information</h5>
+                                                <p class="card-text"><strong>Present Days:</strong> ${payrollPayments.present_days}</p>
                                                 <p class="card-text"><strong>Paid Amount:</strong> ${parseFloat(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</p>
                                                 <p class="card-text"><strong>Balance Amount:</strong> ${parseFloat(payrollPayments.net_salary - data.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AF</p>
                                                 <p class="card-text"><strong>Type:</strong> ${data.payment_method ? 'Full Payment' : 'Advance'}</p>
