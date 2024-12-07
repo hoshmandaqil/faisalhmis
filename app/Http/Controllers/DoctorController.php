@@ -9,6 +9,7 @@ use App\Models\MainLabDepartment;
 use App\Models\MedicineName;
 use App\Models\Patient;
 use App\Models\Pharmacy;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -135,6 +136,11 @@ class DoctorController extends Controller
         $mainLabDepartments = MainLabDepartment::latest()->select('id', 'dep_name', 'discount')->get();
         $medicine_dosage = DB::table('medicine_dosages')->get();
 
+        $doctors = User::where('type', 3)
+        ->where('status', 1)
+        ->latest()
+        ->get();
+
         return view(
             'patient.my_patients',
             compact(
@@ -146,7 +152,8 @@ class DoctorController extends Controller
                 'beds',
                 'patientSearchDetail',
                 'mainLabDepartments',
-                'medicine_dosage'
+                'medicine_dosage',
+                'doctors'
             )
         );
     }
