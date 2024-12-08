@@ -4,10 +4,45 @@
     Payroll Payments
 @endsection
 
-@section('page-action')
+{{-- @section('page-action')
     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPayrollPayment">
         New Payment
     </button>
+@endsection --}}
+
+@section('search_bar')
+    <div class="search-container">
+        <!-- Row start -->
+        <div class="row justify-content-center">
+            <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12">
+
+                <div class="search-box">
+                    <form action="{{ url('search-payroll-payments') }}" method="post">
+                        @csrf
+                        <input type="text" name="search" class="search-query"
+                            value="{{ Request::is('search') ? $patientSearchDetail : '' }}"
+                            placeholder="Search Payroll Payment By Employee ID, Name or Phone...">
+                        <i class="icon-search1" onclick="$(this).closest('form').submit();"></i>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        <!-- Row end -->
+    </div>
+@endsection
+
+@section('page-action')
+    @if (\Request::is('search-payroll-payments'))
+        <a type="button" class="btn btn-danger btn-sm" href="{{ url('payroll-payments') }}">
+            Clear Search
+        </a>
+    @endif
+    @if (!\Request::is('search-payroll-payments'))
+        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPayrollPayment">
+            New Payment
+        </button>
+    @endif
 @endsection
 
 @section('content')
