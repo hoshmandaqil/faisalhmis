@@ -253,6 +253,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Payroll Payments
     Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll_payments.index');
+    Route::post('/search-payroll-payments', [PayrollPaymentController::class, 'search'])->name('payroll_payments.search');
 
     Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails'])->name('payroll_payments.getPayrollDetails');
 
