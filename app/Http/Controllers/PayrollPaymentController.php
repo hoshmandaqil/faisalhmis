@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class PayrollPaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $payrollPayments = PayrollPayment::with('employee')
             ->orderBy('id', 'desc')
@@ -21,6 +21,27 @@ class PayrollPaymentController extends Controller
 
         return view('payrolls.payroll-payments', compact('payrollPayments', 'employees'));
     }
+
+    public function search(Request $request)
+    {
+        $searchItem = $request->search;
+
+        $payrollPayments = PayrollPayment::with('employee')
+            ->when($searchItem, function ($query) use ($searchItem) {
+                $query->whereHas('employee', function ($query) use ($searchItem) {
+                    $query->where('first_name', 'like', '%' . $searchItem . '%')
+                        ->orWhere('last_name', 'like', '%' . $searchItem . '%')
+                        ->orWhere('father_name', 'like', '%' . $searchItem . '%');
+                });
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+
+        $employees = Employee::all();
+
+        return view('payrolls.payroll-payments', compact('payrollPayments', 'employees'));
+    }
+
 
     public function create()
     {
@@ -91,9 +112,9 @@ class PayrollPaymentController extends Controller
 
         $payrollItems = PayrollItem::where('payroll_id', $payment->payroll_id)
             ->where('employee_id', $payment->employee_id)
-            ->select('gross_salary','net_salary','net_salary','bonus','tax','present_days','additional_payments')
+            ->select('gross_salary', 'net_salary', 'net_salary', 'bonus', 'tax', 'present_days', 'additional_payments')
             ->first();
-            
+
         if ($payment) {
             // Format the payroll date
             $payment->payroll_date = $payment->payroll ? \Carbon\Carbon::parse($payment->payment_date)->format('m/Y') : 'N/A';
