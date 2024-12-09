@@ -148,7 +148,8 @@
                         <div class="row">
                             <div class="form-group col-md-4">
                                 <label for="employee">Employee</label>
-                                <select id="employee" name="employee" class="form-control" required>
+                                <select id="employee" name="employee" class="form-control selectpicker"
+                                    data-live-search="true" required>
                                     <option value="">Select Employee</option>
                                     @foreach ($employees as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->first_name }}
@@ -284,6 +285,8 @@
 @endsection
 
 @section('scripts')
+    <script src="{{ asset('assets/vendor/bs-select/bs-select.min.js') }}"></script>
+
     <script>
         $(document).ready(function() {
             $.ajaxSetup({
@@ -553,6 +556,8 @@
 @endsection
 
 @section('styles')
+    <link href="{{ asset('assets/vendor/bs-select/bs-select.css') }}" rel="stylesheet" />
+
     <style>
         table td {
             vertical-align: top !important;
