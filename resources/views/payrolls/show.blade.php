@@ -36,7 +36,7 @@
                     <th>Tax</th>
                     {{-- <th class="text-nowrap">Gross Salary</th> --}}
                     <th class="text-nowrap">Net Salary Payable</th>
-                    {{-- <th class="text-nowrap">Grand Total</th> --}}
+                    <th class="text-nowrap">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,7 +114,16 @@
                             {{ number_format($item->tax, 2) }} AF
                         </td>
                         <td>{{ number_format($item->net_salary, 2) }} AF</td>
-                        {{-- <td>{{ number_format($item->grand_total, 2) }} AF</td> --}}
+                        <td>
+                            @php
+                                $payment = $payroll->payments->firstWhere('employee_id', $item->employee->id);
+                            @endphp
+                            @if ($payment && $payment->payment_method == 1)
+                                <span class="badge bg-success">Paid</span>
+                            @else
+                                <span class="badge bg-warning">Pending</span>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
