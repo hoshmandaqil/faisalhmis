@@ -39,8 +39,8 @@
                     <thead>
                         <tr>
                             <th>S.No</th>
-                            <th>Pement Date</th>
                             <th>Slip No</th>
+                            <th>Pement Date</th>
                             <th>Employee ID</th>
                             <th>Employee Name</th>
                             <th>Employee F/Name</th>
