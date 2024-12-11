@@ -1270,7 +1270,6 @@ class ReportController extends Controller
         $searchTerm = request('searchTerm');
 
         if ($selectedReportType == 'expense') {
-            // dd('i am here');
             $expenseData = $this->expense_report($from, $to, $selectedReportType, $categoryId, $searchTerm);
 
             return view('report.expense_report', $expenseData);
@@ -1278,11 +1277,16 @@ class ReportController extends Controller
 
 
         if ($selectedReportType == 'income') {
-            // dd('i am here');
             $otherIncomeData = $this->other_income_report($from, $to);
 
             // Return a different view for expense reports
             return view('report.other_income', $otherIncomeData);
+        }
+        if ($selectedReportType == 'salary') {
+            $otherIncomeData = $this->salary_report($from, $to);
+
+            // Return a different view for expense reports
+            return view('report.salary', $otherIncomeData);
         }
 
         // Adjust the to date to include the entire day
@@ -1382,9 +1386,9 @@ class ReportController extends Controller
             PatientIPD::where('status', 1)
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))')) +
             MiscellaneousIncome::whereNull('deleted_At')->sum('amount');
-        
+
         // $totalIncomeAllTime +=3000;
-        
+
         $totalExpensesAllTime = ExpenseItem::whereHas('slip', function ($q) {
             $q->whereNull('deleted_at');
         })->sum('amount');
@@ -1440,6 +1444,17 @@ class ReportController extends Controller
         // Debugging the results
         return [
             'incomes' => $incomes,
+        ];
+    }
+
+    public function salary_report($from, $to)
+    {
+        $payrollPayments = PayrollPayment::whereBetween('payment_date', [$from, $to])
+            ->with('employee')
+            ->orderByDesc('id')
+            ->get();
+        return [
+            'payrollPayments' => $payrollPayments,
         ];
     }
 }
