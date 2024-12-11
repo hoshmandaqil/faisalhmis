@@ -289,6 +289,8 @@
                                     Other Income Only</option>
                                 <option value="expense" {{ request('report_type') == 'expense' ? 'selected' : '' }}>
                                     Expense Only</option>
+                                <option value="salary" {{ request('report_type') == 'salary' ? 'selected' : '' }}>
+                                    Salary Only</option>
                             </select>
                         </div>
                         <div class="submit-section">
