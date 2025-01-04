@@ -424,6 +424,7 @@
                                             <div>
                                                 <h6>${data.employee.first_name} ${data.employee.last_name}</h6>
                                                 <h6><strong>Father Name:</strong> ${data.employee.father_name || 'N/A'}</h6>
+                                                <h6><strong>ID:</strong> ${data.employee.id || 'N/A'}</h6>
                                             </div>
                                             <div>
                                                 <h6><strong>Position:</strong> ${data.employee.position || 'Unknown'}</h6>
