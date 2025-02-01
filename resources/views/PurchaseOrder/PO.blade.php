@@ -136,11 +136,13 @@
                                             Actions
                                         </button>
                                         <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                            <a class="dropdown-item px-3" href="#"
-                                                onclick="viewPO({{ $po->id }})" data-toggle="modal"
-                                                data-target="#viewModal">
-                                                View
-                                            </a>
+                                            @if (in_array('View Purchase Order', $user_permissions))
+                                                <a class="dropdown-item px-3" href="#"
+                                                    onclick="viewPO({{ $po->id }})" data-toggle="modal"
+                                                    data-target="#viewModal">
+                                                    View
+                                                </a>
+                                            @endif
                                             {{-- <a class="dropdown-item px-3" href="#"
                                                 x-on:click="$store.files.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
                                                 Files/Attachements
@@ -150,16 +152,16 @@
                                                 Manage Status
                                             </a>
                                             @if ($po->status() == 'Issued')
-                                                {{-- @if (auth()->user()->hasPermissionTo('Edit PO')) --}}
-                                                <a type="button" class="dropdown-item px-3 edit-po"
-                                                    data-po="{{ $po }}" data-toggle="modal"
-                                                    data-target="#editModal">
-                                                    Edit
-                                                </a>
-                                                {{-- <button type="button" class="btn btn-warning btn-sm edit-po"
+                                                @if (in_array('Edit Purchase Order', $user_permissions))
+                                                    <a type="button" class="dropdown-item px-3 edit-po"
+                                                        data-po="{{ $po }}" data-toggle="modal"
+                                                        data-target="#editModal">
+                                                        Edit
+                                                    </a>
+                                                    {{-- <button type="button" class="btn btn-warning btn-sm edit-po"
                                                     data-id="{{ $po->id }}" data-toggle="modal"
                                                     data-target="#editModal">Edit</button> --}}
-                                                {{-- @endif --}}
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
