@@ -121,9 +121,9 @@
                             <td>
                                 <span>
                                     @if ($po->files->isNotEmpty())
-                                        <i class="bi bi-check2-circle badge badge-circle badge-success fs-4"></i>
+                                        <i class="icon-check-circle text-success"></i>
                                     @else
-                                        <i class="bi bi-x-lg badge badge-circle badge-danger fs-4"></i>
+                                        <i class="icon-x text-danger"></i>
                                     @endif
                                 </span>
                             </td>
@@ -143,10 +143,11 @@
                                                     View
                                                 </a>
                                             @endif
-                                            {{-- <a class="dropdown-item px-3" href="#"
-                                                x-on:click="$store.files.openModal({{ json_encode($po) }}, {{ json_encode($po->status()) }})">
-                                                Files/Attachements
-                                            </a> --}}
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                                data-target="#expenseFiles" data-expense="{{ $po }}"
+                                                data-sum-paid="{{ number_format($po->id) }}">
+                                                Files/Attachments
+                                            </a>
                                             <a class="dropdown-item px-3" href="#"
                                                 onclick="openManageStatusModal({{ $po }}, '{{ $po->status() }}')">
                                                 Manage Status
@@ -177,7 +178,75 @@
         {{ $pos->links() }}
     </div>
 
+    <!-- Expense Files -->
+    <div class="modal fade" id="expenseFiles" tabindex="-1" role="dialog" aria-labelledby="expenseFilesLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4">
+                    <!-- Main Fields -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" colspan="100%">
+                                            <h5>Slip No</h5>
+                                            <p class="mt-5" id="slipId"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Paid By</h5>
+                                            <p class="mt-5" id="paidBy"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Paid To</h5>
+                                            <p class="mt-5" id="paidTo"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Total Amount</h5>
+                                            <p class="mt-5" id="totalAmount"></p>
+                                        </th>
+                                        <th class="text-center">
+                                            <h5>Date</h5>
+                                            <p class="mt-5" id="fileDate"></p>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
 
+                    <!-- Files List -->
+                    <div class="row mb-4" id="filesLoading" style="display: none;">
+                        <h3 class="text-center"><span class="spinner-border spinner-border-sm align-middle me-2"></span>
+                            Loading Content...</h3>
+                    </div>
+                    <div class="row mb-4" id="filesList">
+                        <div class="col-md-12">
+                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
+                                <thead>
+                                    <tr class="fw-bold fs-6 text-gray-800 border-bottom border-gray-200">
+                                        <th>No</th>
+                                        <th>File</th>
+                                        <th>Remarks</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expenseFilesTable">
+                                    <!-- Files will be injected here by jQuery -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
@@ -200,14 +269,21 @@
                             </div>
                             <div class="card-body">
                                 <div class="row mb-4">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-3">
                                         <label>PO Requested By <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="text" id="po_by" name="po_by" required>
+                                        <input class="form-control" type="text" id="po_by" name="po_by"
+                                            required>
                                     </div>
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-3">
                                         <label>Date <span class="text-danger">*</span></label>
                                         <input class="form-control" type="date" id="date"
                                             value="{{ date('Y-m-d') }}" name="date" required>
+                                    </div>
+
+                                    <div class="form-group col-md-3">
+                                        <label>Supporting Document</label>
+                                        <input class="form-control-file" id="file" type="file"
+                                            name="file"="image/*,.pdf">
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -576,7 +652,52 @@
 
 @section('scripts')
     <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
+    {{-- View Expense Files --}}
+    <script>
+        $(document).ready(function() {
+            $('#expenseFiles').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var expense = button.data('expense');
+                loadFiles(expense.slip_no);
 
+            });
+
+            function loadFiles(expenseId) {
+                fetch(`/expenses/${expenseId}/files`)
+                    .then(response => response.json())
+                    .then(expenses => {
+                        // Clear existing table rows
+                        $('#expenseFilesTable').empty();
+
+                        // Populate the table with the fetched files
+                        expenses.forEach((expense, index) => {
+                            $('#expenseFilesTable').append(`
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td><a href="/storage/expenses/${expense.file}" target="_BLANK">View File</a></td>
+                                    <td>${expense.remarks}</td>
+                                    <td>
+                                        <form
+                                            action="{{ route('expense-files-delete') }}"
+                                            method="post">
+                                            @method('DELETE')
+                                            @csrf
+                                            <input type="hidden" name="slip_no" value="${expense.slip_no}" />
+                                            <button type="submit" class="btn btn-icon btn-danger btn-sm">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching files:', error);
+                    });
+            }
+        });
+    </script>
     <script>
         $(document).ready(function() {
             // Add new PO item row
