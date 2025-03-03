@@ -189,43 +189,6 @@
                     </button>
                 </div>
                 <div class="modal-body px-4">
-                    <!-- Main Fields -->
-                    <div class="row mb-4">
-                        <div class="col-md-12">
-                            <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center" colspan="100%">
-                                            <h5>Slip No</h5>
-                                            <p class="mt-5" id="slipId"></p>
-                                        </th>
-                                        <th class="text-center">
-                                            <h5>Paid By</h5>
-                                            <p class="mt-5" id="paidBy"></p>
-                                        </th>
-                                        <th class="text-center">
-                                            <h5>Paid To</h5>
-                                            <p class="mt-5" id="paidTo"></p>
-                                        </th>
-                                        <th class="text-center">
-                                            <h5>Total Amount</h5>
-                                            <p class="mt-5" id="totalAmount"></p>
-                                        </th>
-                                        <th class="text-center">
-                                            <h5>Date</h5>
-                                            <p class="mt-5" id="fileDate"></p>
-                                        </th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Files List -->
-                    <div class="row mb-4" id="filesLoading" style="display: none;">
-                        <h3 class="text-center"><span class="spinner-border spinner-border-sm align-middle me-2"></span>
-                            Loading Content...</h3>
-                    </div>
                     <div class="row mb-4" id="filesList">
                         <div class="col-md-12">
                             <table class="table table-sm table-rounded table-row-bordered border gs-7 gy-3">
@@ -653,51 +616,7 @@
 @section('scripts')
     <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
     {{-- View Expense Files --}}
-    <script>
-        $(document).ready(function() {
-            $('#expenseFiles').on('show.bs.modal', function(event) {
-                var button = $(event.relatedTarget);
-                var expense = button.data('expense');
-                loadFiles(expense.slip_no);
-
-            });
-
-            function loadFiles(expenseId) {
-                fetch(`/expenses/${expenseId}/files`)
-                    .then(response => response.json())
-                    .then(expenses => {
-                        // Clear existing table rows
-                        $('#expenseFilesTable').empty();
-
-                        // Populate the table with the fetched files
-                        expenses.forEach((expense, index) => {
-                            $('#expenseFilesTable').append(`
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td><a href="/storage/expenses/${expense.file}" target="_BLANK">View File</a></td>
-                                    <td>${expense.remarks}</td>
-                                    <td>
-                                        <form
-                                            action="{{ route('expense-files-delete') }}"
-                                            method="post">
-                                            @method('DELETE')
-                                            @csrf
-                                            <input type="hidden" name="slip_no" value="${expense.slip_no}" />
-                                            <button type="submit" class="btn btn-icon btn-danger btn-sm">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            `);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching files:', error);
-                    });
-            }
-        });
-    </script>
+   
     <script>
         $(document).ready(function() {
             // Add new PO item row
