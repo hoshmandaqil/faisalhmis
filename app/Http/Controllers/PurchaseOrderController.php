@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderFile;
 use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseOrderSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseOrderController extends Controller
 {
@@ -50,7 +51,6 @@ class PurchaseOrderController extends Controller
     {
         //
     }
-
     public function store(Request $request)
     {
         // Validate the incoming request data
@@ -62,6 +62,7 @@ class PurchaseOrderController extends Controller
             'amount.*' => 'required|numeric',
             'quantity.*' => 'required|integer',
             'item_remarks.*' => 'nullable|string',
+            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg,doc,docx|max:2048', // Validate single file upload
         ]);
 
         // Create the PurchaseOrder
@@ -83,7 +84,20 @@ class PurchaseOrderController extends Controller
             ]);
         }
 
-        return back()->with(['message' => 'Purchase Order and items successfully stored']);
+        // Handle single file upload
+        if ($request->hasFile('file')) {
+            $originalFile = $request->file('file');
+            $file_name = 'purchase-order-' . $purchaseOrder->id . '-' . time() . '.' . $originalFile->getClientOriginalExtension();
+
+            Storage::disk('local')->put('public/purchase_order_files/' . $file_name, file_get_contents($originalFile));
+
+            PurchaseOrderFile::create([
+                'po_id' => $purchaseOrder->id,
+                'file' => $file_name,
+            ]);
+        }
+
+        return back()->with(['message' => 'Purchase Order, items, and file successfully stored']);
     }
 
     /**
@@ -178,7 +192,7 @@ class PurchaseOrderController extends Controller
         ]);
 
         $po = PurchaseOrder::findOrFail($request->po_id);
-        
+
         // Check user permissions here if needed
 
         switch ($request->status) {
