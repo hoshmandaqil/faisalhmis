@@ -62,7 +62,7 @@ class PurchaseOrderController extends Controller
             'amount.*' => 'required|numeric',
             'quantity.*' => 'required|integer',
             'item_remarks.*' => 'nullable|string',
-            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg,doc,docx|max:2048', // Validate single file upload
+            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg,doc,docx|max:500', 
         ]);
 
         // Create the PurchaseOrder
