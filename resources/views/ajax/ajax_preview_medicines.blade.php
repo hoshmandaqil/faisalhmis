@@ -10,15 +10,7 @@
     </style>
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" media='all'>
     <style>
-        @media print {
-            .remark {
-                display: block;
-            }
-
-            body {
-                padding: 10px !important;
-            }
-        }
+        
     </style>
 </head>
 
@@ -26,9 +18,9 @@
     <main>
         <div class="col-12">
             <div class="row">
-                <div class="col-12" id="print-preview">
+                <div class="col-12">
                     <div>
-                        <div class="table-responsive table-borderless table-light">
+                        <div class="table-responsive table-borderless table-light" id="print-preview">
                             <table class="table">
                                 <tr>
                                     <td class="text-center center" colspan="100%">
@@ -96,7 +88,7 @@
     <div class="submit-section d-flex justify-content-end px-4">
         <button class="btn btn-dark btn-sm hidden-print d-print-none" type="button"
             onclick="printSpecificDiv('print-preview')">
-            Print
+            Printt
             <i class="icon icon-print"></i>
         </button>
     </div>
