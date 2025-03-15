@@ -10,7 +10,15 @@
     </style>
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" media='all'>
     <style>
-        
+        @media print {
+            .remark {
+                display: block;
+            }
+
+            body {
+                padding: 10px !important;
+            }
+        }
     </style>
 </head>
 
@@ -18,9 +26,9 @@
     <main>
         <div class="col-12">
             <div class="row">
-                <div class="col-12">
+                <div class="col-12" id="print-preview">
                     <div>
-                        <div class="table-responsive table-borderless table-light" id="print-preview">
+                        <div class="table-responsive table-borderless table-light">
                             <table class="table">
                                 <tr>
                                     <td class="text-center center" colspan="100%">
@@ -88,7 +96,7 @@
     <div class="submit-section d-flex justify-content-end px-4">
         <button class="btn btn-dark btn-sm hidden-print d-print-none" type="button"
             onclick="printSpecificDiv('print-preview')">
-            Printt
+            Print
             <i class="icon icon-print"></i>
         </button>
     </div>
@@ -97,21 +105,17 @@
 
 </html>
 
-<script>
-    function printSpecificDiv(divId) {
-        // Get the specific div content
-        var printContent = document.getElementById(divId).innerHTML;
+    <script>
+        function printSpecificDiv(divId) {
+            var printContent = document.getElementById(divId).innerHTML;
+            var originalContent = document.body.innerHTML;
 
-        // Store the original body content
-        var originalContent = document.body.innerHTML;
+            document.body.innerHTML = printContent;
 
-        // Replace the entire body content with the specific div content
-        document.body.innerHTML = printContent;
+            window.print();
 
-        // Print the page
-        window.print();
+            document.body.innerHTML = originalContent;
 
-        // Restore the original body content
-        document.body.innerHTML = originalContent;
-    }
-</script>
+            window.location.reload();
+        }
+    </script>
