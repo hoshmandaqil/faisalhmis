@@ -97,29 +97,30 @@
 <script>
     function printSpecificDiv(divId) {
         var printContent = document.getElementById(divId).innerHTML;
-        var printWindow = window.open('', '_blank');
+        var originalContent = document.body.innerHTML;
 
-        printWindow.document.open();
-        printWindow.document.write(`
-        <html>
-        <head>
-            <title>Print</title>
+        document.body.innerHTML = `
             <style>
                 @media print {
                     body {
                         font-family: Arial, sans-serif;
                         font-size: 14px;
-                        width: 80mm; /* POS 80 printer width */
+                        width: 80mm; /* Ensures POS printer width */
+                        margin: 0;
+                        padding: 0;
                     }
-                    table {
+
+                    .table {
                         width: 100%;
                         border-collapse: collapse;
                     }
+
                     th, td {
                         border: 1px solid black;
                         padding: 5px;
                         text-align: left;
                     }
+
                     img {
                         display: block;
                         margin: 0 auto;
@@ -127,15 +128,16 @@
                     }
                 }
             </style>
-        </head>
-        <body>
             ${printContent}
-        </body>
-        </html>
-    `);
+        `;
 
-        printWindow.document.close();
-        printWindow.print();
-        printWindow.close();
+        window.print();
+
+        // Restore original content after printing
+        setTimeout(() => {
+            document.body.innerHTML = originalContent;
+            location.reload();
+        }, 500);
     }
 </script>
+
