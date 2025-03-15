@@ -97,47 +97,48 @@
 <script>
     function printSpecificDiv(divId) {
         var printContent = document.getElementById(divId).innerHTML;
-        var originalContent = document.body.innerHTML;
+        var printWindow = window.open('', '_blank');
 
-        document.body.innerHTML = `
-            <style>
-                @media print {
-                    body {
-                        font-family: Arial, sans-serif;
-                        font-size: 14px;
-                        width: 80mm; /* Ensures POS printer width */
-                        margin: 0;
-                        padding: 0;
+        printWindow.document.open();
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print</title>
+                <style>
+                    @media print {
+                        body {
+                            font-family: Arial, sans-serif;
+                            font-size: 10px;
+                            width: 80mm;
+                            margin: 0;
+                            padding: 0;
+                        }
+
+                        .table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+
+                        th, td {
+                            border: 1px solid black;
+                            padding: 5px;
+                            text-align: left;
+                        }
+
+                        img {
+                            display: block;
+                            margin: 0 auto;
+                            max-width: 100%;
+                        }
                     }
-
-                    .table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-
-                    th, td {
-                        border: 1px solid black;
-                        padding: 5px;
-                        text-align: left;
-                    }
-
-                    img {
-                        display: block;
-                        margin: 0 auto;
-                        max-width: 100%;
-                    }
-                }
-            </style>
-            ${printContent}
-        `;
-
-        window.print();
-
-        // Restore original content after printing
-        setTimeout(() => {
-            document.body.innerHTML = originalContent;
-            location.reload();
-        }, 500);
+                </style>
+            </head>
+            <body onload="window.print(); window.onafterprint = function() { window.close(); }">
+                ${printContent}
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
     }
 </script>
-
