@@ -9,17 +9,6 @@
         <?php include public_path('assets/css/bootstrap.min.css'); ?>
     </style>
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" media='all'>
-    <style>
-        @media print {
-            .remark {
-                display: block;
-            }
-
-            body {
-                padding: 10px !important;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -105,17 +94,48 @@
 
 </html>
 
-    <script>
-        function printSpecificDiv(divId) {
-            var printContent = document.getElementById(divId).innerHTML;
-            var originalContent = document.body.innerHTML;
+<script>
+    function printSpecificDiv(divId) {
+        var printContent = document.getElementById(divId).innerHTML;
+        var printWindow = window.open('', '_blank');
 
-            document.body.innerHTML = printContent;
+        printWindow.document.open();
+        printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print</title>
+            <style>
+                @media print {
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 14px;
+                        width: 80mm; /* POS 80 printer width */
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    th, td {
+                        border: 1px solid black;
+                        padding: 5px;
+                        text-align: left;
+                    }
+                    img {
+                        display: block;
+                        margin: 0 auto;
+                        max-width: 100%;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            ${printContent}
+        </body>
+        </html>
+    `);
 
-            window.print();
-
-            document.body.innerHTML = originalContent;
-
-            window.location.reload();
-        }
-    </script>
+        printWindow.document.close();
+        printWindow.print();
+        printWindow.close();
+    }
+</script>
