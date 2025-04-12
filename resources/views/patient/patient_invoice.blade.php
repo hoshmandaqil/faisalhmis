@@ -36,7 +36,7 @@
 @section('content')
     <div id="print-preview">
         <div>
-            <button class="btn btn-primary" onclick="printDiv('print-me')" id="print-button" onclick="window.print()">
+            <button class="btn btn-primary" onclick="printDiv('print-me')">
                 <i class="fa fa-print"></i> Print
             </button>
         </div>
@@ -51,8 +51,6 @@
                             <p class="title" style="font-size: 1rem">Patient Invoice</p>
                         </div>
                     </div>
-
-
                     <div class="invoice-container">
                         <hr>
                         <div class="invoice-body col-12">
