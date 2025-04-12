@@ -6,6 +6,32 @@
 
 @section('page-action')
 @endsection
+<style>
+    @media print {
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            width: 80mm;
+            margin: 0;
+            padding: 0;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th,
+        td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+    }
+</style>
 
 @section('content')
     <div id="print-preview">
