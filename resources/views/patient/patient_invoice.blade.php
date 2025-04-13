@@ -6,32 +6,53 @@
 
 @section('page-action')
 @endsection
+
 <style>
     @media print {
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 10px;
-            width: 80mm;
-            margin: 0;
-            padding: 0;
+        body * {
+            visibility: hidden;
         }
-        .table {
+    
+        #print-me, #print-me * {
+            visibility: visible;
+        }
+    
+        #print-me {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80mm;
+            font-size: 11px;
+        }
+    
+        table {
             width: 100%;
             border-collapse: collapse;
         }
-        th,
-        td {
-            border: 1px solid black;
-            padding: 5px;
+    
+        th, td {
             text-align: left;
+            padding: 2px 4px;
+            font-size: 11px;
+            white-space: nowrap;
         }
-        img {
-            display: block;
-            margin: 0 auto;
-            max-width: 100%;
+    
+        .title {
+            font-size: 13px !important;
+            font-weight: bold;
+        }
+    
+        h5, p {
+            margin: 2px 0;
+            font-size: 11px;
+        }
+    
+        .no-border {
+            border: none !important;
         }
     }
-</style>
+    </style>
+    
 
 @section('content')
     <div id="print-preview">
