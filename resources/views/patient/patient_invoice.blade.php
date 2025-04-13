@@ -17,7 +17,7 @@
         <div class="row gutters">
             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                 <div>
-                    <div class="row gutters">
+                    <div class="row gutters d-print-none">
                         <div class="col-12 text-center">
                             <p class="title">Ministry of Health</p>
                             <p class="title">Bayazid Rokhan Hospital</p>
@@ -36,7 +36,7 @@
                                                 <h5><strong>Patient Name: </strong> {{ ucfirst($patient->patient_name) }}
                                                 </h5>
                                             </div>
-                                            <div>
+                                            <div class="d-print-none">
                                                 <h5><strong>Patient ID: </strong> {{ $patient->patient_generated_id }}</h5>
                                             </div>
                                             <div>
@@ -52,8 +52,8 @@
                                                 <tbody>
                                                     <tr>
                                                         <th>Categories</th>
-                                                        <th>Original Price</th>
-                                                        <th>Discount</th>
+                                                        <th class="d-print-none">Original Price</th>
+                                                        <th class="d-print-none">Discount</th>
                                                         <th>Payable</th>
                                                     </tr>
                                                     <tr>
@@ -111,7 +111,7 @@
                                                                 }
                                                             }
                                                         @endphp
-                                                        <td>
+                                                        <td class="d-print-none">
                                                             <p>
                                                                 {{ number_format($patient->OPD_fee) }} AF<br>
                                                                 {{ number_format($totalIPD + $totalIPD_discount) }} AF<br>
@@ -125,7 +125,7 @@
                                                                 <strong>{{ number_format($patient->OPD_fee + $totalIPD + $totalIPD_discount + $totalPharmacy + $totalLab) }}</strong>
                                                             </h5>
                                                         </td>
-                                                        <td>
+                                                        <td class="d-print-none">
                                                             <p>
                                                                 0 AF<br>
                                                                 {{ number_format($totalIPD_discount) }} AF<br>
