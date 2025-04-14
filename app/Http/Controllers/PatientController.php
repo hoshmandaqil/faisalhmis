@@ -309,8 +309,8 @@ class PatientController extends Controller
     {
         $patient = Patient::where('id', $id)
             ->with('pharmacyMedicines', 'ipd', 'laboratoryTests.testName')->first();
-        // dd($patient);
-        return view('patient.patient_invoice', compact('patient'));
+        $currentDate = now()->format('Y-m-d'); // Get current date in 'YYYY-MM-DD' format
+        return view('patient.patient_invoice', compact('patient', 'currentDate'));
     }
 
     public function printVitalSignOfPatient()
