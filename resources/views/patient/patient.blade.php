@@ -135,7 +135,7 @@
                                         </div>
                                     </div>
                                     <a class="btn btn-sm btn-dark"
-                                        href="{{ url('patient_invoice', ['patient' => $patient->id]) }}">Invoice</a>
+                                        href="{{ url('patient_invoice', ['patient' => $patient->id]) }}" target="_blank">Invoice</a>
                                 </td>
                             </tr>
                         @endforeach
