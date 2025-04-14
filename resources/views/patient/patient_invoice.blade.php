@@ -1,10 +1,10 @@
-@extends('layouts.master')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('page_title')
-    Patients Invoice
-@endsection
-
-@section('styles')
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Invoice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,37 +83,48 @@
             }
         }
     </style>
-@endsection
+</head>
 
-@section('content')
-    <div class="">
-        <div id="print-it" class="card">
-            <div class="card-body">
-                <div class="text-c">
-                    <div class="size-large text-c">Ministry of Health</div>
-                    <div class="size-large text-c">Bayazid Rokhan Hospital</div>
-                    <div class="size-large text-c">Finance Department</div>
-                    <div class="size-large text-c">Patient Invoice</div>
+<body>
+    <div id="print-it">
+        <div class="text-c">
+            <div class="size-large">Ministry of Health</div>
+            <div class="size-large">Bayazid Rokhan Hospital</div>
+            <div class="size-large">Finance Department</div>
+            <div class="size-large">Patient Invoice</div>
+        </div>
+
+        <div class="invoice-container">
+            <div>
+                <div class="display-flex">
+                    <div class="flex-item-1">
+                        <h5 class="text-c"><strong>Patient Name: </strong> {{ ucfirst($patient->patient_name) }}</h5>
+                        <h5 class="text-c"><strong>Patient ID: </strong>{{ $patient->patient_generated_id }}</h5>
+                    </div>
+                    <div class="flex-item-1">
+                        <h5 class="text-c">Doctor: {{ $patient->doctor->name }}</h5>
+                        <h5 class="text-c">Date: {{ $currentDate }}</h5>
+                    </div>
                 </div>
-                <table class="table table-bordered text-center">
+                <table class="invoice-table">
                     <thead>
                         <tr>
-                            <th>Item</th>
-                            <th>Total</th>
-                            <th>Discount</th>
-                            <th>Payable</th>
+                            <th class="text-c">Categories</th>
+                            <th class="text-c">Original Price</th>
+                            <th class="text-c">Discount</th>
+                            <th class="text-c">Payable</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- OPD Fee --}}
+                        {{-- OPD Row --}}
                         <tr>
-                            <td>OPD Fee</td>
-                            <td>{{ number_format($patient->OPD_fee) }} AF</td>
-                            <td>0 AF</td>
-                            <td>{{ number_format($patient->OPD_fee) }} AF</td>
+                            <td class="text-c">OPD Fee</td>
+                            <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
+                            <td class="text-c">0 AF</td>
+                            <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
                         </tr>
 
-                        {{-- IPD Fee --}}
+                        {{-- IPD Row --}}
                         @php
                             $totalIPD = 0;
                             $totalIPD_discount = 0;
@@ -124,41 +135,43 @@
                                 $discharge_date = $patient->ipd->discharge_date;
                                 $ipdDays = $register_date->diffInDays($discharge_date);
                                 for ($i = 1; $i <= $ipdDays; $i++) {
-                                    $price = $patient->ipd->price;
-                                    $discount = ($patient->ipd->discount * $price) / 100;
-                                    $totalIPD += $price - $discount;
-                                    $totalIPD_discount += $discount;
+                                    $totalPrice = $patient->ipd->price;
+                                    $discountForTest = ($patient->ipd->discount * $totalPrice) / 100;
+                                    $totalIPD += $totalPrice - $discountForTest;
+                                    $totalIPD_discount += $discountForTest;
                                 }
                             }
                         @endphp
                         <tr>
-                            <td>IPD Fee</td>
-                            <td>{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
-                            <td>{{ number_format($totalIPD_discount) }} AF</td>
-                            <td>{{ number_format($totalIPD) }} AF</td>
+                            <td class="text-c">IPD Fee</td>
+                            <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
+                            <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
+                            <td class="text-c">{{ number_format($totalIPD) }} AF</td>
                         </tr>
 
-                        {{-- Pharmacy Charges --}}
+                        {{-- Pharmacy Row --}}
                         @php $totalPharmacy = 0; @endphp
                         @foreach ($patient->pharmacyMedicines as $medicine)
                             @php $totalPharmacy += $medicine->quantity * $medicine->unit_price; @endphp
                         @endforeach
                         <tr>
-                            <td>Pharmacy Charges</td>
-                            <td>{{ number_format($totalPharmacy) }} AF</td>
-                            <td>0 AF</td>
-                            <td>{{ number_format($totalPharmacy) }} AF</td>
+                            <td class="text-c">Pharmacy Charges</td>
+                            <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
+                            <td class="text-c">0 AF</td>
+                            <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
                         </tr>
 
-                        {{-- Laboratory Tests --}}
-                        @php $totalLab = 0; @endphp
+                        {{-- Lab Test Rows --}}
+                        @php
+                            $totalLab = 0;
+                        @endphp
                         @foreach ($patient->laboratoryTests as $labTest)
                             @php $totalLab += $labTest->price; @endphp
                             <tr>
-                                <td>{{ $labTest->testName->dep_name }}</td>
-                                <td>{{ number_format($labTest->price) }} AF</td>
-                                <td>0 AF</td>
-                                <td>{{ number_format($labTest->price) }} AF</td>
+                                <td class="text-c">{{ $labTest->testName->dep_name }}</td>
+                                <td class="text-c">{{ number_format($labTest->price) }} AF</td>
+                                <td class="text-c">0 AF</td>
+                                <td class="text-c">{{ number_format($labTest->price) }} AF</td>
                             </tr>
                         @endforeach
 
@@ -167,12 +180,13 @@
                             $grandTotal = $patient->OPD_fee + $totalIPD + $totalPharmacy + $totalLab;
                         @endphp
                         <tr>
-                            <td class="text-bold">Grand Total</td>
-                            <td class="text-bold">{{ number_format($grandTotal) }} AF</td>
-                            <td class="text-bold">0 AF</td>
-                            <td class="text-bold">{{ number_format($grandTotal) }} AF</td>
+                            <td class="size-medium text-bold text-c">Grand Total</td>
+                            <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
+                            <td class="size-medium text-bold text-c">0 AF</td>
+                            <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
                         </tr>
                     </tbody>
+
                 </table>
             </div>
             <div style="text-align: right; margin-top: 20px;">
@@ -182,4 +196,12 @@
             </div>
         </div>
     </div>
-@endsection
+
+    <script>
+        function printDiv(divId) {
+            window.print();
+        }
+    </script>
+</body>
+
+</html>
