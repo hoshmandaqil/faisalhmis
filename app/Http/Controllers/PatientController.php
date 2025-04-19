@@ -28,9 +28,12 @@ class PatientController extends Controller
 
         $doctors = User::where('type', 3)
             ->when(in_array(auth()->user()->id, $targetIds), function ($query) {
-                $query->where('id', 28);
+            $query->where('id', 28);
             })
             ->where('status', 1)
+            ->whereHas('employee', function ($query) {
+            $query->where('status', 1);
+            })
             ->latest()
             ->get();
 
