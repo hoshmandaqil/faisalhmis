@@ -34,7 +34,7 @@
                     <td><strong>{{ number_format($payroll->total_amount)}}</strong></td>
                     <td><strong>{{ number_format($payroll->items->sum('tax'), 2) }}</strong></td>
                     <td><strong>{{number_format($payroll->payments->sum('amount'))}} AF</strong></td>
-                    <td><strong>{{number_format($payroll->total_amount - $payroll->payments->sum('amount') - $payroll->items->sum('tax'))}} AF </strong></td>
+                    <td><strong>{{number_format($payroll->total_amount - $payroll->payments->sum('amount'))}} AF </strong></td>
                     <td>
                         <span
                             class="badge badge-{{ $payroll->status == 'approved' ? 'success' : ($payroll->status == 'rejected' ? 'danger' : 'warning') }}">
