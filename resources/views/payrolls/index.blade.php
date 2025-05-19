@@ -30,8 +30,8 @@
                     <td>{{ $payroll->id }}</td>
                     <td>{{ date('m/Y', strtotime($payroll->end_date)) }}</td>
                     <td>{{ $payroll->official_days }}</td>
-                    <td><strong>{{ number_format($payroll->total_amount) }}</strong></td>
-                    <td><strong>{{ number_format($payroll->total_amount - $payroll->items->sum('tax'))}}</strong></td>
+                    <td><strong>{{ number_format($payroll->total_amount) + $payroll->items->sum('tax') }}</strong></td>
+                    <td><strong>{{ number_format($payroll->total_amount)}}</strong></td>
                     <td><strong>{{ number_format($payroll->items->sum('tax'), 2) }}</strong></td>
                     <td><strong>{{number_format($payroll->payments->sum('amount'))}} AF</strong></td>
                     <td><strong>{{number_format($payroll->total_amount - $payroll->payments->sum('amount') - $payroll->items->sum('tax'))}} AF </strong></td>
