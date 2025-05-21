@@ -115,7 +115,7 @@
                                 <td>{{ round($lab->lab->price - $lab->lab->mainDepartment->discount) }}</td>
                                 <td>1</td>
                                 <td>{{ round($lab->lab->price - $lab->lab->mainDepartment->discount) }}</td>
-                                <?php $grandTotal += $lab->lab->price - $lab->lab->mainDepartment->discount; ?>
+                                <?php $grandTotal += $lab->lab->price; ?>
                             </tr>
                         @endforeach
                         <tr>
