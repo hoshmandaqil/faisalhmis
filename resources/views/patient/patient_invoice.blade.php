@@ -126,24 +126,46 @@
 
                         {{-- IPD Row --}}
                         @php
+                            use Carbon\Carbon;
+
                             $totalIPD = 0;
                             $totalIPD_discount = 0;
-                            if ($patient->ipd != null && $patient->ipd->discharge_date != null) {
-                                $register_date = \Carbon\Carbon::parse(
-                                    date('Y-m-d', strtotime($patient->ipd->created_at)),
-                                );
-                                $discharge_date = $patient->ipd->discharge_date;
-                                $ipdDays = $register_date->diffInDays($discharge_date);
-                                for ($i = 1; $i <= $ipdDays; $i++) {
-                                    $totalPrice = $patient->ipd->price;
-                                    $discountForTest = ($patient->ipd->discount * $totalPrice) / 100;
-                                    $totalIPD += $totalPrice - $discountForTest;
-                                    $totalIPD_discount += $discountForTest;
+
+                            if ($patient->ipd != null) {
+                                $register_date = Carbon::parse($patient->ipd->created_at)->startOfDay();
+                                $end_date = $patient->ipd->discharge_date
+                                    ? Carbon::parse($patient->ipd->discharge_date)->startOfDay()
+                                    : Carbon::now()->startOfDay(); // If not discharged, use today's date
+
+                                $total_days = $register_date->diffInDays($end_date) + 1;
+
+                                $daily_price = (float) $patient->ipd->price;
+                                $discount_percent = (float) $patient->ipd->discount;
+
+                                for ($i = 0; $i < $total_days; $i++) {
+                                    $date = $register_date->copy()->addDays($i)->format('Y-m-d');
+                                    $discount = ($discount_percent * $daily_price) / 100;
+                                    $final_price = $daily_price - $discount;
+
+                                    $totalIPD += $final_price;
+                                    $totalIPD_discount += $discount;
+                        @endphp
+
+                        <tr>
+                            <td class="text-c">IPD Fee ({{ $date }})</td>
+                            <td class="text-c">{{ number_format($daily_price) }} AF</td>
+                            <td class="text-c">{{ number_format($discount) }} AF</td>
+                            <td class="text-c">{{ number_format($final_price) }} AF</td>
+                        </tr>
+
+                        @php
                                 }
                             }
                         @endphp
+
+                        <!-- Summary Row -->
                         <tr>
-                            <td class="text-c">IPD Fee</td>
+                            <td class="text-c font-bold">Total IPD Fee</td>
                             <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
                             <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
                             <td class="text-c">{{ number_format($totalIPD) }} AF</td>
