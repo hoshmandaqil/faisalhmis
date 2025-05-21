@@ -139,8 +139,8 @@ class PatientLabController extends Controller
         })->with('labs', 'laboratoryTests', 'labs.lab.mainDepartment', 'createdBy', 'doctor')->latest()->paginate(100);
         return view('Laboratory.labratory_patients_lab', compact('labPatients', 'patientSearchDetail'));
     }
-
-
+    
+    
     public function search_reception_lab_patient(Request $request)
     {
 
