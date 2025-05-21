@@ -12,28 +12,36 @@
                     <label class="col-form-label-sm mb-2 mr-sm-2 col-md-2">Attachment</label>
                     {{-- <label class="col-form-label-sm mb-2 mr-sm-2 col-md-1">Actions</label> --}}
                 </div>
-                <?php $onlyReassignLabs = []; ?>
+                <?php
+                    use Carbon\Carbon;
+                    $shownTodayLabs = [];
+                    $onlyReassignLabs = [];
+                ?>
                 @foreach ($labs as $lab)
-                    @if (($lab->checkLabAlreadySet($lab->patient_id, $lab->lab_id) || $lab->lab->main_dep_id == 15) && in_array($lab->lab->mainDepartment->dep_name, $user_permissions))
-                        @if ($lab->lab->main_dep_id == 15)
-                            <?php array_push($onlyReassignLabs, $lab); ?>
-                        @else
+                    @php
+                        $isToday = \Carbon\Carbon::parse($lab->created_at)->isToday();
+                        $labId = $lab->lab_id;
+                        $isMainDep15 = $lab->lab->main_dep_id == 15;
+                        $hasPermission = in_array($lab->lab->mainDepartment->dep_name, $user_permissions);
+                    @endphp
+
+                    @if ($hasPermission)
+                        @if ($isMainDep15)
+                            <?php $onlyReassignLabs[] = $lab; ?>
+                        @elseif (!$isToday || !in_array($labId, $shownTodayLabs))
+                            @if ($isToday)
+                                <?php $shownTodayLabs[] = $labId; ?>
+                            @endif
+
                             <div class="form-inline" id="{{ $lab->id }}">
                                 <input type="hidden" name="lab_id[]" value="{{ $lab->lab->id }}">
-                                <input type="hidden" name="lab_discounts[]"
-                                    value="{{ $lab->lab->mainDepartment->discount }}">
-                                <input type="text" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="lab_name[]"
-                                    readonly value="{{ $lab->lab->dep_name }}">
-                                <input type="number" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_price"
-                                    name="price[]" readonly value="{{ $lab->lab->price }}">
-                                <textarea style="height:60px;" cols="3" rows="10"
-                                    class="form-control-sm mb-2 mr-sm-2 col-md-3" name="remark[]"
-                                    readonly>{{ $lab->remark }}</textarea>
-                                <textarea style="height:60px;" cols="3" rows="10"
-                                    class="form-control-sm mb-2 mr-sm-2 col-md-3" name="result[]"></textarea>
+                                <input type="hidden" name="lab_discounts[]" value="{{ $lab->lab->mainDepartment->discount }}">
+                                <input type="text" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="lab_name[]" readonly value="{{ $lab->lab->dep_name }}">
+                                <input type="number" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_price" name="price[]" readonly value="{{ $lab->lab->price }}">
+                                <textarea style="height:60px;" cols="3" rows="10" class="form-control-sm mb-2 mr-sm-2 col-md-3" name="remark[]" readonly>{{ $lab->remark }}</textarea>
+                                <textarea style="height:60px;" cols="3" rows="10" class="form-control-sm mb-2 mr-sm-2 col-md-3" name="result[]"></textarea>
                                 <input type="file" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="attachments[]">
-                                <i class="icon-minus-circle text-danger" style="cursor: pointer"
-                                    onclick="removeTest(this)"></i>
+                                <i class="icon-minus-circle text-danger" style="cursor: pointer" onclick="removeTest(this)"></i>
                             </div>
                         @endif
                     @endif
