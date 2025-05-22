@@ -333,6 +333,7 @@ class ReportController extends Controller
         $allIncomes = 0;
         $allExpenses = 0;
         $otherIncome = 0;
+        $miscellaneousIncome = 0;
         $totalPayrollPayment = 0;
 
         // Extract registered by list
@@ -348,7 +349,6 @@ class ReportController extends Controller
                 $q->whereNull('deleted_at');
             })->sum('amount');
 
-            $miscellaneousIncome = 0;
             $miscellaneousIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->whereNull('deleted_at')->sum('amount');
 
 
