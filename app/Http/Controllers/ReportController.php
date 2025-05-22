@@ -348,6 +348,7 @@ class ReportController extends Controller
                 $q->whereNull('deleted_at');
             })->sum('amount');
 
+            $miscellaneousIncome = 0;
             $miscellaneousIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->whereNull('deleted_at')->sum('amount');
 
 
