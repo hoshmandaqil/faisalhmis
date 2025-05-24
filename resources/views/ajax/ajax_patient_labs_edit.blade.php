@@ -112,14 +112,14 @@
                         @foreach ($labs as $lab)
                             <tr>
                                 <td>{{ ucfirst($lab) }}</td>
-                                <td>{{ round($lab->lab->price - $lab->lab->mainDepartment->discount ) }}</td>
+                                <td>{{ round($lab->lab->price  ) }}</td>
                                 <td>1</td>
-                                <td>{{ round($lab->lab->price - $lab->lab->mainDepartment->discount ) }}</td>
-                                <?php $grandTotal += $lab->lab->price - $lab->lab->mainDepartment->discount; ?>
+                                <td>{{ round($lab->lab->price  ) }}</td>
+                                <?php $grandTotal += $lab->lab->price ; ?>
                             </tr>
                         @endforeach
                         <tr>
-                            <td style="border-top: 1px solid lightgray; font-weight:bold;"
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;"`
                                 colspan="100%"><b>Total: {{ round($grandTotal) }} AFN</b></td>
                         </tr>
                     </tbody>
