@@ -95,7 +95,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-weight:bold;">ID:<span class="font-weight-bolder"> {{ $patient }}</span> / </td>
+                        <td style="font-weight:bold;">ID:<span class="font-weight-bolder"> {{ $patient->patient_generated_id }}</span> / </td>
                         <td style="font-weight:bold;">Patient Name:<span class="font-weight-bolder"> {{ $patient->patient_name }}</span></td>
                     </tr>
                 </table>
@@ -107,11 +107,11 @@
                         <th>QTY</th>
                         <th>AMOUNT</th>
                     </thead>
-                    <tbody>
+                    <tbody>`
                         <?php $grandTotal = 0; ?>
                         @foreach ($labs as $lab)
                             <tr>
-                                <td>{{ ucfirst($lab) }}</td>
+                                <td>{{ ucfirst($lab->lab->dep_name) }}</td>
                                 <td>{{ round($lab->lab->price  ) }}</td>
                                 <td>1</td>
                                 <td>{{ round($lab->lab->price  ) }}</td>
