@@ -1351,7 +1351,7 @@ class ReportController extends Controller
         ];
 
         // Calculate expenses by categories within the date range
-        $expenseCategories = ExpenseSlip::whereBetween('created_at', [
+        $expenseCategories = ExpenseSlip::whereBetween('date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])
