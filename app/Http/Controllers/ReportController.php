@@ -1324,7 +1324,7 @@ class ReportController extends Controller
         $totalIncome += $miscIncome;
 
         // Calculate total expenses within the date range
-        $totalExpenses = ExpenseSlip::whereBetween('created_at', [
+        $totalExpenses = ExpenseSlip::whereBetween('date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])->get()->sum(function ($expenseSlip) {
