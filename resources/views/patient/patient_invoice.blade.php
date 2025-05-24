@@ -127,12 +127,12 @@
                         {{-- IPD Row --}}
                         @php
                             use Carbon\Carbon;
-
                             $totalIPD = 0;
                             $totalIPD_discount = 0;
 
                             if ($patient->ipd != null) {
-                                $register_date = Carbon::parse($patient->ipd->created_at)->startOfDay();
+                                $register_date = Carbon::parse($patient->reg_date)->startOfDay();
+
                                 $end_date = $patient->ipd->discharge_date
                                     ? Carbon::parse($patient->ipd->discharge_date)->startOfDay()
                                     : Carbon::now()->startOfDay(); // If not discharged, use today's date
