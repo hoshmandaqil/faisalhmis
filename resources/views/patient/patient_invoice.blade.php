@@ -125,49 +125,49 @@
                         </tr>
 
                         {{-- IPD Row --}}
+                        @if ($patient->ipds->count() > 0)
                         @php
-                            use Carbon\Carbon;
+                            $firstIpd = $patient->ipds->sortBy('created_at')->first();
+                            $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
+                            $end_date = $firstIpd->discharge_date
+                                ? Carbon::parse($firstIpd->discharge_date)->startOfDay()
+                                : Carbon::now()->startOfDay(); // If not discharged, use today's date
+
+                            $total_days = $register_date->diffInDays($end_date);
+
+                            $daily_price = (float) $firstIpd->price;
+                            $discount_percent = (float) $firstIpd->discount;
+
                             $totalIPD = 0;
                             $totalIPD_discount = 0;
+                        @endphp
 
-                            if ($patient->ipds->count() > 0) {
-                                $firstIpd = $patient->ipds->sortBy('created_at')->first();
-                                $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
-                                $end_date = $firstIpd->discharge_date
-                                    ? Carbon::parse($firstIpd->discharge_date)->startOfDay()
-                                    : Carbon::now()->startOfDay(); // If not discharged, use today's date
-
-                                $total_days = $register_date->diffInDays($end_date);
-
-                                $daily_price = (float) $firstIpd->price;
-                                $discount_percent = (float) $firstIpd->discount;
-
-                                for ($i = 0; $i < $total_days; $i++) {
+                        @if ($total_days > 0)
+                            @for ($i = 0; $i < $total_days; $i++)
+                                @php
                                     $date = $register_date->copy()->addDays($i)->format('Y-m-d');
                                     $discount = ($discount_percent * $daily_price) / 100;
                                     $final_price = $daily_price - $discount;
 
                                     $totalIPD += $final_price;
                                     $totalIPD_discount += $discount;
-                                }
-                            }
-                        @endphp
-
-                        <tr>
-                            <td class="text-c">IPD Fee ({{ $date }})</td>
-                            <td class="text-c">{{ number_format($daily_price) }} AF</td>
-                            <td class="text-c">{{ number_format($discount) }} AF</td>
-                            <td class="text-c">{{ number_format($final_price) }} AF</td>
-                        </tr>
-
-
-                        <!-- Summary Row -->
-                        <tr>
-                            <td class="text-c font-bold">Total IPD Fee</td>
-                            <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
-                            <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
-                            <td class="text-c">{{ number_format($totalIPD) }} AF</td>
-                        </tr>
+                                @endphp
+                                <tr>
+                                    <td class="text-c">IPD Fee ({{ $date }})</td>
+                                    <td class="text-c">{{ number_format($daily_price) }} AF</td>
+                                    <td class="text-c">{{ number_format($discount) }} AF</td>
+                                    <td class="text-c">{{ number_format($final_price) }} AF</td>
+                                </tr>
+                            @endfor
+                            <!-- Summary Row -->
+                            <tr>
+                                <td class="text-c font-bold">Total IPD Fee</td>
+                                <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
+                                <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
+                                <td class="text-c">{{ number_format($totalIPD) }} AF</td>
+                            </tr>
+                        @endif
+                    @endif
 
                         {{-- Pharmacy Row --}}
                         @php $totalPharmacy = 0; @endphp
