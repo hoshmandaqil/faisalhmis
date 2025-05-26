@@ -130,17 +130,17 @@
                             $totalIPD = 0;
                             $totalIPD_discount = 0;
 
-                            if ($patient->ipd != null) {
+                            if ($patient->ipds->count() > 0) {
                                 $firstIpd = $patient->ipds->sortBy('created_at')->first();
                                 $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
-                                $end_date = $patient->ipd->discharge_date
-                                    ? Carbon::parse($patient->ipd->discharge_date)->startOfDay()
+                                $end_date = $firstIpd->discharge_date
+                                    ? Carbon::parse($firstIpd->discharge_date)->startOfDay()
                                     : Carbon::now()->startOfDay(); // If not discharged, use today's date
 
                                 $total_days = $register_date->diffInDays($end_date);
 
-                                $daily_price = (float) $patient->ipd->price;
-                                $discount_percent = (float) $patient->ipd->discount;
+                                $daily_price = (float) $firstIpd->price;
+                                $discount_percent = (float) $firstIpd->discount;
 
                                 for ($i = 0; $i < $total_days; $i++) {
                                     $date = $register_date->copy()->addDays($i)->format('Y-m-d');
@@ -149,6 +149,8 @@
 
                                     $totalIPD += $final_price;
                                     $totalIPD_discount += $discount;
+                                }
+                            }
                         @endphp
 
                         <tr>
@@ -158,10 +160,6 @@
                             <td class="text-c">{{ number_format($final_price) }} AF</td>
                         </tr>
 
-                        @php
-                                }
-                            }
-                        @endphp
 
                         <!-- Summary Row -->
                         <tr>
