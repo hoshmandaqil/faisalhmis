@@ -137,12 +137,7 @@
                                     ? Carbon::parse($patient->ipd->discharge_date)->startOfDay()
                                     : Carbon::now()->startOfDay(); // If not discharged, use today's date
 
-                                $total_days = $register_date->diffInDays($end_date) + 1;
-
-                                // Subtract 1 day if the patient is discharged
-                                if ($patient->ipd->discharge_date) {
-                                    $total_days -= 1;
-                                }
+                                $total_days = $register_date->diffInDays($end_date);
 
                                 $daily_price = (float) $patient->ipd->price;
                                 $discount_percent = (float) $patient->ipd->discount;
