@@ -125,8 +125,11 @@
                         </tr>
 
                         {{-- IPD Row --}}
+
                         @if ($patient->ipds->count() > 0)
                         @php
+                            use Carbon\Carbon;
+
                             $firstIpd = $patient->ipds->sortBy('created_at')->first();
                             $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
                             $end_date = $firstIpd->discharge_date
