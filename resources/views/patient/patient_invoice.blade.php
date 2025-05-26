@@ -131,13 +131,13 @@
                             $totalIPD_discount = 0;
 
                             if ($patient->ipd != null) {
-                                $register_date = Carbon::parse($patient->ipd->created_at)->startOfDay();
-
+                                $firstIpd = $patient->ipds->sortBy('created_at')->first();
+                                $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
                                 $end_date = $patient->ipd->discharge_date
                                     ? Carbon::parse($patient->ipd->discharge_date)->startOfDay()
                                     : Carbon::now()->startOfDay(); // If not discharged, use today's date
 
-                                $total_days = $register_date->diffInDays($end_date);
+                                $total_days = $register_date->diffInDays($end_date);`
 
                                 $daily_price = (float) $patient->ipd->price;
                                 $discount_percent = (float) $patient->ipd->discount;
