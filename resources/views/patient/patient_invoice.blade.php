@@ -133,7 +133,7 @@
                             $lastDischargeIpd = $patient->ipds->whereNotNull('discharge_date')->sortByDesc('discharge_date')->first();
 
                             $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
-                            $end_date = $lastDischargeIpd->discharge_date
+                            $end_date = $lastDischargeIpd
                                 ? Carbon::parse($lastDischargeIpd->discharge_date)->startOfDay()
                                 : Carbon::now()->startOfDay(); // If not discharged, use today's date
 
