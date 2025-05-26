@@ -131,7 +131,7 @@
                             $totalIPD_discount = 0;
 
                             if ($patient->ipd != null) {
-                                $register_date = Carbon::parse($patient->reg_date)->startOfDay();
+                                $register_date = Carbon::parse($patient->ipd->created_at)->startOfDay();
 
                                 $end_date = $patient->ipd->discharge_date
                                     ? Carbon::parse($patient->ipd->discharge_date)->startOfDay()
