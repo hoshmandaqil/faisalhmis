@@ -130,9 +130,11 @@
                         @if ($patient->ipds->count() > 0)
                         @php
                             $firstIpd = $patient->ipds->sortBy('created_at')->first();
+                            $lastDischargeIpd = $patient->ipds->whereNotNull('discharge_date')->sortByDesc('discharge_date')->first();
+
                             $register_date = Carbon::parse($firstIpd->created_at)->startOfDay();
-                            $end_date = $firstIpd->discharge_date
-                                ? Carbon::parse($firstIpd->discharge_date)->startOfDay()
+                            $end_date = $lastDischargeIpd->discharge_date
+                                ? Carbon::parse($lastDischargeIpd->discharge_date)->startOfDay()
                                 : Carbon::now()->startOfDay(); // If not discharged, use today's date
 
                             $total_days = $register_date->diffInDays($end_date);
