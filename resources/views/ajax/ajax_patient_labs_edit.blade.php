@@ -11,18 +11,6 @@
     <div id="editPatientLabPrintMe">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 d-print-none"
             id="editPatientLabPrint">
-            {{-- <div class="row gutters">
-
-            <div class="col-6 offset-3 text-center">
-                <p class="title"
-                    style="font-size: 1.3rem">Ministry of Health</p>
-                <p class="title"
-                    style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
-                <p class="title"
-                    style="font-size: 1rem">Patient Laboratory</p>
-            </div>
-
-        </div> --}}
             <div class="form-group">
                 <label><b>Patient Name:</b> {{ $patient->patient_name }}</label>
             </div>
@@ -106,21 +94,53 @@
                         <th>RATE</th>
                         <th>QTY</th>
                         <th>AMOUNT</th>
+                        <th>DISCOUNT (%)</th>
+                        <th>TOTAL AFTER DISCOUNT</th>
                     </thead>
-                    <tbody>`
-                        <?php $grandTotal = 0; ?>
+                    <tbody>
+                        @php
+                            $grandTotal = 0;
+                            $grandTotalDiscount = 0;
+                            $grandTotalAfterDiscount = 0;
+                        @endphp
                         @foreach ($labs as $lab)
+                            @php
+                                $depName = $lab->lab->dep_name ?? '-';
+                                $price = $lab->lab->price ?? 0;
+                                $discount = $lab->lab && $lab->lab->mainDepartment ? ($lab->lab->mainDepartment->discount ?? 0) : 0;
+                                $amount = $price; // QTY is always 1
+                                if ($patient->no_discount == 1) {
+                                    $discount = 0;
+                                    $discountAmount = 0;
+                                    $afterDiscount = $price;
+                                } else {
+                                    $discountAmount = $price * $discount / 100;
+                                    $afterDiscount = $price - $discountAmount;
+                                }
+                                $grandTotal += $price;
+                                $grandTotalDiscount += $discountAmount;
+                                $grandTotalAfterDiscount += $afterDiscount;
+                            @endphp
                             <tr>
-                                <td>{{ ucfirst($lab->lab->dep_name) }}</td>
-                                <td>{{ round($lab->lab->price  ) }}</td>
+                                <td>{{ ucfirst($depName) }}</td>
+                                <td>{{ round($price) }}</td>
                                 <td>1</td>
-                                <td>{{ round($lab->lab->price  ) }}</td>
-                                <?php $grandTotal += $lab->lab->price ; ?>
+                                <td>{{ round($amount) }}</td>
+                                <td>{{ round($discount) }}</td>
+                                <td>{{ round($afterDiscount) }}</td>
                             </tr>
                         @endforeach
                         <tr>
-                            <td style="border-top: 1px solid lightgray; font-weight:bold;"`
-                                colspan="100%"><b>Total: {{ round($grandTotal) }} AFN</b></td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="3"><b>Amount:</b></td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{$grandTotal}} AFN</td>
+                        </tr>
+                        <tr>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="3"><b>Discount:</b></td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{$patient->no_discount == 1 ? 0 : $grandTotalDiscount}} AFN</td>
+                        </tr>
+                        <tr>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="3"><b>Total After Discount:</b></td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{$patient->no_discount == 1 ? $grandTotal : $grandTotalAfterDiscount}} AFN</td>
                         </tr>
                     </tbody>
                 </table>
