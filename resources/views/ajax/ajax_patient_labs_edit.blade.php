@@ -95,7 +95,6 @@
                         <th>QTY</th>
                         <th>AMOUNT</th>
                         <th>DISCOUNT (%)</th>
-                        <th>TOTAL AFTER DISCOUNT</th>
                     </thead>
                     <tbody>
                         @php
@@ -127,7 +126,6 @@
                                 <td>1</td>
                                 <td>{{ round($amount) }}</td>
                                 <td>{{ round($discount) }}</td>
-                                <td>{{ round($afterDiscount) }}</td>
                             </tr>
                         @endforeach
                         <tr>
