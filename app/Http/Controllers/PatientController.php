@@ -24,7 +24,7 @@ class PatientController extends Controller
     {
         $patients = Patient::latest()->with('doctor', 'createdBy')->paginate(30);
         //$doctors = User::where('type', 3)->latest()->pluck('name', 'id')->all();
-        $targetIds = [25, 23, 24, 64];
+        $targetIds = [25, 23, 24, 64,91];
         $doctors = User::where('type', 3)
             ->where('status', 1)
             ->whereHas('employee', function ($query) {
