@@ -333,6 +333,7 @@ class ReportController extends Controller
         $allIncomes = 0;
         $allExpenses = 0;
         $otherIncome = 0;
+        $miscellaneousIncome = 0;
         $totalPayrollPayment = 0;
 
         // Extract registered by list
@@ -343,25 +344,19 @@ class ReportController extends Controller
 
         if ($from != null && $to != NULL) {
 
-            // This is Overall Profit and expenses Codes.
-            // We are getting expenses and incomes from Kblhms too as an API.
 
-            // // Get all expenses from kblhms
-            // $client = new \GuzzleHttp\Client(['verify' => false]);
-            // $allExpensesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_expenses");
             $kblAllExpenses = ExpenseItem::whereHas('slip', function ($q) {
                 $q->whereNull('deleted_at');
             })->sum('amount');
-            $otherIncome = MiscellaneousIncome::whereNull('deleted_at')->sum('amount');
-            $allExpenses += $kblAllExpenses;
 
-            // Get all income from kblhms
-            // $allIncomesKbl = $client->get("https://kblhms.rokhan.co/api_get_all_incomes");
-            // $kblAllIncomes = json_decode($allIncomesKbl->getBody()->getContents());
-            // $allIncomes += $kblAllIncomes;
+            $miscellaneousIncome = MiscellaneousIncome::whereBetween('date', [$from, $to])->whereNull('deleted_at')->sum('amount');
+
+
+            $allExpenses += $kblAllExpenses;
 
             // OPD
             $allIncomes += Patient::sum('OPD_fee');
+
             //Get medicines sales
             $allMedicineProfitQuery = PatientPharmacyMedicine::select(DB::raw('SUM(quantity*unit_price) as medicineProfit'))->first();
             $allIncomes += $allMedicineProfitQuery->medicineProfit;
@@ -426,16 +421,6 @@ class ReportController extends Controller
                 } else {
                     $data['OPD Incomes'][$dayDate] = DB::table('patients')->whereDate('created_at', $day)->sum('OPD_fee');
                 }
-
-
-                // $kblData = $client->get("https://kblhms.rokhan.co/api_get_appointments", [
-                //     "query" => ['from' => $day, 'to' => $day]
-                // ]);
-                // $kblTotalIncomes = json_decode($kblData->getBody()->getContents());
-                // $data['OPD Incomes'][$dayDate] = $kblTotalIncomes->appointmentsIncome;
-                // $data['Other Incomes'][$dayDate] = $kblTotalIncomes->otherIncomes;
-
-                // IPD Report
 
 
                 $ipdProfitQuery = Patient::wherehas('ipd', function ($q) use ($day) {
@@ -559,6 +544,7 @@ class ReportController extends Controller
             'allExpenses',
             'allIncomes',
             'otherIncome',
+            'miscellaneousIncome',
             'totalPayrollPayment'
         ));
     }
@@ -1298,7 +1284,7 @@ class ReportController extends Controller
         // Calculate total income within the date range
         $totalIncome = 0;
 
-        // OPD Income / correct 
+        // OPD Income / correct
         $opdIncome = Patient::whereBetween('created_at', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
@@ -1314,7 +1300,7 @@ class ReportController extends Controller
             ->sum(DB::raw('DATEDIFF(discharge_date, created_at) * (price - (price * discount / 100))'));
         $totalIncome += $ipdIncome;
 
-        // Pharmacy Income / correct 
+        // Pharmacy Income / correct
         $pharmacyIncome = PatientPharmacyMedicine::whereBetween('created_at', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
@@ -1338,7 +1324,7 @@ class ReportController extends Controller
         $totalIncome += $miscIncome;
 
         // Calculate total expenses within the date range
-        $totalExpenses = ExpenseSlip::whereBetween('created_at', [
+        $totalExpenses = ExpenseSlip::whereBetween('date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])->get()->sum(function ($expenseSlip) {
@@ -1365,7 +1351,7 @@ class ReportController extends Controller
         ];
 
         // Calculate expenses by categories within the date range
-        $expenseCategories = ExpenseSlip::whereBetween('created_at', [
+        $expenseCategories = ExpenseSlip::whereBetween('date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])

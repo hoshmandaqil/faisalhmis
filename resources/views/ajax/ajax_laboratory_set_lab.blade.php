@@ -38,7 +38,6 @@
                         @endif
                     @endif
                 @endforeach
-
                 @if (!empty($onlyReassignLabs))
                     <?php
                     $reAssignLabTests = DB::table('lab_departments')

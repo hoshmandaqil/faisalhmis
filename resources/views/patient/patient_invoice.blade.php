@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+@php use Carbon\Carbon; @endphp
 
 <head>
     <meta charset="UTF-8">
@@ -56,6 +57,12 @@
             font-size: 18px;
             font-weight: bold;
             text-align: center;
+        }
+
+        .section-header {
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: left;
         }
 
         /* Hide the print button when printing */
@@ -116,7 +123,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- OPD Row --}}
+                        {{-- OPD Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">OPD Charges</td>
+                        </tr>
                         <tr>
                             <td class="text-c">OPD Fee</td>
                             <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
@@ -124,32 +134,78 @@
                             <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
                         </tr>
 
-                        {{-- IPD Row --}}
+                        {{-- Always initialize IPD totals --}}
                         @php
                             $totalIPD = 0;
                             $totalIPD_discount = 0;
-                            if ($patient->ipd != null && $patient->ipd->discharge_date != null) {
-                                $register_date = \Carbon\Carbon::parse(
-                                    date('Y-m-d', strtotime($patient->ipd->created_at)),
-                                );
-                                $discharge_date = $patient->ipd->discharge_date;
-                                $ipdDays = $register_date->diffInDays($discharge_date);
-                                for ($i = 1; $i <= $ipdDays; $i++) {
-                                    $totalPrice = $patient->ipd->price;
-                                    $discountForTest = ($patient->ipd->discount * $totalPrice) / 100;
-                                    $totalIPD += $totalPrice - $discountForTest;
-                                    $totalIPD_discount += $discountForTest;
-                                }
-                            }
                         @endphp
-                        <tr>
-                            <td class="text-c">IPD Fee</td>
-                            <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
-                            <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
-                            <td class="text-c">{{ number_format($totalIPD) }} AF</td>
-                        </tr>
 
-                        {{-- Pharmacy Row --}}
+                        {{-- IPD Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">IPD Charges</td>
+                        </tr>
+                        @php
+                            $totalIPD = 0;
+                            $totalIPD_discount = 0;
+                        @endphp
+                        @if ($patient->ipds->count() > 0)
+                            @foreach ($patient->ipds->sortBy('created_at') as $ipd)
+                                @php
+                                    $register_date = Carbon::parse($ipd->created_at)->startOfDay();
+                                    $end_date = $ipd->discharge_date
+                                        ? Carbon::parse($ipd->discharge_date)->startOfDay()
+                                        : Carbon::now()->startOfDay();
+                                    $total_days = $register_date->diffInDays($end_date);
+                                    $daily_price = (float) $ipd->price;
+                                    $discount_percent = (float) $ipd->discount;
+                                    $admission_total = 0;
+                                    $admission_discount = 0;
+                                @endphp
+                                @if ($total_days > 0)
+                                    <tr>
+                                        <td colspan="4" style="font-weight:bold; background:#e0e0e0;">
+                                            Admission: {{ $register_date->format('Y-m-d') }} to {{ $end_date->format('Y-m-d') }}
+                                        </td>
+                                    </tr>
+                                    @for ($i = 0; $i < $total_days; $i++)
+                                        @php
+                                            $date = $register_date->copy()->addDays($i)->format('Y-m-d');
+                                            $discount = ($discount_percent * $daily_price) / 100;
+                                            $final_price = $daily_price - $discount;
+                                            $admission_total += $final_price;
+                                            $admission_discount += $discount;
+                                        @endphp
+                                        <tr>
+                                            <td class="text-c">IPD Fee ({{ $date }})</td>
+                                            <td class="text-c">{{ number_format($daily_price) }} AF</td>
+                                            <td class="text-c">{{ number_format($discount) }} AF</td>
+                                            <td class="text-c">{{ number_format($final_price) }} AF</td>
+                                        </tr>
+                                    @endfor
+                                    <tr>
+                                        <td class="text-c font-bold">Subtotal for this Admission</td>
+                                        <td class="text-c">{{ number_format($admission_total + $admission_discount) }} AF</td>
+                                        <td class="text-c">{{ number_format($admission_discount) }} AF</td>
+                                        <td class="text-c">{{ number_format($admission_total) }} AF</td>
+                                    </tr>
+                                    @php
+                                        $totalIPD += $admission_total;
+                                        $totalIPD_discount += $admission_discount;
+                                    @endphp
+                                @endif
+                            @endforeach
+                            <tr>
+                                <td class="text-c font-bold">Total IPD Fee</td>
+                                <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
+                                <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
+                                <td class="text-c">{{ number_format($totalIPD) }} AF</td>
+                            </tr>
+                        @endif
+
+                        {{-- Pharmacy Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">Pharmacy Charges</td>
+                        </tr>
                         @php $totalPharmacy = 0; @endphp
                         @foreach ($patient->pharmacyMedicines as $medicine)
                             @php $totalPharmacy += $medicine->quantity * $medicine->unit_price; @endphp
@@ -161,7 +217,10 @@
                             <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
                         </tr>
 
-                        {{-- Lab Test Rows --}}
+                        {{-- Lab Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">Lab Charges</td>
+                        </tr>
                         @php
                             $totalLab = 0;
                         @endphp
@@ -175,7 +234,10 @@
                             </tr>
                         @endforeach
 
-                        {{-- Grand Total --}}
+                        {{-- Grand Total Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">Grand Total</td>
+                        </tr>
                         @php
                             $grandTotal = $patient->OPD_fee + $totalIPD + $totalPharmacy + $totalLab;
                         @endphp
@@ -186,7 +248,6 @@
                             <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
                         </tr>
                     </tbody>
-
                 </table>
             </div>
             <div style="text-align: right; margin-top: 20px;">
