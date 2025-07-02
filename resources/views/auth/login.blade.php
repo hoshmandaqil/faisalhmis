@@ -38,7 +38,7 @@
                 <div class="login-screen">
                     <div class="login-box">
                         <a href="#" class="login-logo">
-                            <span class="text-danger">Bayazid</span><span class="text-warning">Rokhan</span><span class="text-success">Hospital</span><span class="text-info"></span><span class="text-royal-orange"></span><span class="text-jungle-green"></span>
+                            <span class="text-danger">Hamza</span><span class="text-warning">Medical</span><span class="text-success">Clinic</span><span class="text-info"></span><span class="text-royal-orange"></span><span class="text-jungle-green"></span>
                         </a>
                         <h5>Welcome back,<br />Please Login to your Account.</h5>
                         <div class="form-group">
@@ -78,7 +78,7 @@
 
 <script>
     $('form').submit(function(){
-      
+
         $(this).find(':submit').attr( 'disabled','disabled' );
         //the rest of your code
         setTimeout(() => {
