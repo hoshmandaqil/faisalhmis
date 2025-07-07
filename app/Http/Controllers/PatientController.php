@@ -24,17 +24,8 @@ class PatientController extends Controller
     {
         $patients = Patient::latest()->with('doctor', 'createdBy')->paginate(30);
         //$doctors = User::where('type', 3)->latest()->pluck('name', 'id')->all();
-        $targetIds = [25, 23, 24, 64];
-        $doctors = User::where('type', 3)
-            ->where('status', 1)
-            ->whereHas('employee', function ($query) {
-            $query->where('status', 1);
-            })
-            ->when(!in_array(auth()->user()->id, $targetIds), function ($query) {
-            $query->orWhereIn('id', [28, 47, 77,91]);
-            })
-            ->latest()
-            ->get();
+
+        $doctors = User::where('type', 3)->where('status', 1)->orWhere('id',73)->latest()->get();
 
         $previousPatientId = Patient::max('id');
 

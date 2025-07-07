@@ -395,7 +395,7 @@
                                     <p class="title"
                                         style="font-size: 1.3rem">Ministry of Health</p>
                                     <p class="title"
-                                        style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
+                                        style="font-size: 1.2rem">Hamza Hospital</p>
                                     <p class="title"
                                         style="font-size: 1rem">Patient Laboratory</p>
                                 </div>
@@ -418,7 +418,7 @@
                                     <b>Patient Name: <span id="lab_patient_name_show"></span></b>
                                 </label>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="original_lab_row">
                                 <label>Select Test</label>
                                 <div class="input-group">
                                     <select class="form-control selectpicker col-md-3 labTestsSelect"
@@ -438,12 +438,25 @@
                                                 test_discount="{{ $lab->mainDepartment->discount }}">{{ ucfirst($lab->dep_name) }}</option>
                                         @endforeach
                                     </select>
-                                    <input class="form-control col-md-3 normal-range"
+                                    <input class="form-control col-md-3 test-price-display"
                                         type="text"
                                         style="height: 38px !important;"
-                                        placeholder="Normal Range"
+                                        placeholder="Price"
                                         readonly>
-                                    <input class="form-control col-md-6"
+                                    <input class="form-control col-md-2 lab-discount-input"
+                                        type="number"
+                                        name="discount[]"
+                                        style="height: 38px !important;"
+                                        placeholder="Discount"
+                                        min="0"
+                                        step="0.01"
+                                        value="0">
+                                    <input class="form-control col-md-2 test-total-display"
+                                        type="text"
+                                        style="height: 38px !important;"
+                                        placeholder="Total"
+                                        readonly>
+                                    <input class="form-control col-md-4"
                                         name="remark[]"
                                         type="text"
                                         style="height: 38px !important;"
@@ -460,9 +473,9 @@
                             <div class="table-responsive">
                                 <table class="table">
                                     <tr>
-                                        <td><b>Total: <span id="dep_lab_total">0</span></b></td>
-                                        <td><b>Discount: <span id="dep_lab_discount">0</span></b></td>
-                                        <td><b>Total After Discount: <span id="dep_lab_total_discount">0</span></b></td>
+                                        <td><b>Grand Total Price: <span id="dep_lab_total">0</span></b></td>
+                                        <td><b>Total Discount: <span id="dep_lab_discount">0</span></b></td>
+                                        <td><b>Payable Amount: <span id="dep_lab_total_discount">0</span></b></td>
                                     </tr>
                                 </table>
                             </div>
@@ -750,8 +763,9 @@
     <script src="{{ asset('assets/vendor/bs-select/bs-select.min.js') }}"></script>
     <script>
         function addnewLabTest() {
+            var rowId = 'lab_row_' + Date.now();
             $('#add_more_lab_test').append(`
-                <div class="form-group">
+                <div class="form-group" id="${rowId}">
                     <div class="input-group">
                         <select class="form-control selectpicker col-md-3 labTestsSelect" data-live-search="true" name="labDeps[]">
                             <option value="" selected disabled hidden>Please select</option>
@@ -759,15 +773,22 @@
                                 <option value="{{ $lab->id }}" normal_range="{{ $lab->normal_range }}" test_price="{{ $lab->price }}" test_main_dep="{{ $lab->main_dep_id }}" test_discount="{{ $lab->mainDepartment->discount }}">{{ ucfirst($lab->dep_name) }}</option>
                             @endforeach
                         </select>
-                        <input type="text" class="form-control col-md-3 normal-range" placeholder="Normal Range" readonly style="height: 38px !important;">
-                        <input type="text" class="form-control col-md-6" name="remark[]" placeholder="Remark" style="height: 38px !important;">
+                        <input type="text" class="form-control col-md-3 test-price-display" placeholder="Price" readonly style="height: 38px !important;">
+                        <input type="number" class="form-control col-md-2 lab-discount-input" name="discount[]" placeholder="Discount" min="0" step="0.01" value="0" style="height: 38px !important;">
+                        <input type="text" class="form-control col-md-2 test-total-display" placeholder="Total" readonly style="height: 38px !important;">
+                        <input type="text" class="form-control col-md-4" name="remark[]" placeholder="Remark" style="height: 38px !important;">
 
-                        <i class="icon-plus-circle ml-2 mt-2" style="cursor: pointer" onclick="addnewLabTest()"></i>
+                        <i class="icon-minus-circle ml-2 mt-2" style="cursor: pointer; color: red;" onclick="removeLabRow('${rowId}')"></i>
                     </div>
                 </div>
             `);
 
             $(".selectpicker").selectpicker().trigger("change");
+        }
+
+        function removeLabRow(rowId) {
+            $('#' + rowId).remove();
+            setTotalPriceOfLab();
         }
     </script>
     <script>
@@ -826,7 +847,6 @@
 
 
         $('#labModal').on('show.bs.modal', function(event) {
-
             var button = $(event.relatedTarget) // Button that triggered the modal
 
             // Extract info from data-* attributes
@@ -838,15 +858,40 @@
 
             var modal = $(this)
 
-            // Set values in edit popup
+            // Reset the form
             $("#lab_patient_id").val(patient_id);
             $('#add_more_lab_test').empty();
 
-            //Call again for updating the value
-            setTotalPriceOfLab()
+            // Reset the original row
+            $('#original_lab_row select').val('').selectpicker('refresh');
+            $('#original_lab_row input.test-price-display').val('');
+            $('#original_lab_row input.lab-discount-input').val('0');
+            $('#original_lab_row input.test-total-display').val('');
+            $('#original_lab_row input[name="remark[]"]').val('');
 
-            modal.find('.modal-content #lab_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
-            modal.find('.modal-content #lab_patient_name_show').html('<b class="text text-danger"> (' + patient_name + ')</b>');
+            // Reset totals
+            $('#dep_lab_total').html('<b>0</b>');
+            $('#dep_lab_discount').html('<b>0</b>');
+            $('#dep_lab_total_discount').html('<b>0</b>');
+
+            // Debug: Check for any labTestsSelect elements outside the modal
+            console.log('=== Modal Opening Debug ===');
+            console.log('Total .labTestsSelect elements in document:', $('.labTestsSelect').length);
+            console.log('.labTestsSelect elements in labModal:', $('#labModal .labTestsSelect').length);
+            console.log('.labTestsSelect elements outside labModal:', $('.labTestsSelect').not('#labModal .labTestsSelect').length);
+
+            // Detailed inspection of each element
+            $('.labTestsSelect').each(function(index) {
+                console.log('Element ' + index + ':', {
+                    id: $(this).attr('id'),
+                    classes: $(this).attr('class'),
+                    inModal: $(this).closest('#labModal').length > 0,
+                    parent: $(this).parent().attr('class')
+                });
+            });
+
+            // Set patient name in modal title
+            $('#lab_patient_name').html('<b class="text text-danger"> (' + patient_name + ')</b>');
         });
 
         $('#editPatientLab').on('show.bs.modal', function(event) {
@@ -862,31 +907,11 @@
     </script>
 
     <script>
-        var spanValue = 0;
-        var remarkTitle = '';
-        var labId;
+        // Old dep_inputs handler removed - using new labTestsSelect system instead
+        // var spanValue = 0;
+        // var remarkTitle = '';
+        // var labId;
         var no_discount = 0;
-        $('.dep_inputs').click(function() {
-            if ($(this).is(':checked')) {
-                spanValue = parseInt(spanValue) + parseInt($(this).attr("lab-price"));
-                remarkTitle = $(this).attr("lab-name");
-                labId = $(this).attr("lab-id");
-                $('div#' + labId + '').remove();
-                $('#add-lab-remark').append(`
-                 <div class="form-group" id=` + labId + `>
-                            <label>Any comments for ` + remarkTitle + ` ?</label>
-                            <input class="form-control" type="text" name="remark[]">
-                        </div>
-                `);
-            }
-            if (!$(this).is(':checked')) {
-                spanValue = parseInt(spanValue) - parseInt($(this).attr("lab-price"));
-                $('div#' + labId + '').remove();
-            }
-
-            $('#dep_lab_total').html(spanValue);
-
-        });
 
         function editLab(id) {
             if (id != '') {
@@ -899,33 +924,84 @@
         }
 
         $(document).on('change', '.labTestsSelect', function() {
-            var normal_range = $('option:selected', this).attr('normal_range');
-            $(this).parent('.input-group').children('input.normal-range').val(normal_range);
+            console.log('labTestsSelect change event triggered');
+            var test_price = $('option:selected', this).attr('test_price');
+            console.log('Selected test price:', test_price);
+            $(this).parent('.input-group').children('input.test-price-display').val(test_price);
+            calculateTestTotal($(this));
             setTotalPriceOfLab();
         });
 
+        $(document).on('input', '.lab-discount-input', function() {
+            console.log('lab-discount-input input event triggered');
+            console.log('Discount value:', $(this).val());
+            calculateTestTotal($(this).closest('.input-group').find('.labTestsSelect'));
+            setTotalPriceOfLab();
+        });
+
+        function calculateTestTotal(selectElement) {
+            var selectedOption = selectElement.find('option:selected');
+            var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
+            var discountInput = selectElement.closest('.input-group').find('.lab-discount-input');
+            var discountAmount = parseFloat(discountInput.val()) || 0;
+            var totalDisplay = selectElement.closest('.input-group').find('.test-total-display');
+
+            console.log('calculateTestTotal - Price:', testPrice, 'Discount:', discountAmount);
+
+            var finalPrice = Math.max(0, testPrice - discountAmount);
+            totalDisplay.val(finalPrice.toLocaleString());
+
+            console.log('calculateTestTotal - Final Price:', finalPrice);
+        }
+
         function setTotalPriceOfLab() {
             var grandTotalPrice = 0;
-            var grandTotalAfterDiscount = 0;
             var grandTotalDiscount = 0;
+            var testCount = 0;
 
-            var totalValues = $(".labTestsSelect :selected").map((i, el) => $(el).attr("test_price")).toArray();
-            var totalDiscounts = $(".labTestsSelect :selected").map((i, el) => $(el).attr("test_discount")).toArray();
+            console.log('=== Starting setTotalPriceOfLab calculation ===');
 
-            for (var i = 0; i < totalValues.length; i++) {
-                grandTotalPrice += totalValues[i] << 0;
+            // Use a more specific selector to avoid Bootstrap Select wrappers
+            var labTestSelects = $("#labModal select.labTestsSelect");
+            var totalElements = labTestSelects.length;
+            console.log('Total .labTestsSelect elements found:', totalElements);
 
-                if (no_discount == 1) {
-                    grandTotalAfterDiscount += totalValues[i] * 1
-                } else {
-                    grandTotalAfterDiscount += (totalValues[i] * (100 - totalDiscounts[i]) / 100)
-                    grandTotalDiscount += (totalValues[i] * (totalDiscounts[i]) / 100)
+            // Loop through all lab test rows - only within the lab modal
+            labTestSelects.each(function(index) {
+                var selectedOption = $(this).find('option:selected');
+                var testValue = selectedOption.val();
+                var elementId = $(this).attr('id') || 'no-id';
+                var elementClass = $(this).attr('class');
+
+                console.log('Row ' + index + ': Element ID = "' + elementId + '", Classes = "' + elementClass + '", Test value = "' + testValue + '"');
+
+                // Only calculate if a test is selected and has a valid value
+                if (testValue && testValue !== '' && testValue !== 'Please select' && testValue !== undefined) {
+                    var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
+                    var discountInput = $(this).closest('.input-group').find('.lab-discount-input');
+                    var discountAmount = parseFloat(discountInput.val()) || 0;
+
+                    console.log('Row ' + index + ' - Price:', testPrice, 'Discount:', discountAmount);
+
+                    // Ensure we have valid numbers
+                    if (!isNaN(testPrice) && !isNaN(discountAmount)) {
+                        grandTotalPrice += testPrice;
+                        grandTotalDiscount += discountAmount;
+                        testCount++;
+
+                        // Debug logging
+                        console.log('Test ' + testCount + ':', selectedOption.text(), 'Price:', testPrice, 'Discount:', discountAmount, 'Element ID:', elementId);
+                    }
                 }
-            }
+            });
+
+            var payableAmount = Math.max(0, grandTotalPrice - grandTotalDiscount);
+
+            console.log('Final totals - Price:', grandTotalPrice, 'Discount:', grandTotalDiscount, 'Payable:', payableAmount, 'Test count:', testCount);
 
             $('#dep_lab_total').html('<b>' + grandTotalPrice.toLocaleString() + '</b>');
             $('#dep_lab_discount').html('<b>' + grandTotalDiscount.toLocaleString() + '</b>');
-            $('#dep_lab_total_discount').html('<b>' + grandTotalAfterDiscount.toLocaleString() + '</b>');
+            $('#dep_lab_total_discount').html('<b>' + payableAmount.toLocaleString() + '</b>');
         }
 
         $(document).on('input', '.medicineQTY', function() {
