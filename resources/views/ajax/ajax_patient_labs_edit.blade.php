@@ -20,7 +20,7 @@
             @foreach ($labs as $lab)
                 <div class="form-group">
                     <div class="input-group">
-                        <select class="form-control selectpicker col-md-6 labTestsSelectOnEdit"
+                        <select class="form-control selectpicker col-md-3 labTestsSelectOnEdit"
                             name="labDeps[]"
                             data-live-search="true"
                             required>
@@ -37,7 +37,27 @@
                                 {{ ucfirst($lab->lab->dep_name) }}
                             </option>
                         </select>
-                        <input class="form-control col-md-6"
+                        <input class="form-control col-md-3 test-price-display-edit"
+                            type="text"
+                            style="height: 38px !important;"
+                            placeholder="Price"
+                            value="{{ $lab->lab->price }}"
+                            readonly>
+                        <input class="form-control col-md-2 lab-discount-input-edit"
+                            type="number"
+                            name="discount[]"
+                            style="height: 38px !important;"
+                            placeholder="Discount"
+                            min="0"
+                            step="0.01"
+                            value="{{ $lab->discount ?? 0 }}">
+                        <input class="form-control col-md-2 test-total-display-edit"
+                            type="text"
+                            style="height: 38px !important;"
+                            placeholder="Total"
+                            value="{{ ($lab->lab->price - ($lab->discount ?? 0)) }}"
+                            readonly>
+                        <input class="form-control col-md-4"
                             name="remark[]"
                             type="text"
                             value="{{ $lab->remark }}"
@@ -121,11 +141,12 @@
                                 $grandTotalAfterDiscount += $afterDiscount;
                             @endphp
                             <tr>
-                                <td>{{ ucfirst($depName) }}</td>
-                                <td>{{ round($price) }}</td>
+                                <td>{{ ucfirst($lab->lab->dep_name) }}</td>
+                                <td>{{ round($lab->lab->price - ($lab->discount ?? 0)) }}</td>
                                 <td>1</td>
-                                <td>{{ round($amount) }}</td>
-                                <td>{{ round($discount) }}</td>
+                                <td>{{ round($lab->lab->price - ($lab->discount ?? 0)) }}</td>
+                                <?php $grandTotal += $lab->lab->price - ($lab->discount ?? 0); ?>
+
                             </tr>
                         @endforeach
                         <tr>
@@ -165,14 +186,17 @@
         $('#add_more_lab_test_edit_form').append(`
          <div class="form-group">
        <div class="input-group">
-     <select class="form-control selectpicker col-md-6 labTestsSelectOnEdit" data-live-search="true" name="labDeps[]">
+     <select class="form-control selectpicker col-md-3 labTestsSelectOnEdit" data-live-search="true" name="labDeps[]">
          <option value="" selected disabled hidden>Please select</option>
             @foreach ($selectLab as $lab)
                 <option value="{{ $lab->id }}" normal_range="{{ $lab->normal_range }}" labTestPrice="{{ $lab->price }}" test_price="{{ $lab->price }}" test_main_dep="{{ $lab->main_dep_id }}" test_discount="{{ $lab->mainDepartment->discount }}">{{ ucfirst($lab->dep_name) }}</option>
             @endforeach
         </select>
-        <input type="text" class="form-control col-md-6" name="remark[]" placeholder="Remark" style="height: 38px !important;">
-        <i class="icon-plus-circle ml-2 mt-2" style="cursor: pointer" onclick="addnewLabTestOnEdit()"></i>
+        <input type="text" class="form-control col-md-3 test-price-display-edit" placeholder="Price" readonly style="height: 38px !important;">
+        <input type="number" class="form-control col-md-2 lab-discount-input-edit" name="discount[]" placeholder="Discount" min="0" step="0.01" value="0" style="height: 38px !important;">
+        <input type="text" class="form-control col-md-2 test-total-display-edit" placeholder="Total" readonly style="height: 38px !important;">
+        <input type="text" class="form-control col-md-4" name="remark[]" placeholder="Remark" style="height: 38px !important;">
+        <i class="icon-minus-circle ml-2 mt-2 text-danger" style="cursor: pointer" onclick="removeLab(this)"></i>
     </div>
 </div>
 
@@ -190,32 +214,72 @@
     }
 
     $(document).on('change', '.labTestsSelectOnEdit', function() {
+        var test_price = $('option:selected', this).attr('test_price');
+        $(this).parent('.input-group').children('input.test-price-display-edit').val(test_price);
+        calculateTestTotalOnEdit($(this));
         setTotalPriceOnEdit();
     });
 
+    $(document).on('input', '.lab-discount-input-edit', function() {
+        calculateTestTotalOnEdit($(this).closest('.input-group').find('.labTestsSelectOnEdit'));
+        setTotalPriceOnEdit();
+    });
+
+    function calculateTestTotalOnEdit(selectElement) {
+        var selectedOption = selectElement.find('option:selected');
+        var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
+        var discountInput = selectElement.closest('.input-group').find('.lab-discount-input-edit');
+        var discountAmount = parseFloat(discountInput.val()) || 0;
+        var totalDisplay = selectElement.closest('.input-group').find('.test-total-display-edit');
+
+        var finalPrice = Math.max(0, testPrice - discountAmount);
+        totalDisplay.val(finalPrice.toLocaleString());
+    }
 
     function setTotalPriceOnEdit() {
-
         var grandTotalPrice = 0;
-        var grandTotalAfterDiscount = 0;
         var grandTotalDiscount = 0;
+        var testCount = 0;
 
-        var totalValues = $(".labTestsSelectOnEdit :selected").map((i, el) => $(el).attr("labTestPrice")).toArray();
-        var totalDiscounts = $(".labTestsSelectOnEdit :selected").map((i, el) => $(el).attr("test_discount")).toArray();
+        console.log('=== Starting setTotalPriceOnEdit calculation ===');
 
-        for (var i = 0; i < totalValues.length; i++) {
-            grandTotalPrice += totalValues[i] << 0;
+        // Use a more specific selector to avoid Bootstrap Select wrappers
+        var labTestSelects = $("select.labTestsSelectOnEdit");
+        var totalElements = labTestSelects.length;
+        console.log('Total .labTestsSelectOnEdit elements found:', totalElements);
 
-            if (no_discount == 1) {
-                grandTotalAfterDiscount += totalValues[i] * 1
-            } else {
-                grandTotalAfterDiscount += (totalValues[i] * (100 - totalDiscounts[i]) / 100)
-                grandTotalDiscount += (totalValues[i] * (totalDiscounts[i]) / 100)
+        // Loop through all lab test rows in edit modal
+        labTestSelects.each(function(index) {
+            var selectedOption = $(this).find('option:selected');
+            var testValue = selectedOption.val();
+
+            console.log('Edit Row ' + index + ': Test value = "' + testValue + '"');
+
+            // Only calculate if a test is selected and has a valid value
+            if (testValue && testValue !== '' && testValue !== 'Please select' && testValue !== undefined) {
+                var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
+                var discountInput = $(this).closest('.input-group').find('.lab-discount-input-edit');
+                var discountAmount = parseFloat(discountInput.val()) || 0;
+
+                console.log('Edit Row ' + index + ' - Price:', testPrice, 'Discount:', discountAmount);
+
+                // Ensure we have valid numbers
+                if (!isNaN(testPrice) && !isNaN(discountAmount)) {
+                    grandTotalPrice += testPrice;
+                    grandTotalDiscount += discountAmount;
+                    testCount++;
+
+                    console.log('Edit Test ' + testCount + ':', selectedOption.text(), 'Price:', testPrice, 'Discount:', discountAmount);
+                }
             }
-        }
+        });
+
+        var payableAmount = Math.max(0, grandTotalPrice - grandTotalDiscount);
+
+        console.log('Edit Final totals - Price:', grandTotalPrice, 'Discount:', grandTotalDiscount, 'Payable:', payableAmount, 'Test count:', testCount);
 
         $('#dep_lab_total1').html('<b>' + grandTotalPrice.toLocaleString() + '</b>');
         $('#dep_lab_discount1').html('<b>' + grandTotalDiscount.toLocaleString() + '</b>');
-        $('#dep_lab_total_discount1').html('<b>' + grandTotalAfterDiscount.toLocaleString() + '</b>');
+        $('#dep_lab_total_discount1').html('<b>' + payableAmount.toLocaleString() + '</b>');
     }
 </script>

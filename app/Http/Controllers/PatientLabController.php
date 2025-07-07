@@ -42,13 +42,18 @@ class PatientLabController extends Controller
         $patient_id = $request->patient_id;
         $deps = $request->labDeps;
         $remark = $request->remark;
+        $discount = $request->discount;
+
         foreach ($deps as $key => $dep){
-            $patientLab = new PatientLab();
-            $patientLab->patient_id = $patient_id;
-            $patientLab->lab_id = $dep;
-            $patientLab->remark = $remark[$key];
-            $patientLab->created_by = \Auth::user()->id;
-            $patientLab->save();
+            if (!empty($dep)) { // Only save if lab is selected
+                $patientLab = new PatientLab();
+                $patientLab->patient_id = $patient_id;
+                $patientLab->lab_id = $dep;
+                $patientLab->remark = $remark[$key] ?? '';
+                $patientLab->discount = $discount[$key] ?? 0;
+                $patientLab->created_by = \Auth::user()->id;
+                $patientLab->save();
+            }
         }
         return  redirect()->route('my_patients')->with('alert', 'The Labs added Successfully')->with('alert-type', 'alert-success');
 
@@ -88,14 +93,20 @@ class PatientLabController extends Controller
         $patient_id = $request->patient_id;
         $deps = $request->labDeps;
         $remark = $request->remark;
+        $discount = $request->discount;
+
         $deletePreviousLabs = PatientLab::where('patient_id', $patient_id)->delete();
+
         foreach ($deps as $key => $dep){
-            $patientLab = new PatientLab();
-            $patientLab->patient_id = $patient_id;
-            $patientLab->lab_id = $dep;
-            $patientLab->remark = $remark[$key];
-            $patientLab->created_by = \Auth::user()->id;
-            $patientLab->save();
+            if (!empty($dep)) { // Only save if lab is selected
+                $patientLab = new PatientLab();
+                $patientLab->patient_id = $patient_id;
+                $patientLab->lab_id = $dep;
+                $patientLab->remark = $remark[$key] ?? '';
+                $patientLab->discount = $discount[$key] ?? 0;
+                $patientLab->created_by = \Auth::user()->id;
+                $patientLab->save();
+            }
         }
         return  redirect()->route('my_patients')->with('alert', 'The Labs Updated Successfully')->with('alert-type', 'alert-info');
     }
@@ -139,8 +150,8 @@ class PatientLabController extends Controller
         })->with('labs', 'laboratoryTests', 'labs.lab.mainDepartment', 'createdBy', 'doctor')->latest()->paginate(100);
         return view('Laboratory.labratory_patients_lab', compact('labPatients', 'patientSearchDetail'));
     }
-    
-    
+
+
     public function search_reception_lab_patient(Request $request)
     {
 

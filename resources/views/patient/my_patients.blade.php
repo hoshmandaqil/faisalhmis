@@ -237,7 +237,7 @@
                                                 if ($medicineSalePrice->sale_price > $maxSalePrice && $i < 2) {
                                                     $maxSalePrice = $medicineSalePrice->sale_price;
                                                 }
-                                            
+
                                                 $i++;
                                             }
                                             ?>
@@ -432,9 +432,14 @@
                             <div class="row gutters">
 
                                 <div class="col-6 offset-3 text-center">
-                                    <p class="title" style="font-size: 1.3rem">Ministry of Health</p>
-                                    <p class="title" style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
-                                    <p class="title" style="font-size: 1rem">Patient Laboratory</p>
+
+                                    <p class="title"
+                                        style="font-size: 1.3rem">Ministry of Health</p>
+                                    <p class="title"
+                                        style="font-size: 1.2rem">Hamza Medical Clinic</p>
+                                    <p class="title"
+                                        style="font-size: 1rem">Patient Laboratory</p>
+
                                 </div>
 
                             </div>
@@ -456,12 +461,30 @@
                                                 {{ ucfirst($lab->dep_name) }}</option>
                                         @endforeach
                                     </select>
-                                    <input class="form-control col-md-3 normal-range" type="text"
-                                        style="height: 38px !important;" placeholder="Normal Range" readonly>
-                                    <input class="form-control col-md-6" name="remark[]" type="text"
-                                        style="height: 38px !important;" placeholder="Remark">
+                                    <input class="form-control col-md-3 test-price-display"
+                                        type="text"
+                                        style="height: 38px !important;"
+                                        placeholder="Price"
+                                        readonly>
+                                    <input class="form-control col-md-2 lab-discount-input"
+                                        type="text"
+                                        name="discount[]"
+                                        style="height: 38px !important;"
+                                        placeholder="Discount"
+                                        >
+                                    <input class="form-control col-md-2 test-total-display"
+                                        type="text"
+                                        style="height: 38px !important;"
+                                        placeholder="Total"
+                                        readonly>
+                                    <input class="form-control col-md-4"
+                                        name="remark[]"
+                                        type="text"
+                                        style="height: 38px !important;"
+                                        placeholder="Remark">
 
-                                    <i class="icon-plus-circle ml-2 mt-2" style="cursor: pointer"
+                                    <i class="icon-plus-circle ml-2 mt-2"
+                                        style="cursor: pointer"
                                         onclick="addnewLabTest()"></i>
                                 </div>
 
@@ -471,9 +494,9 @@
                             <div class="table-responsive">
                                 <table class="table">
                                     <tr>
-                                        <td><b>Total: <span id="dep_lab_total">0</span></b></td>
-                                        <td><b>Discount: <span id="dep_lab_discount">0</span></b></td>
-                                        <td><b>Total After Discount: <span id="dep_lab_total_discount">0</span></b></td>
+                                        <td><b>Grand Total Price: <span id="dep_lab_total">0</span></b></td>
+                                        <td><b>Total Discount: <span id="dep_lab_discount">0</span></b></td>
+                                        <td><b>Payable Amount: <span id="dep_lab_total_discount">0</span></b></td>
                                     </tr>
                                 </table>
                             </div>
@@ -893,9 +916,9 @@
              <div class="form-group"> <div class="input-group"><select class="form-control selectpicker medicineItems" data-live-search="true" name="medicine_id[]">
                 <option value="" selected disabled hidden>Please select</option>
                 @foreach ($selectPharmacy as $key => $medicine)
-                
+
                     <?php $maxSalePrice = 0; ?>
-                    
+
                     @if ($medicine->thisMedicinePharmacy->sum('quantity'))
                         <?php
                         $i = 1;
@@ -931,8 +954,10 @@
             <option value="{{ $lab->id }}" normal_range="{{ $lab->normal_range }}" test_price="{{ $lab->price }}" test_main_dep="{{ $lab->main_dep_id }}" test_discount="{{ $lab->mainDepartment->discount }}">{{ ucfirst($lab->dep_name) }}</option>
                                     @endforeach
             </select>
-            <input type="text" class="form-control col-md-3 normal-range" placeholder="Normal Range" readonly style="height: 38px !important;">
-            <input type="text" class="form-control col-md-6" name="remark[]" placeholder="Remark" style="height: 38px !important;">
+            <input type="text" class="form-control col-md-3 test-price-display" placeholder="Price" readonly style="height: 38px !important;">
+            <input type="text" class="form-control col-md-2 lab-discount-input" name="discount[]" placeholder="Discount" style="height: 38px !important;">
+            <input type="text" class="form-control col-md-2 test-total-display" placeholder="Total" readonly style="height: 38px !important;">
+            <input type="text" class="form-control col-md-4" name="remark[]" placeholder="Remark" style="height: 38px !important;">
 
             <i class="icon-plus-circle ml-2 mt-2" style="cursor: pointer" onclick="addnewLabTest()"></i>
         </div>
@@ -1157,29 +1182,57 @@
         }
 
         $(document).on('change', '.labTestsSelect', function() {
-            var normal_range = $('option:selected', this).attr('normal_range');
-            $(this).parent('.input-group').children('input.normal-range').val(normal_range);
+            var test_price = $('option:selected', this).attr('test_price');
+            $(this).parent('.input-group').children('input.test-price-display').val(test_price);
+            calculateTestTotal($(this));
             setTotalPriceOfLab();
         });
+
+        $(document).on('input', '.lab-discount-input', function() {
+            calculateTestTotal($(this).closest('.input-group').find('.labTestsSelect'));
+            setTotalPriceOfLab();
+        });
+
+        function calculateTestTotal(selectElement) {
+            var selectedOption = selectElement.find('option:selected');
+            var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
+            var discountInput = selectElement.closest('.input-group').find('.lab-discount-input');
+            var discountAmount = parseFloat(discountInput.val()) || 0;
+            var totalDisplay = selectElement.closest('.input-group').find('.test-total-display');
+
+            var finalPrice = Math.max(0, testPrice - discountAmount);
+            totalDisplay.val(finalPrice.toLocaleString());
+        }
 
         function setTotalPriceOfLab() {
             var grandTotalPrice = 0;
             var grandTotalAfterDiscount = 0;
             var grandTotalDiscount = 0;
 
-            var totalValues = $(".labTestsSelect :selected").map((i, el) => $(el).attr("test_price")).toArray();
-            var totalDiscounts = $(".labTestsSelect :selected").map((i, el) => $(el).attr("test_discount")).toArray();
+                        // Loop through all lab test rows (both selected and unselected)
+            $(".labTestsSelect").each(function(index) {
+                var selectedOption = $(this).find('option:selected');
+                var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
+                var discountInput = $(this).closest('.input-group').find('.lab-discount-input');
+                var discountAmount = parseFloat(discountInput.val()) || 0;
 
-            for (var i = 0; i < totalValues.length; i++) {
-                grandTotalPrice += totalValues[i] << 0;
+                // Only calculate if a test is selected
+                if (selectedOption.val() && selectedOption.val() !== '') {
+                    grandTotalPrice += testPrice;
 
-                if (no_discount == 1) {
-                    grandTotalAfterDiscount += totalValues[i] * 1
-                } else {
-                    grandTotalAfterDiscount += (totalValues[i] * (100 - totalDiscounts[i]) / 100)
-                    grandTotalDiscount += (totalValues[i] * (totalDiscounts[i]) / 100)
+                    if (no_discount == 1) {
+                        grandTotalAfterDiscount += testPrice;
+                        grandTotalDiscount += 0;
+                    } else {
+                        // Treat discount as fixed amount, not percentage
+                        var finalPrice = Math.max(0, testPrice - discountAmount);
+                        grandTotalAfterDiscount += finalPrice;
+                        grandTotalDiscount += discountAmount;
+                    }
+
+
                 }
-            }
+            });
 
             $('#dep_lab_total').html('<b>' + grandTotalPrice.toLocaleString() + '</b>');
             $('#dep_lab_discount').html('<b>' + grandTotalDiscount.toLocaleString() + '</b>');
