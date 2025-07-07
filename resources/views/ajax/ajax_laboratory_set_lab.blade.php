@@ -7,9 +7,11 @@
                 <div class="form-inline">
                     <label class="col-form-label-sm mb-2 mr-sm-2 col-md-2">Test Name</label>
                     <label class="col-form-label-sm mb-2 mr-sm-2 col-md-1">Price</label>
-                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-3">Remark</label>
-                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-3">Result</label>
-                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-2">Attachment</label>
+                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-1">Discount</label>
+                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-1">Total</label>
+                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-2">Remark</label>
+                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-2">Result</label>
+                    <label class="col-form-label-sm mb-2 mr-sm-2 col-md-1">Attachment</label>
                     {{-- <label class="col-form-label-sm mb-2 mr-sm-2 col-md-1">Actions</label> --}}
                 </div>
                 <?php $onlyReassignLabs = []; ?>
@@ -20,18 +22,22 @@
                         @else
                             <div class="form-inline" id="{{ $lab->id }}">
                                 <input type="hidden" name="lab_id[]" value="{{ $lab->lab->id }}">
-                                <input type="hidden" name="lab_discounts[]"
-                                    value="{{ $lab->lab->mainDepartment->discount }}">
+                                <input type="hidden" name="payable_amount[]" class="test_payable_amount" value="{{ ($lab->lab->price - ($lab->discount ?? 0)) }}">
                                 <input type="text" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="lab_name[]"
                                     readonly value="{{ $lab->lab->dep_name }}">
                                 <input type="number" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_price"
                                     name="price[]" readonly value="{{ $lab->lab->price }}">
+                                <input type="number" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_discount"
+                                    name="lab_discounts[]" value="{{ $lab->discount ?? 0 }}"
+                                    min="0" step="0.01" onchange="calculateTestTotal(this)">
+                                <input type="text" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_total_display"
+                                    readonly value="{{ ($lab->lab->price - ($lab->discount ?? 0)) }}">
                                 <textarea style="height:60px;" cols="3" rows="10"
-                                    class="form-control-sm mb-2 mr-sm-2 col-md-3" name="remark[]"
+                                    class="form-control-sm mb-2 mr-sm-2 col-md-2" name="remark[]"
                                     readonly>{{ $lab->remark }}</textarea>
                                 <textarea style="height:60px;" cols="3" rows="10"
-                                    class="form-control-sm mb-2 mr-sm-2 col-md-3" name="result[]"></textarea>
-                                <input type="file" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="attachments[]">
+                                    class="form-control-sm mb-2 mr-sm-2 col-md-2" name="result[]"></textarea>
+                                <input type="file" class="form-control-sm mb-2 mr-sm-2 col-md-1" name="attachments[]">
                                 <i class="icon-minus-circle text-danger" style="cursor: pointer"
                                     onclick="removeTest(this)"></i>
                             </div>
@@ -55,28 +61,38 @@
                     @foreach ($onlyReassignLabs as $reassignLabs)
                         <div class="form-inline" id="{{ $lab->id }}">
                             <input type="hidden" name="lab_id[]" value="{{ $lab->lab->id }}">
-                            <input type="hidden" name="lab_discounts[]"
-                                value="{{ $lab->lab->mainDepartment->discount }}">
+                            <input type="hidden" name="payable_amount[]" class="test_payable_amount" value="{{ ($lab->lab->price - ($lab->discount ?? 0)) }}">
                             <input type="text" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="lab_name[]" readonly
                                 value="{{ $lab->lab->dep_name }}">
                             <input type="number" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_price" name="price[]"
                                 readonly value="{{ $lab->lab->price }}">
+                            <input type="number" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_discount"
+                                name="lab_discounts[]" value="{{ $lab->discount ?? 0 }}"
+                                min="0" step="0.01" onchange="calculateTestTotal(this)">
+                            <input type="text" class="form-control-sm mb-2 mr-sm-2 col-md-1 test_total_display"
+                                readonly value="{{ ($lab->lab->price - ($lab->discount ?? 0)) }}">
                             <textarea style="height:60px;" cols="3" rows="10"
-                                class="form-control-sm mb-2 mr-sm-2 col-md-3" name="remark[]"
+                                class="form-control-sm mb-2 mr-sm-2 col-md-2" name="remark[]"
                                 readonly>{{ $lab->remark }}</textarea>
                             <textarea style="height:60px;" cols="3" rows="10"
-                                class="form-control-sm mb-2 mr-sm-2 col-md-3" name="result[]"></textarea>
-                            <input type="file" class="form-control-sm mb-2 mr-sm-2 col-md-2" name="attachments[]">
+                                class="form-control-sm mb-2 mr-sm-2 col-md-2" name="result[]"></textarea>
+                            <input type="file" class="form-control-sm mb-2 mr-sm-2 col-md-1" name="attachments[]">
                             <i class="icon-minus-circle text-danger" style="cursor: pointer"
                                 onclick="removeTest(this)"></i>
                         </div>
                     @endforeach
                 @endif
 
-
-
                 <hr>
-                <span id="patientTotalPrice"></span>
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr>
+                            <td><b>Grand Total Price: <span id="lab_grand_total">0</span></b></td>
+                            <td><b>Total Discount: <span id="lab_total_discount">0</span></b></td>
+                            <td><b>Payable Amount: <span id="lab_payable_amount">0</span></b></td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -95,13 +111,55 @@
         setTotalPrice();
     }
 
+    function calculateTestTotal(element) {
+        var row = $(element).closest('.form-inline');
+        var price = parseFloat(row.find('.test_price').val()) || 0;
+        var discount = parseFloat(row.find('.test_discount').val()) || 0;
+
+        // Ensure discount is not negative
+        if (discount < 0) discount = 0;
+
+        // Update the discount field with the corrected value
+        row.find('.test_discount').val(discount);
+
+        // Calculate total for this test (simple: price - discount)
+        var finalPrice = price - discount;
+
+        // Ensure final price is not negative
+        if (finalPrice < 0) finalPrice = 0;
+
+        // Update the total display for this row
+        row.find('.test_total_display').val(finalPrice.toFixed(2));
+
+        // Update the hidden payable amount field
+        row.find('.test_payable_amount').val(finalPrice.toFixed(2));
+
+        setTotalPrice();
+    }
+
     function setTotalPrice() {
         var grandTotalPrice = 0;
-        var totalValues = $('.test_price').map((_, el) => el.value).get();
-        for (var i = 0; i < totalValues.length; i++) {
-            grandTotalPrice += totalValues[i] << 0;
-        }
-        $('#patientTotalPrice').html('<b>Total: ' + grandTotalPrice + '</b>');
+        var grandTotalDiscount = 0;
+        var grandPayableAmount = 0;
+
+        $('.form-inline').each(function() {
+            var price = parseFloat($(this).find('.test_price').val()) || 0;
+            var discount = parseFloat($(this).find('.test_discount').val()) || 0;
+
+            // Simple calculation: price - discount
+            var finalPrice = price - discount;
+
+            // Ensure final price is not negative
+            if (finalPrice < 0) finalPrice = 0;
+
+            grandTotalPrice += price;
+            grandTotalDiscount += discount;
+            grandPayableAmount += finalPrice;
+        });
+
+        $('#lab_grand_total').html('<b>' + grandTotalPrice.toLocaleString() + '</b>');
+        $('#lab_total_discount').html('<b>' + grandTotalDiscount.toLocaleString() + '</b>');
+        $('#lab_payable_amount').html('<b>' + grandPayableAmount.toLocaleString() + '</b>');
     }
 </script>
 <script>

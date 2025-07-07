@@ -135,19 +135,40 @@ class DoctorController extends Controller
         $mainLabDepartments = MainLabDepartment::latest()->select('id', 'dep_name', 'discount')->get();
         $medicine_dosage = DB::table('medicine_dosages')->get();
 
-        return view(
-            'patient.my_patients',
-            compact(
-                'patients',
-                'selectPharmacy',
-                'floors',
-                'selectLab',
-                'rooms',
-                'beds',
-                'patientSearchDetail',
-                'mainLabDepartments',
-                'medicine_dosage'
-            )
-        );
+        // Check if the request is coming from lab/IPD page
+        $referer = $request->headers->get('referer');
+        $isFromLabIpdPage = strpos($referer, 'my_patients_lab_ipd') !== false;
+
+        if ($isFromLabIpdPage) {
+            // Return lab/IPD view for lab/IPD page searches
+            return view(
+                'patient.my_patients_lab_ipd',
+                compact(
+                    'patients',
+                    'floors',
+                    'selectLab',
+                    'rooms',
+                    'beds',
+                    'patientSearchDetail',
+                    'mainLabDepartments'
+                )
+            );
+        } else {
+            // Return medicine view for other page searches
+            return view(
+                'patient.my_patients',
+                compact(
+                    'patients',
+                    'selectPharmacy',
+                    'floors',
+                    'selectLab',
+                    'rooms',
+                    'beds',
+                    'patientSearchDetail',
+                    'mainLabDepartments',
+                    'medicine_dosage'
+                )
+            );
+        }
     }
 }

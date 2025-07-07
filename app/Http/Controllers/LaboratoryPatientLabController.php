@@ -6,6 +6,7 @@ use App\Models\LaboratoryPatientLab;
 use App\Models\Patient;
 use App\Models\PatientLab;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use ZipArchive;
@@ -44,11 +45,12 @@ class LaboratoryPatientLabController extends Controller
         $price = $request->price;
         $result = $request->result;
         $discount = $request->lab_discounts;
+        $payable_amount = $request->payable_amount;
         foreach ($lab_ids as $key => $lab){
             $patientLab = new LaboratoryPatientLab();
             $patientLab->patient_id = $patient_id;
             $patientLab->lab_id = $lab;
-            $patientLab->price = $price[$key];
+            $patientLab->price = $payable_amount[$key];
             $patientLab->result = $result[$key];
             if (Patient::find($patient_id)->no_discount == 0) {
                 $patientLab->discount = $discount[$key];
@@ -62,7 +64,7 @@ class LaboratoryPatientLabController extends Controller
                     $patientLab->file = $imageName;
                 }
             }
-            $patientLab->created_by = \Auth::user()->id;
+            $patientLab->created_by = Auth::user()->id;
             $patientLab->save();
         }
         return  redirect()->back()->with('alert', 'The Results  added Successfully')->with('alert-type', 'alert-success');
@@ -118,7 +120,7 @@ class LaboratoryPatientLabController extends Controller
     {
         // $labPatients = Patient::wherehas('laboratoryTests', function ($q){
         // })->with('laboratoryTests', 'laboratoryTests.testName')->latest()->paginate(20);
-        
+
           $labPatients = Patient::whereIn('patients.id', function($query){
             $query->from('laboratory_patient_labs')
                 ->select('laboratory_patient_labs.patient_id');
@@ -134,13 +136,13 @@ class LaboratoryPatientLabController extends Controller
         return view('ajax.ajax_preview_lab_test', compact('labs', 'patient', 'patient_id'));
 
     }
-    
+
     public function recent_entries_lab_patients()
     {
         $recent_entries = LaboratoryPatientLab::with('testName', 'patient')->latest()->where('patient_id', 'LIKE', '%'.request('search').'%')->paginate(100);
         return view('Laboratory.last_entries', compact('recent_entries'));
     }
-    
+
     public function recent_entries_lab_patients_search(Request $request)
     {
         return redirect('recent_entries_lab_patients' . '?search=' . $request->search);
@@ -153,8 +155,8 @@ class LaboratoryPatientLabController extends Controller
         return  redirect()->back()->with('alert', 'The Test deleted Successfully')->with('alert-type', 'alert-success');
 
     }
-    
-    
+
+
     public function download_lab_files($id)
     {
         $files = DB::table('laboratory_patient_labs')->where('patient_id', $id)->select('file')->get();
