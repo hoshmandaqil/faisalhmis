@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\DataMigrationController;
+use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PayrollPaymentController;
 use Illuminate\Support\Facades\Route;
@@ -79,10 +81,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('laboratory_sale_report/', [\App\Http\Controllers\ReportController::class, 'laboratory_sale_report']);
     Route::get('laboratory_tests_report/', [\App\Http\Controllers\ReportController::class, 'laboratory_tests_report']);
     Route::get('ipd_patient_report/', [\App\Http\Controllers\ReportController::class, 'ipd_patient_report']);
+    Route::get('overview_report/', [\App\Http\Controllers\ReportController::class, 'overview_report'])->name('overview_report');
     Route::get('general_profits_report/', [\App\Http\Controllers\ReportController::class, 'general_profits_report']);
     Route::get('new_general_profits_report/', [\App\Http\Controllers\ReportController::class, 'new_general_profits_report']);
     Route::get('cumulative_report/', [\App\Http\Controllers\ReportController::class, 'cumulative_report']);
-    Route::get('registered_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_patient_report']);
+    Route::get('registered_all_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_all_patient_report']);
+    Route::get('registered_in_door_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_in_door_patient_report']);
+    Route::get('registered_out_door_patient_report/', [\App\Http\Controllers\ReportController::class, 'registered_out_door_patient_report']);
     Route::get('returned_medicines_report/', [\App\Http\Controllers\ReportController::class, 'returned_medicines_report']);
     Route::get('manual_expired_medicines_report/', [\App\Http\Controllers\ReportController::class, 'manual_expired_medicines_report']);
     Route::get('OPD_fee_report/', [\App\Http\Controllers\ReportController::class, 'OPD_fee_report']);
@@ -145,8 +150,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('approvedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'approvedPOs']);
     Route::get('unapprovedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'unapprovedPOs']);
     Route::get('rejectedPOs', [App\Http\Controllers\PurchaseOrderController::class, 'rejectedPOs'])->name('PO.rejectedList');
+    // In your web.php or api.php routes file
+    Route::post('/po_status', [App\Http\Controllers\PurchaseOrderController::class, 'status'])->name('po.status');
 
-    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store']);
+    // Expenses
+    Route::resource('/expenses', \App\Http\Controllers\ExpenseController::class)->only(['index', 'store', 'destroy']);
+    Route::get('/expenses/search', [\App\Http\Controllers\ExpenseController::class, 'index'])->name('expenses.search');
     Route::get('expenses/{id}/files', [\App\Http\Controllers\ExpenseController::class, 'files']);
     Route::delete('expenses/files', [\App\Http\Controllers\ExpenseController::class, 'deleteFile'])->name('expense-files-delete');
 
@@ -154,6 +163,15 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/', [ExpenseCategoryController::class, 'index'])->name('expense_categories.index');
         Route::post('{id?}', [ExpenseCategoryController::class, 'store'])->name('expense_categories.store');
         Route::delete('{id}', [ExpenseCategoryController::class, 'destroy'])->name('expense_categories.destroy');
+    });
+
+    // Incomes
+    Route::resource('/incomes', \App\Http\Controllers\IncomeController::class)->only(['index', 'store', 'destroy']);
+
+    Route::prefix('income-categories')->group(function () {
+        Route::get('/', [IncomeCategoryController::class, 'index'])->name('income_categories.index');
+        Route::post('{id?}', [IncomeCategoryController::class, 'store'])->name('income_categories.store');
+        Route::delete('{id}', [IncomeCategoryController::class, 'destroy'])->name('income_categories.destroy');
     });
 
     // Old POs
@@ -234,15 +252,26 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/payrolls/{payroll}', [PayrollController::class, 'destroy'])->name('payrolls.destroy');
 
     // Payroll Payments
-    Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll-payment.index');
+    Route::get('/payroll-payments', [PayrollPaymentController::class, 'index'])->name('payroll_payments.index');
+    Route::post('/search-payroll-payments', [PayrollPaymentController::class, 'search'])->name('payroll_payments.search');
 
-    Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails']);
+    Route::get('/getPayrollDetails', [PayrollPaymentController::class, 'getPayrollDetails'])->name('payroll_payments.getPayrollDetails');
 
-    Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payrolls.payments.store');
+    Route::post('/payrolls/payments', [PayrollPaymentController::class, 'store'])->name('payroll_payments.store');
 
-    Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'store'])->name('payroll_payments.destroy');
+    Route::delete('/payrolls/payments/{id}', [PayrollPaymentController::class, 'destroy'])->name('payroll_payments.destroy');
 
-    Route::get('data-migration',[DataMigrationController::class,'index']);
+    Route::get('data-migration', [DataMigrationController::class, 'index']);
+
+    Route::post('/payroll_status', [PayrollController::class, 'status'])->name('payroll.status');
+
+    Route::get('/payroll_payments/show', [PayrollPaymentController::class, 'show'])->name('payroll_payments.show');
+
+    Route::prefix('employee-attendance')->controller(EmployeeAttendanceController::class)->group(function () {
+        Route::get('/', 'index')->name('attendance.index');
+        Route::post('/import', 'import')->name('attendance.import');
+        Route::post('/adjust', 'adjust')->name('attendance.adjust');
+    });
 });
 
 Auth::routes(['register' => true]);

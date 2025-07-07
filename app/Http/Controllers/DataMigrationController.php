@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PurchaseOrder as ModelsPurchaseOrder;
+use App\Models\Expense\ExpenseCategory;
+use App\Models\Expense\ExpenseItem;
+use App\Models\Expense\ExpenseSlip;
+use App\Models\IncomeCategory;
+use App\Models\MiscellaneousIncome;
 use App\Models\PurchaseOrderFile;
 use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseOrder;
@@ -13,7 +17,8 @@ class DataMigrationController extends Controller
 {
     public function index()
     {
-        $this->movePoFile();
+        // return 'hello dear';
+        $this->moveOtherIncome();
     }
 
 
@@ -28,19 +33,19 @@ class DataMigrationController extends Controller
                 'id' => $po->id,
                 'po_by' => $po->po_by,
                 'description' => $po->description,
+                'remarks' => $po->remarks,
                 'date' => !empty($po->date) ? $po->date : null,
                 'inserted_by' => 8,
                 'checked_by' => 8,
                 'checked_date' => !empty($po->checked_date) ? $po->checked_date : null,
                 'verified_by' => 27,
                 'verified_date' => !empty($po->verified_date) ? $po->verified_date : null,
-                'approved_by' => $po->approved_by,
+                'approved_by' => 27,
                 'approved_date' => !empty($po->approved_date) ? $po->approved_date : null,
                 'rejected_by' => $po->rejected_by,
                 'rejected_date' => !empty($po->rejected_date) ? $po->rejected_date : null,
                 'reject_comment' => $po->reject_comment,
             ]);
-           
         }
 
         echo "Purchase Order are shifted successfully.";
@@ -79,5 +84,113 @@ class DataMigrationController extends Controller
         }
 
         echo "Purchase order files are shifted successfully.";
+    }
+
+    public function moveExpenseCategory()
+    {
+        $categories = DB::connection('mysql2')->table('expenses_categories')->where('application_id', 8)->get();
+
+        foreach ($categories as $file) {
+            ExpenseCategory::insert([
+                'id' => $file->id,
+                'name' => $file->name,
+                'name_fa' => $file->name_fa,
+                'description' => $file->description,
+                'tax' => $file->tax,
+                'parent' => $file->parent,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Expense Category are shifted successfully.";
+    }
+
+    public function moveExpense()
+    {
+        $categories = DB::connection('mysql2')->table('expenses_slip')->where('application_id', 8)->get();
+        // dd($categories);
+        foreach ($categories as $file) {
+            ExpenseSlip::insert([
+                'id' => $file->id,
+                'slip_no' => $file->slip_no,
+                'paid_by' => $file->paid_by,
+                'paid_to' => $file->paid_to,
+                'po_id' => $file->po_id,
+                'date' => $file->date,
+                'file' => $file->file,
+                'remarks' => $file->remarks,
+                'category' => $file->category,
+                'cashier' => 8,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Expense slip are shifted successfully.";
+    }
+
+    public function moveExpenseItems()
+    {
+        $categories = DB::connection('mysql2')->table('expenses_items')->where('application_id', 8)->get();
+        // dd($categories);
+        foreach ($categories as $file) {
+            ExpenseItem::insert([
+                'id' => $file->id,
+                'slip_id' => $file->slip_id,
+                'expense_description' => $file->expense_description,
+                'amount' => $file->amount,
+                'quantity' => '',
+                'remarks' => $file->remarks,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Expense item are shifted successfully.";
+    }
+
+
+    public function otherIncomeCategory()
+    {
+        $categories = DB::connection('mysql2')->table('income_categories')->where('application_id', 8)->get();
+        // dd($categories);
+        foreach ($categories as $file) {
+            IncomeCategory::insert([
+                'id' => $file->id,
+                'name' => $file->name,
+                'name_fa' => $file->name_fa,
+                'description' => $file->description,
+                'tax' => $file->tax,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Income category are shifted successfully.";
+    }
+
+    public function moveOtherIncome()
+    {
+        $categories = DB::connection('mysql2')->table('miscellaneous_income')->where('application_id', 8)->get();
+        // dd($categories);
+        foreach ($categories as $file) {
+            MiscellaneousIncome::insert([
+                'id' => $file->id,
+                'slip_no' => $file->slip_no,
+                'paid_by' => $file->paid_by,
+                'paid_to' => $file->paid_to,
+                'date' => $file->date,
+                'income_description' => $file->income_description,
+                'amount' => $file->amount,
+                'remarks' => $file->remarks,
+                'category' => $file->category,
+                'cashier' => 8,
+                'created_at' => $file->created_at,
+                'updated_at' => $file->updated_at,
+            ]);
+        }
+
+        echo "Other item are shifted successfully.";
     }
 }

@@ -11,13 +11,37 @@ use Illuminate\Http\Request;
 
 class PayrollPaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payrollPayments = PayrollPayment::with('employee')->get();
+        $payrollPayments = PayrollPayment::with('employee')
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+
         $employees = Employee::all();
 
         return view('payrolls.payroll-payments', compact('payrollPayments', 'employees'));
     }
+
+    public function search(Request $request)
+    {
+        $searchItem = $request->search;
+
+        $payrollPayments = PayrollPayment::with('employee')
+            ->when($searchItem, function ($query) use ($searchItem) {
+                $query->whereHas('employee', function ($query) use ($searchItem) {
+                    $query->where('first_name', 'like', '%' . $searchItem . '%')
+                        ->orWhere('last_name', 'like', '%' . $searchItem . '%')
+                        ->orWhere('father_name', 'like', '%' . $searchItem . '%');
+                });
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+
+        $employees = Employee::all();
+
+        return view('payrolls.payroll-payments', compact('payrollPayments', 'employees'));
+    }
+
 
     public function create()
     {
@@ -26,7 +50,6 @@ class PayrollPaymentController extends Controller
 
     public function store(Request $request)
     {
-        info($request->all());
         // Validate the incoming request data
         $validatedData = $request->validate([
             'employee_id' => 'required|exists:employees,id',
@@ -38,8 +61,8 @@ class PayrollPaymentController extends Controller
         ]);
 
         // Find the payroll for the given date
-        $payroll = Payroll::whereYear('payroll_date', Carbon::parse($validatedData['payroll_date'])->year)
-            ->whereMonth('payroll_date', Carbon::parse($validatedData['payroll_date'])->month)
+        $payroll = Payroll::whereYear('end_date', Carbon::parse($validatedData['payroll_date'])->year)
+            ->whereMonth('end_date', Carbon::parse($validatedData['payroll_date'])->month)
             ->firstOrFail();
 
         // // Find the corresponding payroll item
@@ -53,7 +76,9 @@ class PayrollPaymentController extends Controller
 
             $last_slip = PayrollPayment::orderBy('id', 'desc')->first();
 
-            if ($last_slip) $data['slip_no'] = $last_slip->slip_no + 1;
+            if ($last_slip) {
+                $data['slip_no'] = $last_slip->slip_no + 1;
+            }
         }
 
         // Update or Create the payment
@@ -66,9 +91,9 @@ class PayrollPaymentController extends Controller
                 'amount' => $request->payment_amount,
                 'cashier' => $id == null ? auth()->user()->id : $request->cashier,
                 'payment_method' => $request->payment_type,
-                'payment_date' => $request->payroll_date,
+                'payment_date' => $request->payment_date,
                 'remarks' => $request->remarks,
-            ]
+            ],
         );
 
         return response()->json([
@@ -77,9 +102,34 @@ class PayrollPaymentController extends Controller
         ]);
     }
 
-    public function show(PayrollPayment $payrollPayment)
+    public function show(Request $request)
     {
-        return view('payroll_payments.show', compact('payrollPayment'));
+        $paymentId = $request->input('id');
+
+        // Fetch the payroll payment along with related employee and payroll data
+        $payment = PayrollPayment::with(['employee', 'payroll'])
+            ->find($paymentId);
+
+        $payrollItems = PayrollItem::where('payroll_id', $payment->payroll_id)
+            ->where('employee_id', $payment->employee_id)
+            ->select('gross_salary', 'net_salary', 'net_salary', 'bonus', 'tax', 'present_days', 'additional_payments')
+            ->first();
+
+        if ($payment) {
+            // Format the payroll date
+            $payment->payroll_date = $payment->payroll ? \Carbon\Carbon::parse($payment->payment_date)->format('m/Y') : 'N/A';
+
+            return response()->json([
+                'success' => true,
+                'data' => $payment,
+                'payrollItems' => $payrollItems
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payroll payment not found.'
+            ]);
+        }
     }
 
     public function edit(PayrollPayment $payrollPayment)
@@ -105,8 +155,9 @@ class PayrollPaymentController extends Controller
         return redirect()->route('payroll_payments.index')->with('success', 'Payroll payment updated successfully.');
     }
 
-    public function destroy(PayrollPayment $payrollPayment)
+    public function destroy($id)
     {
+        $payrollPayment = PayrollPayment::findOrFail($id);
         $payrollPayment->delete();
 
         return redirect()->route('payroll_payments.index')->with('success', 'Payroll payment deleted successfully.');
@@ -121,9 +172,7 @@ class PayrollPaymentController extends Controller
         [$year, $month] = explode('-', $payrollDate);
 
         // Find the payroll where the year and month match
-        $payroll = Payroll::whereYear('payroll_date', $year)
-            ->whereMonth('payroll_date', $month)
-            ->firstOrFail();
+        $payroll = Payroll::whereYear('end_date', $year)->whereMonth('end_date', $month)->firstOrFail();
 
         // Fetch the payroll item details based on employee ID and payroll ID
         $payrollItem = PayrollItem::where('payroll_id', $payroll->id)
@@ -139,12 +188,14 @@ class PayrollPaymentController extends Controller
         $balance = $payrollItem->net_salary - $totalPaid;
 
         return response()->json([
-            'payroll_date' => $payroll->payroll_date,
+            'payroll_date' => $payroll->end_date,
             'salary' => $payrollItem->gross_salary,
             'present_days' => $payrollItem->present_days,
-            'additional_payments' => $payrollItem->additional_payments,
+            'additional_payments' => json_decode($payrollItem->additional_payments),
             'tax' => $payrollItem->tax,
             'bonus' => $payrollItem->bonus,
+            'gross_salary' => $payrollItem->gross_salary,
+            'net_salary' => $payrollItem->net_salary,
             'payable' => $payrollItem->net_salary,
             'paid' => $totalPaid,
             'balance' => $balance,

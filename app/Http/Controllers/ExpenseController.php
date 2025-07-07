@@ -18,26 +18,41 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $searchTerm = request()->input('search', null);
-
-        $expensesQuery = ExpenseSlip::with('expenseItems', 'expenseCategory', 'cashierUser')
+        // Get the search term and category from the request
+        $searchTerm = request()->input('searchTerm', null);
+        $category = request()->input('category', null);
+    
+        // Build the expenses query
+        $expensesQuery = ExpenseSlip::with(['expenses', 'expenseCategory', 'cashierUser'])
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                $query->where('remarks', 'like', "%$searchTerm%");
+                $query->where('remarks', 'like', "%$searchTerm%")
+                    ->orWhereHas('expenses', function ($q) use ($searchTerm) {
+                        $q->where('po_id', 'like', "%$searchTerm%")
+                            ->orWhereRaw("CAST(amount AS CHAR) like ?", ["%$searchTerm%"]);
+                    });
+            })
+            ->when($category, function ($query) use ($category) {
+                // Filter by category if it's selected
+                $query->where('category', $category);
             })
             ->orderByDesc('id');
-
+    
+        // Paginate the result
         $expenses = $expensesQuery->paginate(10);
+    
+        // Append search and category filters to the pagination links
         $expenses->appends(request()->query());
-
-        $categories = ExpenseCategory::where('parent', null)->with('subCategories')->get();
-
+    
+        // Fetch categories and subcategories
+        $categories = ExpenseCategory::whereNull('parent')->with('subCategories')->get();
+    
+        // Fetch all purchase orders
         $pos = PurchaseOrder::orderBy('id', 'desc')->get();
-
-        return view(
-            'expenses.index',
-            compact('expenses', 'categories', 'pos')
-        );
+    
+        // Return view with filtered expenses, categories, and purchase orders
+        return view('expenses.index', compact('expenses', 'categories', 'pos'));
     }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -49,14 +64,6 @@ class ExpenseController extends Controller
         $id = $request->id;
 
         $request->validate([
-            'paid_by' => 'required',
-            'paid_to' => 'required',
-            'date' => 'required',
-            'category' => 'required',
-            'expenses' => 'required',
-            'expenses.*.expense_description' => 'required',
-            'expenses.*.amount' => 'required',
-            'expenses.*.quantity' => 'required',
             'po_id' => 'required'
         ]);
 
@@ -92,7 +99,7 @@ class ExpenseController extends Controller
                 // If no file just name it as the current file, otherwise delete it.
                 if (!isset($data['file'])) {
                     $file_name = $exp->file;
-                } else if(!empty($exp->file)) {
+                } else if (!empty($exp->file)) {
                     $file_path = public_path('storage/expenses' . '/' . $exp->file);
 
                     if (file_exists($file_path)) {
@@ -169,5 +176,12 @@ class ExpenseController extends Controller
             $expensesFile->update(['file' => '']);
         }
         return back()->with('success',  'Successfully deleted!');
+    }
+    public function destroy($id)
+    {
+        // dd($id);
+        $expense = ExpenseSlip::withTrashed()->findOrFail($id);
+        $expense->delete();
+        return back()->with('success', 'Successfully Deleted!');
     }
 }

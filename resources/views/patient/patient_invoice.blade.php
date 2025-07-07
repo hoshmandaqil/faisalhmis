@@ -1,186 +1,268 @@
-@extends('layouts.master')
+<!DOCTYPE html>
+<html lang="en">
+@php use Carbon\Carbon; @endphp
 
-@section('page_title')
-    Patients Invoice
-@endsection
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
 
-@section('page-action')
+        .text-c {
+            text-align: center !important;
+        }
 
-@endsection
-@section('styles')
+        .size-large {
+            font-size: 25px !important;
+        }
 
-@endsection
-@section('content')
+        .size-medium {
+            font-size: 18px !important;
+        }
 
+        .display-flex {
+            display: flex;
+        }
 
-    <div class="row gutters">
-        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-            <div class="row gutters">
+        .flex-item-1 {
+            flex: 1;
+        }
 
-                <div class="col-6 offset-3 text-center">
-                    <p class="title" style="font-size: 1.3rem">Ministry of Health</p>
-                    <p class="title" style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
-                    <p class="title" style="font-size: 1.1rem">Finance Department</p>
-                    <p class="title" style="font-size: 1rem">Patient Invoice</p>
+        .invoice-table {
+            border: 1px solid #000;
+            border-collapse: collapse;
+            width: 100% !important;
+            margin-top: 20px;
+        }
+
+        .invoice-table td,
+        .invoice-table th {
+            border: 1px solid #000;
+            padding: 5px;
+        }
+
+        .text-bold {
+            font-weight: bold !important;
+        }
+
+        .grand-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .section-header {
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        /* Hide the print button when printing */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #print-it,
+            #print-it * {
+                visibility: visible;
+            }
+
+            #print-it {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            button {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="print-it">
+        <div class="text-c">
+            <div class="size-large">Ministry of Health</div>
+            <div class="size-large">Bayazid Rokhan Hospital</div>
+            <div class="size-large">Finance Department</div>
+            <div class="size-large">Patient Invoice</div>
+        </div>
+
+        <div class="invoice-container">
+            <div>
+                <div class="display-flex">
+                    <div class="flex-item-1">
+                        <h5 class="text-c"><strong>Patient Name: </strong> {{ ucfirst($patient->patient_name) }}</h5>
+                        <h5 class="text-c"><strong>Patient ID: </strong>{{ $patient->patient_generated_id }}</h5>
+                    </div>
+                    <div class="flex-item-1">
+                        <h5 class="text-c">Doctor: {{ $patient->doctor->name }}</h5>
+                        <h5 class="text-c">Date: {{ $currentDate }}</h5>
+                    </div>
                 </div>
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th class="text-c">Categories</th>
+                            <th class="text-c">Original Price</th>
+                            <th class="text-c">Discount</th>
+                            <th class="text-c">Payable</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{-- OPD Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">OPD Charges</td>
+                        </tr>
+                        <tr>
+                            <td class="text-c">OPD Fee</td>
+                            <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
+                            <td class="text-c">0 AF</td>
+                            <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
+                        </tr>
 
+                        {{-- Always initialize IPD totals --}}
+                        @php
+                            $totalIPD = 0;
+                            $totalIPD_discount = 0;
+                        @endphp
+
+                        {{-- IPD Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">IPD Charges</td>
+                        </tr>
+                        @php
+                            $totalIPD = 0;
+                            $totalIPD_discount = 0;
+                        @endphp
+                        @if ($patient->ipds->count() > 0)
+                            @foreach ($patient->ipds->sortBy('created_at') as $ipd)
+                                @php
+                                    $register_date = Carbon::parse($ipd->created_at)->startOfDay();
+                                    $end_date = $ipd->discharge_date
+                                        ? Carbon::parse($ipd->discharge_date)->startOfDay()
+                                        : Carbon::now()->startOfDay();
+                                    $total_days = $register_date->diffInDays($end_date);
+                                    $daily_price = (float) $ipd->price;
+                                    $discount_percent = (float) $ipd->discount;
+                                    $admission_total = 0;
+                                    $admission_discount = 0;
+                                @endphp
+                                @if ($total_days > 0)
+                                    <tr>
+                                        <td colspan="4" style="font-weight:bold; background:#e0e0e0;">
+                                            Admission: {{ $register_date->format('Y-m-d') }} to {{ $end_date->format('Y-m-d') }}
+                                        </td>
+                                    </tr>
+                                    @for ($i = 0; $i < $total_days; $i++)
+                                        @php
+                                            $date = $register_date->copy()->addDays($i)->format('Y-m-d');
+                                            $discount = ($discount_percent * $daily_price) / 100;
+                                            $final_price = $daily_price - $discount;
+                                            $admission_total += $final_price;
+                                            $admission_discount += $discount;
+                                        @endphp
+                                        <tr>
+                                            <td class="text-c">IPD Fee ({{ $date }})</td>
+                                            <td class="text-c">{{ number_format($daily_price) }} AF</td>
+                                            <td class="text-c">{{ number_format($discount) }} AF</td>
+                                            <td class="text-c">{{ number_format($final_price) }} AF</td>
+                                        </tr>
+                                    @endfor
+                                    <tr>
+                                        <td class="text-c font-bold">Subtotal for this Admission</td>
+                                        <td class="text-c">{{ number_format($admission_total + $admission_discount) }} AF</td>
+                                        <td class="text-c">{{ number_format($admission_discount) }} AF</td>
+                                        <td class="text-c">{{ number_format($admission_total) }} AF</td>
+                                    </tr>
+                                    @php
+                                        $totalIPD += $admission_total;
+                                        $totalIPD_discount += $admission_discount;
+                                    @endphp
+                                @endif
+                            @endforeach
+                            <tr>
+                                <td class="text-c font-bold">Total IPD Fee</td>
+                                <td class="text-c">{{ number_format($totalIPD + $totalIPD_discount) }} AF</td>
+                                <td class="text-c">{{ number_format($totalIPD_discount) }} AF</td>
+                                <td class="text-c">{{ number_format($totalIPD) }} AF</td>
+                            </tr>
+                        @endif
+
+                        {{-- Pharmacy Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">Pharmacy Charges</td>
+                        </tr>
+                        @php $totalPharmacy = 0; @endphp
+                        @foreach ($patient->pharmacyMedicines as $medicine)
+                            @php $totalPharmacy += $medicine->quantity * $medicine->unit_price; @endphp
+                        @endforeach
+                        <tr>
+                            <td class="text-c">Pharmacy Charges</td>
+                            <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
+                            <td class="text-c">0 AF</td>
+                            <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
+                        </tr>
+
+                        {{-- Lab Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">Lab Charges</td>
+                        </tr>
+                        @php
+                            $totalLab = 0;
+                        @endphp
+                        @foreach ($patient->laboratoryTests as $labTest)
+                            @php $totalLab += $labTest->price; @endphp
+                            <tr>
+                                <td class="text-c">{{ $labTest->testName->dep_name }}</td>
+                                <td class="text-c">{{ number_format($labTest->price) }} AF</td>
+                                <td class="text-c">0 AF</td>
+                                <td class="text-c">{{ number_format($labTest->price) }} AF</td>
+                            </tr>
+                        @endforeach
+
+                        {{-- Grand Total Section --}}
+                        <tr>
+                            <td colspan="4" class="section-header">Grand Total</td>
+                        </tr>
+                        @php
+                            $grandTotal = $patient->OPD_fee + $totalIPD + $totalPharmacy + $totalLab;
+                        @endphp
+                        <tr>
+                            <td class="size-medium text-bold text-c">Grand Total</td>
+                            <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
+                            <td class="size-medium text-bold text-c">0 AF</td>
+                            <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="invoice-container">
-                <hr>
-                <div class="invoice-body col-12 offset-3">
-
-                    <!-- Row start -->
-                    <div class="row gutters">
-                        <div class="col-lg-6 col-md-6 col-sm-6">
-                            <div class="row gutters">
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <div class="row ml-2">
-                                        <h6>Patient Name: </h6>
-                                        <h5 class="ml-1"> {{ ucfirst($patient->patient_name) }}</h5>
-                                    </div>
-                                    <div class="row ml-2">
-                                        <h6>Patient ID: </h6>
-                                        <h5 class="ml-1"> {{ $patient->patient_generated_id }}</h5>
-                                    </div>
-                                    <div class="row ml-2">
-                                        <h6>Doctor: </h6>
-                                        <h5 class="ml-1"> {{ $patient->doctor->name }}</h5>
-                                    </div>
-                                </div>
-
-
-                            </div>
-
-                        </div>
-                    </div>
-                    <!-- Row end -->
-
-                    <!-- Row start -->
-                    <div class="invoice-payment">
-                        <div class="row gutters">
-
-                            <div class="col-lg-6 col-md-6 col-sm-12 order-last">
-                                <table class="table no-border m-0">
-                                    <tbody>
-                                        <tr>
-                                            <th></th>
-                                            <th>Original Price</th>
-                                            <th>Discount</th>
-                                            <th>Payable</th>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <p>
-                                                    OPD Fee<br>
-                                                    IPD Fee<br>
-                                                    Pharmacy Charges<br>
-                                                    <br>
-                                                    <b>Diagnose Fee</b><br>
-                                                     @foreach ( $patient->laboratoryTests as $labTest)
-                                                     {{ $labTest->testName-> dep_name}} <br>
-                                                     @endforeach
-                                                </p>
-                                                <h5 class="text-danger"><strong>Grand Total</strong></h5>
-                                            </td>
-                                            <?php
-                                                $totalIPD = 0;
-                                                $totalIPD_discount = 0;
-                                                $totalPharmacy = 0;
-                                                $totalLab = 0;
-                                                $totalLabDiscount = 0;
-
-                                                    if ($patient->ipd != NULL){
-                                                    $totalPrice = 0;
-                                                    $totalDiscount = 0;
-                                                    if ($patient->ipd->discharge_date != NULL){
-                                                    $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($patient->ipd->created_at)));
-                                                    $discharge_date = $patient->ipd->discharge_date;
-                                                    $ipdDays = $register_date->diffInDays($discharge_date);
-
-                                                    for ($i = 1; $i <= $ipdDays; $i++) {
-                                                        $totalPrice += $patient->ipd->price;
-                                                        $discountForTest = ($patient->ipd->discount * $patient->ipd->price) / 100;
-                                                        $totalDiscount += $discountForTest;
-                                                    }
-                                                 }
-                                                    $totalIPD += $totalPrice - $totalDiscount;
-                                                    $totalIPD_discount+= $totalDiscount;
-                                                 }
-
-                                                    if($patient->pharmacyMedicines != NULL){
-                                                        foreach ($patient->pharmacyMedicines as $medicine) {
-                                                            $totalPharmacy += $medicine->quantity * $medicine->unit_price;
-                                                        }
-                                                    }
-                                                    ?>
-                                            <td>
-                                                <p>
-                                                   {{ number_format($patient->OPD_fee) }} AF<br>
-                                                    {{ number_format($totalIPD + $totalIPD_discount) }} AF<br>
-                                                    {{ number_format($totalPharmacy )}} AF<br>
-                                                    <br>
-                                                    <br>
-                                                    @foreach ( $patient->laboratoryTests as $labTest )
-                                                     {{number_format($labTest->price) }} <br>
-                                                     <?php $totalLab += $labTest->price; ?>
-                                                    @endforeach
-
-
-
-                                                </p>
-                                                <h5 class="text-danger"><strong>{{ number_format($patient->OPD_fee + $totalIPD + $totalIPD_discount +  $totalPharmacy + $totalLab)}}</strong></h5>
-                                            </td>
-                                            <td>
-                                                <p>
-                                                   0 AF<br>
-                                                    {{ number_format($totalIPD_discount) }} AF<br>
-                                                    0 AF<br>
-                                                    <br>
-                                                    <br>
-                                                    @foreach ( $patient->laboratoryTests as $labTest )
-                                                     {{number_format(($labTest->discount * $labTest->price) / 100 ) }} <br>
-                                                     <?php $totalLabDiscount += ($labTest->discount * $labTest->price / 100); ?>
-                                                    @endforeach
-
-
-
-                                                </p>
-                                                <h5 class="text-danger"><strong>{{ number_format($t_discount = $totalIPD_discount + $totalLabDiscount)}}</strong></h5>
-                                            </td>
-                                            <td>
-                                                <p>
-                                                   {{ number_format($patient->OPD_fee) }} AF<br>
-                                                    {{ number_format($totalIPD) }} AF<br>
-                                                    {{ number_format($totalPharmacy )}} AF<br>
-                                                    <br>
-                                                    <br>
-                                                    @foreach ( $patient->laboratoryTests as $labTest )
-                                                     {{number_format($labTest->price - ($labTest->discount * $labTest->price) / 100 ) }} <br>
-                                                     <?php  ?>
-                                                    @endforeach
-
-
-
-                                                </p>
-                                                <h5 class="text-danger"><strong>{{ number_format($patient->OPD_fee + $totalIPD +  $totalPharmacy + $totalLab-$totalLabDiscount)}}</strong></h5>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Row end -->
-
-                </div>
-
-
-
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="printDiv('print-it')">
+                    <i class="fa">🖨️</i> Print
+                </button>
             </div>
         </div>
     </div>
 
+    <script>
+        function printDiv(divId) {
+            window.print();
+        }
+    </script>
+</body>
 
-@endsection
-@section('scripts')
-@endsection
+</html>

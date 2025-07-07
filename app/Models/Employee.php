@@ -9,7 +9,7 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['opd_percentage', 'ipd_percentage', 'ipd_amount', 'opd_amount'];
+    protected $fillable = ['opd_percentage', 'ipd_percentage', 'ipd_amount', 'opd_amount', 'opd_tax', 'ipd_tax'];
 
     public function user()
     {
@@ -23,7 +23,7 @@ class Employee extends Model
 
     public function labPercentage()
     {
-        return $this->belongsToMany(MainLabDepartment::class)->withPivot('percentage');
+        return $this->belongsToMany(MainLabDepartment::class)->withPivot('percentage', 'tax', 'expense');
     }
 
     public function patients()

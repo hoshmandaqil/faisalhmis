@@ -135,7 +135,7 @@
                                         </div>
                                     </div>
                                     <a class="btn btn-sm btn-dark"
-                                        href="{{ url('patient_invoice', ['patient' => $patient->id]) }}">Invoice</a>
+                                        href="{{ url('patient_invoice', ['patient' => $patient->id]) }}" target="_blank">Invoice</a>
                                 </td>
                             </tr>
                         @endforeach
@@ -231,16 +231,16 @@
                                 <label>Age</label>
                                 <input class="form-control" name="age" type="text">
                             </div>
-                            <div class="form-group col-6">
+                            {{-- <div class="form-group col-6">
                                 <label>Advance Payment?</label>
                                 <input class="form-control" name="advance_pay" type="number" value="0">
-                            </div>
-                        </div>
-                        <div class="row">
+                            </div> --}}
                             <div class="form-group col-6">
                                 <label>Register Date</label>
                                 <input class="form-control" name="reg_date" type="date" value="{{ date('Y-m-d') }}">
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="form-group col-6">
                                 <label>Default Discount</label>
                                 <select class="form-control" name="default_discount">
@@ -335,10 +335,10 @@
                                 <input class="form-control" name="age" type="text">
                             </div>
 
-                            <div class="form-group col-4">
+                            {{-- <div class="form-group col-4">
                                 <label>Advance Payment?</label>
                                 <input class="form-control" name="advance_pay" type="number" value="0">
-                            </div>
+                            </div> --}}
                             <div class="form-group col-4">
                                 <label>Register Date</label>
                                 <input class="form-control" name="reg_date" type="date" value="{{ date('Y-m-d') }}">
@@ -361,23 +361,23 @@
                                 <label>SPO2</label>
                                 <input class="form-control" name="heart_rate" type="text">
                             </div>
-                            <div class="form-group col-3">
+                            <div class="form-group col-4">
                                 <label>Temperature</label>
                                 <input class="form-control" name="temperature" type="text">
                             </div>
-                            <div class="form-group col-3">
+                            <div class="form-group col-4">
                                 <label>Weight</label>
                                 <input class="form-control" name="weight" type="text">
                             </div>
-                            <div class="form-group col-3">
+                            <div class="form-group col-4">
                                 <label>Height</label>
                                 <input class="form-control" name="height" type="text">
                             </div>
-                            <div class="form-group col-3">
+                            <div class="form-group col-4">
                                 <label>Mental State</label>
                                 <input class="form-control" name="mental_state" type="text">
                             </div>
-                            <div class="form-group col-3">
+                            <div class="form-group col-4">
                                 <label>Default Discount</label>
                                 <select class="form-control" name="default_discount"
                                     @if (!in_array('Patient Default Discount', $user_permissions)) disabled @endif>

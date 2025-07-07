@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expense\ExpenseCategory;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderFile;
+use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseOrderSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseOrderController extends Controller
 {
@@ -38,9 +39,7 @@ class PurchaseOrderController extends Controller
             'approved_no_expenses' => 'Approved/No Expenses',
         ];
 
-        $categories = ExpenseCategory::where('parent', null)->with('subCategories')->get();
-
-        return view('PurchaseOrder.PO', compact('pos', 'setting', 'users', 'status', 'categories'));
+        return view('PurchaseOrder.PO', compact('pos', 'setting', 'users', 'status'));
     }
 
     /**
@@ -52,49 +51,53 @@ class PurchaseOrderController extends Controller
     {
         //
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
+        // Validate the incoming request data
+        $validated = $request->validate([
+            'po_by' => 'required|string|max:255',
+            'date' => 'required|date',
+            'remarks' => 'nullable|string',
+            'description.*' => 'required|string',
+            'amount.*' => 'required|numeric',
+            'quantity.*' => 'required|integer',
+            'item_remarks.*' => 'nullable|string',
+            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg,doc,docx|max:500', 
+        ]);
 
-        $descriptions = $request->description;
+        // Create the PurchaseOrder
+        $purchaseOrder = PurchaseOrder::create([
+            'po_by' => $validated['po_by'],
+            'date' => $validated['date'], // Assuming it's already in the correct format
+            'remarks' => $validated['remarks'] ?? null,
+            'inserted_by' => auth()->id(),
+        ]);
 
-        $quantities = $request->quantity;
-        $prices = $request->price;
-        $totalPrices = $request->total_price;
-        $dates = $request->date;
-        $numberOfFilesEach = explode(',', $request->numberOfFilesPerEach);
-        $startKeyFile = 0;
-        $endKeyFile = 0;
-        $thisPOFiles = [];
-        foreach ($descriptions as $key => $des) {
-
-            $poItem = new PurchaseOrder();
-            $poItem->description = $descriptions[$key];
-            $poItem->quantity = $quantities[$key];
-            $poItem->price = $prices[$key];
-            $poItem->total_price = $totalPrices[$key];
-            $poItem->date = $dates[$key];
-            $thisPOFilesNumber = $numberOfFilesEach[$key];
-            $poItem->created_by = \Auth::user()->id;
-
-            if ($request->hasfile('files')) {
-                foreach ($request->file('files') as $image) {
-                    $filename =  rand() . '_' . time() . '_' . $image->getClientOriginalName();
-                    $image->move(public_path() . '/POs/', $filename);
-                    $images[] = $filename;
-                }
-                $poItem->files = json_encode($images);
-            }
-            $poItem->save();
+        // Loop through the items and create PurchaseOrderItem for each
+        foreach ($validated['description'] as $index => $description) {
+            PurchaseOrderItem::create([
+                'po_id' => $purchaseOrder->id,
+                'description' => $description,
+                'amount' => $validated['amount'][$index],
+                'quantity' => $validated['quantity'][$index],
+                'remarks' => $validated['item_remarks'][$index] ?? null,
+            ]);
         }
 
-        return redirect()->back()->with('alert', 'The PO Added Successfully')->with('alert-type', 'alert-success');
+        // Handle single file upload
+        if ($request->hasFile('file')) {
+            $originalFile = $request->file('file');
+            $file_name = 'purchase-order-' . $purchaseOrder->id . '-' . time() . '.' . $originalFile->getClientOriginalExtension();
+
+            Storage::disk('local')->put('public/purchase_order_files/' . $file_name, file_get_contents($originalFile));
+
+            PurchaseOrderFile::create([
+                'po_id' => $purchaseOrder->id,
+                'file' => $file_name,
+            ]);
+        }
+
+        return back()->with(['message' => 'Purchase Order, items, and file successfully stored']);
     }
 
     /**
@@ -103,9 +106,11 @@ class PurchaseOrderController extends Controller
      * @param  \App\Models\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function show(PurchaseOrder $purchaseOrder)
+    public function show($id)
     {
-        //
+        $po = PurchaseOrder::with('items')->findOrFail($id);
+
+        return view('PurchaseOrder.show', compact('po'));
     }
 
     /**
@@ -114,9 +119,17 @@ class PurchaseOrderController extends Controller
      * @param  \App\Models\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseOrder $purchaseOrder)
+    public function edit($id)
     {
-        //
+        $purchaseOrder = PurchaseOrder::find($id);
+        // Load the related PO items
+        $purchaseOrder->load('items');
+        // Return the purchase order and items as JSON
+        return response()->json([
+            'po' => $purchaseOrder,
+            'items' => $purchaseOrder->items,
+            'status' => $purchaseOrder->status(),
+        ]);
     }
 
     /**
@@ -126,28 +139,85 @@ class PurchaseOrderController extends Controller
      * @param  \App\Models\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $po = PurchaseOrder::where('id', $id)->first();
-        $po->description = $request->description;
-        $po->quantity = $request->quantity;
-        $po->price = $request->price;
-        $po->total_price = $request->total_price;
-        $po->date = $request->date;
-        $po->updated_by = \Auth::user()->id;
-        if ($request->hasfile('files')) {
-            $image = $request->file('files');
-            $filename =  rand() . '_' . time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path() . '/POs/', $filename);
+        // Validate the request data
+        $validated = $request->validate([
+            'po_id' => 'required|exists:purchase_order,id',
+            'po_by' => 'required|string',
+            'date' => 'required|date',
+            'remarks' => 'nullable|string',
+            'description' => 'required|array',
+            'description.*' => 'required|string',
+            'amount' => 'required|array',
+            'amount.*' => 'required|numeric',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|integer',
+            'item_remarks' => 'nullable|array',
+            'item_remarks.*' => 'nullable|string',
+        ]);
 
-            $images = (array) json_decode($po->files);
+        // Find the purchase order
+        $purchaseOrder = PurchaseOrder::findOrFail($validated['po_id']);
 
-            $images[] = $filename;
+        // Update the purchase order
+        $purchaseOrder->update([
+            'po_by' => $validated['po_by'],
+            'date' => $validated['date'],
+            'remarks' => $validated['remarks'],
+        ]);
 
-            $po->files = json_encode($images);
+        // Delete existing items
+        $purchaseOrder->items()->delete();
+
+        // Create new items
+        foreach ($validated['description'] as $index => $description) {
+            $purchaseOrder->items()->create([
+                'description' => $description,
+                'amount' => $validated['amount'][$index],
+                'quantity' => $validated['quantity'][$index],
+                'remarks' => $validated['item_remarks'][$index] ?? null,
+            ]);
         }
-        $po->save();
         return redirect()->back()->with('alert', 'The PO Updated Successfully')->with('alert-type', 'alert-info');
+    }
+
+    // In your PurchaseOrderController
+
+    public function status(Request $request)
+    {
+        $request->validate([
+            'po_id' => 'required',
+            'status' => 'required|in:check,verify,approve,reject'
+        ]);
+
+        $po = PurchaseOrder::findOrFail($request->po_id);
+
+        // Check user permissions here if needed
+
+        switch ($request->status) {
+            case 'check':
+                $po->checked_by = auth()->id();
+                $po->checked_date = now();
+                break;
+            case 'verify':
+                $po->verified_by = auth()->id();
+                $po->verified_date = now();
+                break;
+            case 'approve':
+                $po->approved_by = auth()->id();
+                $po->approved_date = now();
+                break;
+            case 'reject':
+                $po->rejected_by = auth()->id();
+                $po->rejected_date = now();
+                $po->reject_comment = $request->reject_comment;
+                break;
+        }
+
+        $po->save();
+
+        return response()->json(['success' => 'Status updated successfully'], 200);
     }
 
     /**

@@ -46,6 +46,7 @@
                             <th>S.NO</th>
                             <th>ID</th>
                             <th>Name</th>
+                            <th>F/Name</th>
                             <th>Position</th>
                             <th>Gender</th>
                             <th>Phone Number</th>
@@ -59,6 +60,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $employee->employee_id }}</td>
                                 <td>{{ ucfirst($employee->first_name) . ' ' . ucfirst($employee->last_name) }}</td>
+                                <td>{{ ucfirst($employee->father_name) }}</td>
                                 <td>{{ ucfirst($employee->position) }}</td>
                                 <td>{{ $employee->gender == 0 ? 'Male' : 'Female' }}</td>
                                 <td>{{ $employee->phone_number }}</td>
@@ -528,7 +530,7 @@
 
     <div class="modal fade" id="setPercentage" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"
         aria-labelledby="exampleModalLabel1" data-keyboard="false">
-        <div class="modal-dialog modal-md" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel1">Set Percentage </h5>

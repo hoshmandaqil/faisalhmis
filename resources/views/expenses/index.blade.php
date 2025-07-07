@@ -18,24 +18,45 @@
 @endsection
 
 @section('search_bar')
-    <div class="search-container">
-        <!-- Row start -->
+    <div class="search-container my-4">
         <div class="row justify-content-center">
-            <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12">
+            <!-- Search Bar Section -->
+            <div class="col-xl-5 col-lg-6 col-md-7 col-sm-8 col-12 mb-3">
+                <form action="{{ route('expenses.search') }}" method="GET">
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" class="form-control" value="{{ request('searchTerm') }}"
+                            placeholder="Search Expense...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="icon-search1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-                <div class="search-box">
-                    <form action="{{ url('searchPO') }}" method="post">
-                        @csrf
-                        <input type="text" name="search" class="search-query" value="{{ request('search') }}"
-                            placeholder="Search Expense ...">
-                        <i class="icon-search1" onclick="$(this).closest('form').submit();"></i>
-                    </form>
-
-                </div>
-
+            <!-- Category Filter Section -->
+            <div class="col-xl-3 col-lg-4 col-md-5 col-sm-6 col-12 mb-3">
+                <form action="{{ route('expenses.search') }}" method="GET">
+                    <div class="input-group">
+                        <select class="form-control" name="category" id="category" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}"
+                                    {{ request('category') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="input-group-append">
+                            <button class="btn btn-secondary" type="submit">
+                                <i class="icon-filter mr-2"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
-        <!-- Row end -->
     </div>
 @endsection
 @section('content')
@@ -56,6 +77,7 @@
                         <tr>
                             <th>No.</th>
                             <th>Slip No.</th>
+                            <th>PO No.</th>
                             <th>Paid By</th>
                             <th>Paid To</th>
                             <th>Expense Date</th>
@@ -67,10 +89,14 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $totalAmount = 0;
+                        @endphp
                         @foreach ($expenses as $expense)
-                            <tr class="text-center">
+                            <tr>
                                 <td>{{ ($expenses->currentpage() - 1) * $expenses->perpage() + $loop->index + 1 }}</td>
                                 <td>{{ $expense->slip_no }}</td>
+                                <td>{{ $expense->po_id }}</td>
                                 <td>{{ $expense->paid_by }}</td>
                                 <td>{{ $expense->paid_to }}</td>
                                 <td>{{ $expense->date }}</td>
@@ -87,29 +113,54 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @php
-                                        $shamsiDate = $expense->date;
-                                    @endphp
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#viewExpense" data-expense="{{ $expense }}"
-                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                        View
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#expenseFiles" data-expense="{{ $expense }}"
-                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                        Files/Attachements
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#addExpenseModal" data-expense="{{ $expense }}"
-                                        data-sum-paid="{{ number_format($expense->sum_paid) }}">
-                                        Edit
-                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button"
+                                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                                data-target="#viewExpense" data-expense="{{ $expense }}"
+                                                data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                View
+                                            </a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                                data-target="#expenseFiles" data-expense="{{ $expense }}"
+                                                data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                Files/Attachments
+                                            </a>
+                                            @if (in_array('edit_expense', $user_permissions))
+                                                <a class="dropdown-item" href="#" data-toggle="modal"
+                                                    data-target="#addExpenseModal" data-expense="{{ $expense }}"
+                                                    data-sum-paid="{{ number_format($expense->sum_paid) }}">
+                                                    Edit
+                                                </a>
+                                            @endif
+                                            @if (in_array('delete_expense', $user_permissions))
+                                                <a class="dropdown-item text-danger" href="#" data-toggle="modal"
+                                                    data-target="#deleteExpenseModal"
+                                                    data-expense-id="{{ $expense->id }}">
+                                                    Delete
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
+                            @php
+                                $totalAmount += $expense->sum_paid;
+                            @endphp
                         @endforeach
 
                     </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <td colspan="7" class="text-right"><strong>Total Amount:</strong></td>
+                            <td><strong>{{ number_format($totalAmount, 2) }} AF</strong></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
                 </table>
                 {{ $expenses->links() }}
             </div>
@@ -122,7 +173,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    {{-- <button type="button" class="btn btn-sm btn-dark" onclick="newPo()">Add New</button> --}}
+                    <h5>Add New Expense</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -164,8 +215,7 @@
                                             @foreach ($categories as $category)
                                                 <optgroup label="{{ $category->name }}">
                                                     @if ($category->subCategories->isEmpty())
-                                                        <option value="{{ $category->id }}"
-                                                            :selected="$store.form.form.category == $category - > id">
+                                                        <option value="{{ $category->id }}">
                                                             {{ $category->name }}
                                                         </option>
                                                     @else
@@ -185,21 +235,22 @@
                                         <label>Date
                                             *
                                         </label>
-                                        <input class="form-control persianDate" type="text" name="date" readonly
-                                            required>
+                                        <input class="form-control" type="date" name="date"
+                                            value="{{ date('Y-m-d') }}" required>
                                     </div>
                                 </div>
 
                                 <div class="row mb-4">
                                     <div class="form-group col-md-3">
                                         <label>Purchase Order</label>
-                                        <select class="form-control" name="po_id" required>
+                                        <select class="form-control selectpicker" name="po_id" required
+                                            data-live-search="true">
                                             <option value="" disabled selected>Please select a PO</option>
                                             @if ($pos->isEmpty())
                                                 <option value="0">Without PO</option>
                                             @else
                                                 @foreach ($pos as $po)
-                                                    @if ($po->approved !== null)
+                                                    @if ($po->approved_by !== null)
                                                         <option value="{{ $po->id }}">
                                                             {{ $po->id }}: {{ $po->description }}
                                                         </option>
@@ -567,9 +618,13 @@
                                 <table class="table table-sm table-rounded border gs-7 gy-3">
                                     <tr>
                                         <td class="mx-auto text-start w-25" rowspan="100%">
-                                            <img class="h-50px" src="" alt="Logo" />
-                                        </td>
+                                            <img src="{{ asset('assets/img/logo/logo.png') }}" alt="" style="height: 50px"
+                                            class="mb-4">
+                                       </td>
                                         <td class="text-center fw-bold">
+                                            <h4>Ministry of Public Health</h4>
+                                            <h6>Bayazid Rokhan Curative Hospital KBL</h6>
+                                            <h6>Finance Department</h6>
                                             <h6>Expense Voucher</h6>
                                         </td>
                                         <td class="text-end w-25">
@@ -645,7 +700,8 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button onclick="printDiv('paymentPrint')" type="button" class="btn btn-icon btn-primary btn-sm">
+                        <button onclick="printDiv('paymentPrint')" type="button"
+                            class="btn btn-icon btn-primary btn-sm">
                             Print
                         </button>
                     </div>
@@ -653,6 +709,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteExpenseModal" tabindex="-1" role="dialog"
+        aria-labelledby="deleteExpenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteExpenseModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this expense?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form id="deleteExpenseForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 @endsection
 
@@ -937,6 +1020,20 @@
 
             // Initialize total amount on page load
             updateTotalAmount();
+        });
+    </script>
+
+
+    <script>
+        $('#deleteExpenseModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var expenseId = button.data('expense-id');
+
+            var form = $(this).find('form');
+            var actionUrl = '{{ route('expenses.destroy', ':id') }}';
+            actionUrl = actionUrl.replace(':id', expenseId);
+
+            form.attr('action', actionUrl);
         });
     </script>
 @endsection

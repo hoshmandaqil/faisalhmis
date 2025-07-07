@@ -94,7 +94,7 @@
                                             </td>
                                             <?php
                                             $totalOfEach += $dayData;
-                                            
+
                                             if ($key != 'Patients') {
                                                 $totalIncomesPerDay[$key1][] = $dayData;
                                             }
@@ -111,11 +111,15 @@
                                 @endif
                             @endforeach
                             <tr>
+                                <td colspan="{{ count($days) + 1 }}">miscellaneousIncome:</td>
+                                <td>{{ number_format($miscellaneousIncome) }}</td>
+                            </tr>
+                            <tr>
                                 <td>Total (Patients Not Calculated): </td>
                                 @foreach ($totalIncomesPerDay as $perDayIncome)
                                     <td> {{ number_format(array_sum($perDayIncome)) }}</td>
                                 @endforeach
-                                <td>{{ number_format($grandTotalOfEach) }}</td>
+                                <td>{{ number_format($grandTotalOfEach + $miscellaneousIncome) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -134,7 +138,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <h4>Available Cash: {{ number_format($allIncomes - $allExpenses) }}</h4>
+                        <h4>Available Cash: {{ number_format($allIncomes + $otherIncome - $allExpenses - 1249955 -$totalPayrollPayment) }}</h4>
                     </div>
                 </div>
 

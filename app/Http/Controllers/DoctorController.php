@@ -9,6 +9,7 @@ use App\Models\MainLabDepartment;
 use App\Models\MedicineName;
 use App\Models\Patient;
 use App\Models\Pharmacy;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -138,6 +139,10 @@ class DoctorController extends Controller
         // Check if the request is coming from lab/IPD page
         $referer = $request->headers->get('referer');
         $isFromLabIpdPage = strpos($referer, 'my_patients_lab_ipd') !== false;
+        $doctors = User::where('type', 3)
+        ->where('status', 1)
+        ->latest()
+        ->get();
 
         if ($isFromLabIpdPage) {
             // Return lab/IPD view for lab/IPD page searches
@@ -150,7 +155,8 @@ class DoctorController extends Controller
                     'rooms',
                     'beds',
                     'patientSearchDetail',
-                    'mainLabDepartments'
+                    'mainLabDepartments',
+                    'doctors'
                 )
             );
         } else {
@@ -166,9 +172,11 @@ class DoctorController extends Controller
                     'beds',
                     'patientSearchDetail',
                     'mainLabDepartments',
-                    'medicine_dosage'
+                    'medicine_dosage',
+                    'doctors'
                 )
             );
         }
+
     }
 }

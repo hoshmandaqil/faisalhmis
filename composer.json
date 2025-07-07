@@ -13,7 +13,8 @@
         "laravel/framework": "^8.40",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
-        "maatwebsite/excel": "^3.1"
+        "maatwebsite/excel": "^3.1",
+        "morilog/jalali": "^3.4"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -30,7 +31,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/helpers/globalFunctions.php"
+            "app/helpers/globalFunctions.php",
+            "app/helpers/helper.php"
         ]
     },
     "autoload-dev": {

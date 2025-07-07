@@ -10,10 +10,10 @@ body {
   color: #333;
 }
 
-input[type="text"]{
-    padding: 5px;
-    border: 1px solid #aaa;
-    border-radius: 3px;
+input[type="text"] {
+  padding: 5px;
+  border: 1px solid #aaa;
+  border-radius: 3px;
 }
 
 header {
@@ -39,16 +39,16 @@ header h1 {
   float: left;
 }
 
-.wrapper {  
+.wrapper {
   padding: 15px 30px;
   transition: all 0.3s ease-out;
   margin: 0;
 }
 
-.wrapper section{
-      padding-top: 70px;
-  }
-  
+.wrapper section {
+  padding-top: 70px;
+}
+
 .clearfix:after {
   content: "";
   display: block;
@@ -56,11 +56,11 @@ header h1 {
 }
 
 
+
+
 /* Small devices (tablets)
 ==========================*/
-@media (min-width: 768px) {
-
-}
+@media (min-width: 768px) {}
 
 
 /* Medium devices (desktops)
@@ -85,10 +85,24 @@ header h1 {
   .wrapper__minify {
     margin-left: 50px;
   }
-  
-  
+
+
 
 }
 
+@media print {
+  .d-print-none {
+    display: none !important;
+  }
+  .d-print-block {
+    display: block !important;
+  }
+}
 
-label.usage, span.usage{background: #eee; margin-left: 150px; padding:5px}
+
+label.usage,
+span.usage {
+  background: #eee;
+  margin-left: 150px;
+  padding: 5px
+}

@@ -101,7 +101,7 @@
                             $ipdDays = 1;
                             $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($patient->ipd->created_at)));
                             $to = \Carbon\Carbon::parse(date('Y-m-d'));
-                            $ipdDays = $register_date->diffInDays($to);
+                            $ipdDays = $register_date->diffInDays($to) +1;
                             ?>
                             <td>
                                 <table class="ipd_table">

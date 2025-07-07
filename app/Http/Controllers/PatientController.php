@@ -24,7 +24,9 @@ class PatientController extends Controller
     {
         $patients = Patient::latest()->with('doctor', 'createdBy')->paginate(30);
         //$doctors = User::where('type', 3)->latest()->pluck('name', 'id')->all();
+
         $doctors = User::where('type', 3)->where('status', 1)->orWhere('id',73)->latest()->get();
+
         $previousPatientId = Patient::max('id');
 
         return view('patient.patient', compact('patients', 'doctors', 'previousPatientId'));
@@ -60,7 +62,7 @@ class PatientController extends Controller
         $patient->marital_status = $request->marital_status;
         $patient->age = $request->age;
         $patient->patient_generated_id = NULL;
-        $patient->advance_pay = $request->advance_pay;
+        // $patient->advance_pay = $request->advance_pay;
         $patient->blood_group = $request->blood_group;
         $patient->reg_date = $request->reg_date;
         $patient->doctor_id = $request->doctor_id;
@@ -190,6 +192,11 @@ class PatientController extends Controller
 
         $medicine_dosage = DB::table('medicine_dosages')->get();
 
+        $doctors = User::where('type', 3)
+            ->where('status', 1)
+            ->latest()
+            ->get();
+
         return view(
             'patient.my_patients',
             compact(
@@ -200,7 +207,8 @@ class PatientController extends Controller
                 'rooms',
                 'beds',
                 'mainLabDepartments',
-                'medicine_dosage'
+                'medicine_dosage',
+                'doctors'
             )
         );
     }
@@ -232,6 +240,8 @@ class PatientController extends Controller
             })->lazy();
 
         $medicine_dosage = DB::table('medicine_dosages')->get();
+
+        
 
         return view(
             'patient.my_patients_medicines',
@@ -292,8 +302,8 @@ class PatientController extends Controller
     {
         $patient = Patient::where('id', $id)
             ->with('pharmacyMedicines', 'ipd', 'laboratoryTests.testName')->first();
-        // dd($patient);
-        return view('patient.patient_invoice', compact('patient'));
+        $currentDate = now()->format('Y-m-d'); // Get current date in 'YYYY-MM-DD' format
+        return view('patient.patient_invoice', compact('patient', 'currentDate'));
     }
 
     public function printVitalSignOfPatient()
