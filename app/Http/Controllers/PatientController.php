@@ -31,7 +31,7 @@ class PatientController extends Controller
             $query->where('status', 1);
             })
             ->when(!in_array(auth()->user()->id, $targetIds), function ($query) {
-            $query->orWhereIn('id', [28, 47, 77,91]);
+            $query->orWhereIn('id', [28, 47, 77,91,99]);
             })
             ->latest()
             ->get();

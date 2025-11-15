@@ -56,8 +56,7 @@
                                         onclick="openManageStatusModal({{ $payroll }}, '{{ $payroll->status }}')">
                                         Manage Status
                                     </a>
-                                    @if (!$payroll->approved_date)
-                                        <a class="dropdown-item px-3" href="{{ route('payrolls.edit', $payroll->id) }}">
+                                       <a class="dropdown-item px-3" href="{{ route('payrolls.edit', $payroll->id) }}">
                                             Edit
                                         </a>
                                         <form action="{{ route('payrolls.destroy', $payroll->id) }}" method="POST">
@@ -65,7 +64,6 @@
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item px-3">Delete</button>
                                         </form>
-                                    @endif
                                 </div>
                             </div>
                         </div>

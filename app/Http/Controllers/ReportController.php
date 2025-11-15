@@ -26,30 +26,50 @@ class ReportController extends Controller
 {
 
     public function dashboard()
-    {
-        $today = today()->format('Y-m-d');
-        $currentYear = date('Y');
-        $currentMonth = date('m');
+{
+    $today = today()->format('Y-m-d');
+    $currentYear = date('Y');
+    $currentMonth = date('m');
 
-        $previousDay = Carbon::now()->subDays(1)->format('Y-m-d');
-        $previousMonthDate = Carbon::now()->subMonthNoOverflow()->format('Y-m');
-        $previousMonth = explode('-', $previousMonthDate)[1];
-        $previousMonthYear = explode('-', $previousMonthDate)[0];
+    $previousDay = Carbon::now()->subDays(1)->format('Y-m-d');
+    $previousMonthDate = Carbon::now()->subMonthNoOverflow()->format('Y-m');
+    $previousMonth = explode('-', $previousMonthDate)[1];
+    $previousMonthYear = explode('-', $previousMonthDate)[0];
 
-        // dd($today, $currentMonth, $currentYear, $previousDay, $previousMonth, $previousMonthYear);
+    // Fetch setting
+    $halfDataMode = DB::table('settings')->value('half_data_mode');
 
-        $todayPatient = DB::table('patients')->whereDate('created_at', $today)->count();
-        $outDorPaitent = DB::table('patients')->where('doctor_id', 28)->whereDate('created_at', $today)->count();
-        $yesterdayPatient = DB::table('patients')->whereDate('created_at', $previousDay)->count();
-        $currentMonthPatient = DB::table('patients')->whereYear('created_at', $currentYear)
-            ->whereMonth('created_at', $currentMonth)->count();
-        $previousMonthPatient = DB::table('patients')->whereYear('created_at', $previousMonthYear)
-            ->whereMonth('created_at', $previousMonth)->count();
-        $totalAllPatients = DB::table('patients')->count();
-        $currentYearAllPatients = DB::table('patients')->whereYear('created_at', $currentYear)->count();
+    $todayPatient = DB::table('patients')->whereDate('created_at', $today)->count();
+    $outDorPaitent = DB::table('patients')->where('doctor_id', 28)->whereDate('created_at', $today)->count();
+    $yesterdayPatient = DB::table('patients')->whereDate('created_at', $previousDay)->count();
+    $currentMonthPatient = DB::table('patients')->whereYear('created_at', $currentYear)
+        ->whereMonth('created_at', $currentMonth)->count();
+    $previousMonthPatient = DB::table('patients')->whereYear('created_at', $previousMonthYear)
+        ->whereMonth('created_at', $previousMonth)->count();
+    $totalAllPatients = DB::table('patients')->count();
+    $currentYearAllPatients = DB::table('patients')->whereYear('created_at', $currentYear)->count();
 
-        return view('dashboard', compact('todayPatient', 'yesterdayPatient', 'currentMonthPatient', 'previousMonthPatient', 'totalAllPatients', 'currentYearAllPatients', 'outDorPaitent'));
+    // ✅ If half_data_mode is ON, divide and round values
+    if ($halfDataMode) {
+        $todayPatient = round($todayPatient / 2);
+        $outDorPaitent = round($outDorPaitent / 2);
+        $yesterdayPatient = round($yesterdayPatient / 2);
+        $currentMonthPatient = round($currentMonthPatient / 2);
+        $previousMonthPatient = round($previousMonthPatient / 2);
+        $totalAllPatients = round($totalAllPatients / 2);
+        $currentYearAllPatients = round($currentYearAllPatients / 2);
     }
+
+    return view('dashboard', compact(
+        'todayPatient',
+        'yesterdayPatient',
+        'currentMonthPatient',
+        'previousMonthPatient',
+        'totalAllPatients',
+        'currentYearAllPatients',
+        'outDorPaitent'
+    ));
+}
 
 
     public function date_wise_procurement_report()
@@ -93,41 +113,57 @@ class ReportController extends Controller
         return view('report.date_wise_procurement_report', compact('pharmacies', 'from', 'to', 'type', 'created_users', 'pharmacyInvoiceNumbers', 'pharmacyVendors', 'theads'));
     }
 
-    public function date_wise_sale_report()
-    {
-        $from = $_GET['from'] ?? '';
-        $to = $_GET['to'] ?? '';
-        $type = $_GET['type'] ?? '';
-        $doc = $_GET['doc'] ?? '';
-        $pharmacies = [];
+   public function date_wise_sale_report()
+{
+    $from = request('from');
+    $to = request('to');
+    $doc = request('doc');
 
-        $doctors = User::where('type', 3)->where('status', 1)->select('id', 'name')->get();
+    $doctors = User::where('type', 3)
+        ->where('status', 1)
+        ->select('id', 'name')
+        ->get();
 
-        if ($from != null || $to != null) {
-            $query = PatientPharmacyMedicine::query();
-        }
+    // ✅ Read setting once
+    $halfDataMode = DB::table('settings')->value('half_data_mode');
 
-        if ($from != null) {
-            $query->whereDate('created_at', '>=', $from);
-        }
+    $query = PatientPharmacyMedicine::query();
 
-        if ($to != null) {
-            $query->whereDate('created_at', '<=', $to);
-        }
-
-        if ($doc != null) {
-            $query->whereHas('patient', function ($q) use ($doc) {
-                $q->where('doctor_id', $doc);
-            });
-        }
-
-        if ($from != null || $to != null) {
-            $pharmacies = $query->select('patient_id', 'medicine_id', 'quantity', 'unit_price', 'created_by')->with('patient:id,patient_name,patient_generated_id')
-                ->with('patient.createdBy')->with('medicine:id,medicine_name')->with('user:id,name')->latest()->get()->groupBy('patient_id');
-        }
-
-        return view('report.date_wise_sale_report', compact('pharmacies', 'from', 'to', 'doctors'));
+    if ($from) {
+        $query->whereDate('created_at', '>=', $from);
     }
+
+    if ($to) {
+        $query->whereDate('created_at', '<=', $to);
+    }
+
+    if ($doc) {
+        $query->whereHas('patient', function ($q) use ($doc) {
+            $q->where('doctor_id', $doc);
+        });
+    }
+
+    $pharmacies = $query
+        ->select('patient_id', 'medicine_id', 'quantity', 'unit_price', 'created_by')
+        ->with('patient:id,patient_name,patient_generated_id')
+        ->with('patient.createdBy')
+        ->with('medicine:id,medicine_name')
+        ->with('user:id,name')
+        ->latest()
+        ->get()
+        ->groupBy('patient_id');
+
+    // ✅ Apply half sale price if enabled
+    if ($halfDataMode == 1) {
+        foreach ($pharmacies as $group) {
+            foreach ($group as $item) {
+                $item->unit_price = round($item->unit_price / 2, 2);
+            }
+        }
+    }
+
+    return view('report.date_wise_sale_report', compact('pharmacies', 'from', 'to', 'doctors'));
+}
 
     public function available_stock_report()
     {
@@ -212,35 +248,72 @@ class ReportController extends Controller
         $to = $_GET['to'] ?? '';
         $department_id = $_GET['department'] ?? '';
         $doctor_id = $_GET['doctor'] ?? '';
+    
         $labMainDepartments = MainLabDepartment::select('id', 'dep_name')->get();
         $labMainDepartmentName = MainLabDepartment::where('id', $department_id)->value('dep_name');
         $doctors = User::where('type', 3)->where('status', 1)->select('id', 'name')->get();
         $labSalePatients = [];
-        if ($from != null && $to != NULL) {
-            $labSalePatients = Patient::whereHas('laboratoryTests',  function ($q) use ($from, $to) {
+    
+        // ✅ Get half_data_mode from settings
+        $halfDataMode = DB::table('settings')->value('half_data_mode');
+    
+        if ($from != null && $to != null) {
+            $labSalePatients = Patient::whereHas('laboratoryTests', function ($q) use ($from, $to) {
                 $q->whereDate('created_at', '>=', $from)
-                    ->whereDate('created_at', '<=', $to);
-            })->select('id', 'patient_name', 'patient_generated_id', 'doctor_id', 'created_by')
-                ->with(['doctor', 'createdBy', 'laboratoryTests.testName', 'laboratoryTests.testName.mainDepartment', 'laboratoryTests' => function ($q) use ($from, $to) {
+                  ->whereDate('created_at', '<=', $to);
+            })
+            ->select('id', 'patient_name', 'patient_generated_id', 'doctor_id', 'created_by')
+            ->with([
+                'doctor',
+                'createdBy',
+                'laboratoryTests.testName',
+                'laboratoryTests.testName.mainDepartment',
+                'laboratoryTests' => function ($q) use ($from, $to) {
                     $q->whereDate('created_at', '>=', $from)
-                        ->whereDate('created_at', '<=', $to);
-                }]);
-
+                      ->whereDate('created_at', '<=', $to);
+                }
+            ]);
+    
             if ($department_id) {
-                $labSalePatients = $labSalePatients->with(['laboratoryTests' => function ($q) use ($from, $to) {
-                    $q->whereDate('created_at', '>=', $from)
-                        ->whereDate('created_at', '<=', $to);
-                }, 'laboratoryTests.testName' => function ($q) use ($department_id) {
-                    $q->where('main_dep_id', $department_id);
-                }]);
+                $labSalePatients = $labSalePatients->with([
+                    'laboratoryTests' => function ($q) use ($from, $to) {
+                        $q->whereDate('created_at', '>=', $from)
+                          ->whereDate('created_at', '<=', $to);
+                    },
+                    'laboratoryTests.testName' => function ($q) use ($department_id) {
+                        $q->where('main_dep_id', $department_id);
+                    }
+                ]);
             }
+    
             if ($doctor_id) {
                 $labSalePatients = $labSalePatients->where('doctor_id', $doctor_id);
             }
-
+    
             $labSalePatients = $labSalePatients->get();
+    
+            // ✅ Apply half data mode: halve lab test prices
+            if ($halfDataMode == 1) {
+                foreach ($labSalePatients as $patient) {
+                    foreach ($patient->laboratoryTests as $labTest) {
+                        if (isset($labTest->price)) {
+                            $labTest->price = round($labTest->price / 2, 2);
+                        }
+                    }
+                }
+            }
         }
-        return view('report.laboratory_sale_report', compact('labSalePatients', 'from', 'to', 'labMainDepartments', 'department_id', 'labMainDepartmentName', 'doctors', 'doctor_id'));
+    
+        return view('report.laboratory_sale_report', compact(
+            'labSalePatients',
+            'from',
+            'to',
+            'labMainDepartments',
+            'department_id',
+            'labMainDepartmentName',
+            'doctors',
+            'doctor_id'
+        ));
     }
 
     public function laboratory_tests_report()
@@ -317,7 +390,7 @@ class ReportController extends Controller
         return view('report.ipd_patient_report', compact('ipdPatients', 'from', 'until', 'charge_type', 'doctors', 'doctor_id'));
     }
 
-    public function general_profits_report()
+   public function general_profits_report()
     {
         $from = $_GET['from'] ?? '';
         $to = $_GET['to'] ?? '';
@@ -423,40 +496,36 @@ class ReportController extends Controller
                 }
 
 
-                $ipdProfitQuery = Patient::wherehas('ipd', function ($q) use ($day) {
-                    $q->where('status', 1)->whereDate('discharge_date', '=', $day);
-                });
+                // IPD Report - Fixed to match cumulative_report logic
+                $ipdProfitQuery = PatientIPD::where('status', 1)->whereDate('discharge_date', '=', $day)
+                    ->whereHas('patient', function ($q) use ($registered_by, $doctor_id) {
+                        if ($registered_by != 0) {
+                            $q->where('created_by', $registered_by);
+                        }
+                        if ($doctor_id != 0) {
+                            $q->where('doctor_id', $doctor_id);
+                        }
+                    })->select('price', 'discount', 'discharge_date', 'patient_id', 'created_at')->get();
 
-                if ($registered_by != 0) {
-                    $ipdProfitQuery = $ipdProfitQuery->where('created_by', $registered_by);
-                }
-                if ($doctor_id != 0) {
-                    $ipdProfitQuery = $ipdProfitQuery->where('doctor_id', $doctor_id);
-                }
-
-                $ipdProfitQuery = $ipdProfitQuery->latest()->with(['ipd' => function ($q) use ($day) {
-                    $q->where('status', 1)->whereDate('discharge_date', '=', $day);
-                }])->get();
-
-                $data['Total Patients Per Day']['IPD'][$dayDate][0] = $totalIPDPatients;
+                $data['Total Patients Per Day']['IPD'][$dayDate][0] = $ipdProfitQuery->count();
 
                 foreach ($ipdProfitQuery as $ipdProfit) {
                     $totalPrice = 0;
                     $totalDiscount = 0;
-                    $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($ipdProfit->ipd->created_at)));
-                    $discharge_date = $ipdProfit->ipd->discharge_date;
+                    $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($ipdProfit->created_at)));
+                    $discharge_date = $ipdProfit->discharge_date;
                     $ipdDays = $register_date->diffInDays($discharge_date);
 
                     for ($i = 1; $i <= $ipdDays; $i++) {
-                        $totalPrice += $ipdProfit->ipd->price;
-                        $discountForTest = ($ipdProfit->ipd->discount * $ipdProfit->ipd->price) / 100;
+                        $totalPrice += $ipdProfit->price;
+                        $discountForTest = ($ipdProfit->discount * $ipdProfit->price) / 100;
                         $totalDiscount += $discountForTest;
                     }
                     $totalProfitIPD += $totalPrice - $totalDiscount;
 
                     $totalIPDPatients++;
 
-                    $data['Total Patients Per Day']['IPD'][$dayDate][$ipdProfit->id] = $totalIPDPatients;
+                    $data['Total Patients Per Day']['IPD'][$dayDate][$ipdProfit->patient_id] = 1;
                 }
 
                 $data['IPD'][$dayDate] = $totalProfitIPD;
@@ -929,14 +998,22 @@ class ReportController extends Controller
         $datesUntilToday = $this->getDatesUntilToday();
         $dailyPatientCountData = [];
         array_push($dailyPatientCountData, ['Day', 'Daily Patients']);
-
+    
+        // ✅ Fetch setting once
+        $halfDataMode = DB::table('settings')->value('half_data_mode');
+    
         foreach ($datesUntilToday as $date) {
             $dayDate = explode('-', $date)[2];
-            $totalPatient = 0;
-
             $totalPatient = DB::table('patients')->whereDate('created_at', $date)->count();
+    
+            // ✅ Apply half data mode if enabled
+            if ($halfDataMode) {
+                $totalPatient = round($totalPatient / 2);
+            }
+    
             array_push($dailyPatientCountData, [$dayDate, (int)$totalPatient]);
         }
+    
         return $dailyPatientCountData;
     }
 
@@ -945,10 +1022,15 @@ class ReportController extends Controller
         $currentYear = date('Y');
         $monthlyPatientCountData = [];
         array_push($monthlyPatientCountData, ['Month', 'Monthly Patients']);
+        $halfDataMode = DB::table('settings')->value('half_data_mode');
         for ($m = 1; $m <= 12; $m++) {
             $monthName = date('M', mktime(0, 0, 0, $m, 10));
             $totalPatient = DB::table('patients')->whereYear('created_at', $currentYear)
                 ->whereMonth('created_at', $m)->count();
+             // ✅ Apply half data mode if enabled
+            if ($halfDataMode) {
+                $totalPatient = round($totalPatient / 2);
+            }
             array_push($monthlyPatientCountData, [$monthName, (int)$totalPatient]);
         }
         return $monthlyPatientCountData;
@@ -960,6 +1042,7 @@ class ReportController extends Controller
         $datesUntilToday = $this->getDatesUntilToday();
         $dailyPatientData = [];
         array_push($dailyPatientData, ['Day', 'OPD Income', 'Medicine Income', 'Lab Income', 'IPD Income', 'Total Income']);
+        $halfDataMode = DB::table('settings')->value('half_data_mode');
 
         foreach ($datesUntilToday as $date) {
             $dayDate = explode('-', $date)[2];
@@ -995,6 +1078,13 @@ class ReportController extends Controller
             }
 
             $grandTotalOfAll = $totalMedicineSale + $totalLab + $totalIPDIncome + $opdQuery;
+            if ($halfDataMode) {
+            $opdQuery = round($opdQuery / 2);
+            $totalMedicineSale = round($totalMedicineSale / 2);
+            $totalLab = round($totalLab / 2);
+            $totalIPDIncome = round($totalIPDIncome / 2);
+            $grandTotalOfAll = round($grandTotalOfAll / 2);
+            }
             array_push($dailyPatientData, [$dayDate, (int)$opdQuery, (int)$totalMedicineSale, (int)$totalLab, (int)$totalIPDIncome, (int)$grandTotalOfAll]);
         }
         return $dailyPatientData;
@@ -1005,53 +1095,94 @@ class ReportController extends Controller
         $currentYear = date('Y');
         $monthlyPatientIncome = [];
         array_push($monthlyPatientIncome, ['Month', 'OPD Income', 'Medicine Income', 'Lab Income', 'IPD Income', 'Total Income']);
-
+    
+        // ✅ Get the half data mode setting once
+        $halfDataMode = DB::table('settings')->value('half_data_mode');
+    
         for ($m = 1; $m <= 12; $m++) {
             $totalLab = 0;
             $totalMedicineSale = 0;
             $totalIPDIncome = 0;
-            $grandTotalOfAll = 0;
-
+    
             $monthName = date('M', mktime(0, 0, 0, $m, 10));
-
-            $opdQuery = DB::table('patients')->whereYear('reg_date', $currentYear)->whereMonth('reg_date', $m)->sum('OPD_fee');
-
-            $labQuery = DB::table('laboratory_patient_labs')->whereYear('created_at', $currentYear)
-                ->whereMonth('created_at', $m)->select('price', 'discount')->get();
-
-            $medicineSaleQuery = DB::table('patient_pharmacy_medicines')->whereYear('created_at', $currentYear)
-                ->whereMonth('created_at', $m)->select('unit_price', 'quantity')->get();
-
+    
+            // ✅ OPD
+            $opdQuery = DB::table('patients')
+                ->whereYear('reg_date', $currentYear)
+                ->whereMonth('reg_date', $m)
+                ->sum('OPD_fee');
+    
+            // ✅ Lab
+            $labQuery = DB::table('laboratory_patient_labs')
+                ->whereYear('created_at', $currentYear)
+                ->whereMonth('created_at', $m)
+                ->select('price', 'discount')
+                ->get();
+    
+            // ✅ Medicine
+            $medicineSaleQuery = DB::table('patient_pharmacy_medicines')
+                ->whereYear('created_at', $currentYear)
+                ->whereMonth('created_at', $m)
+                ->select('unit_price', 'quantity')
+                ->get();
+    
+            // ✅ IPD
             $ipdProfitQuery = PatientIPD::whereYear('discharge_date', $currentYear)
-                ->whereMonth('discharge_date', $m)->where('status', 1)->select('price', 'discount', 'discharge_date', 'created_at')->get();
-
+                ->whereMonth('discharge_date', $m)
+                ->where('status', 1)
+                ->select('price', 'discount', 'discharge_date', 'created_at')
+                ->get();
+    
+            // ✅ Calculate Lab income
             foreach ($labQuery as $lab) {
                 $totalLab += $lab->price - ($lab->discount * $lab->price) / 100;
             }
-
+    
+            // ✅ Calculate Medicine income
             foreach ($medicineSaleQuery as $medicine) {
                 $totalMedicineSale += $medicine->quantity * $medicine->unit_price;
             }
-
+    
+            // ✅ Calculate IPD income
             foreach ($ipdProfitQuery as $ipdProfit) {
                 $totalPrice = 0;
                 $totalDiscount = 0;
                 $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($ipdProfit->created_at)));
                 $discharge_date = $ipdProfit->discharge_date;
                 $ipdDays = $register_date->diffInDays($discharge_date);
-
+    
                 for ($i = 1; $i <= $ipdDays; $i++) {
                     $totalPrice += $ipdProfit->price;
                     $discountForTest = ($ipdProfit->discount * $ipdProfit->price) / 100;
                     $totalDiscount += $discountForTest;
                 }
+    
                 $totalIPDIncome += $totalPrice - $totalDiscount;
             }
-
+    
+            // ✅ Grand Total
             $grandTotalOfAll = $totalMedicineSale + $totalLab + $totalIPDIncome + $opdQuery;
-            array_push($monthlyPatientIncome, [$monthName, (int)$opdQuery, (int)$totalMedicineSale, (int)$totalLab, (int)$totalIPDIncome, (int)$grandTotalOfAll]);
+    
+            // ✅ Apply half mode if enabled
+            if ($halfDataMode) {
+                $opdQuery = round($opdQuery / 2);
+                $totalMedicineSale = round($totalMedicineSale / 2);
+                $totalLab = round($totalLab / 2);
+                $totalIPDIncome = round($totalIPDIncome / 2);
+                $grandTotalOfAll = round($grandTotalOfAll / 2);
+            }
+    
+            // ✅ Push to array
+            array_push($monthlyPatientIncome, [
+                $monthName,
+                (int) round($opdQuery),
+                (int) round($totalMedicineSale),
+                (int) round($totalLab),
+                (int) round($totalIPDIncome),
+                (int) round($grandTotalOfAll),
+            ]);
         }
-
+    
         return $monthlyPatientIncome;
     }
 
@@ -1285,7 +1416,7 @@ class ReportController extends Controller
         $totalIncome = 0;
 
         // OPD Income / correct
-        $opdIncome = Patient::whereBetween('created_at', [
+        $opdIncome = Patient::whereBetween('reg_date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])->sum('OPD_fee');
@@ -1324,16 +1455,23 @@ class ReportController extends Controller
         $totalIncome += $miscIncome;
 
         // Calculate total expenses within the date range
-        $totalExpenses = ExpenseSlip::whereBetween('date', [
-            Carbon::parse($from)->startOfDay(),
-            Carbon::parse($to)->endOfDay()
-        ])->get()->sum(function ($expenseSlip) {
-            return $expenseSlip->expenses->sum('amount');
+       $totalExpenses = \App\Models\Expense\ExpenseSlip::whereBetween('date', [
+            $from,$to
+        ])
+        ->whereNull('deleted_at')
+        ->with(['expenses' => function($q) {
+            $q->whereNull('deleted_at');
+        }])
+        ->get()
+        ->sum(function($slip) {
+            return $slip->expenses->sum(function($item) {
+                return $item->amount * $item->quantity;
+            });
         });
 
 
         // Calculate total payroll payment within the date range
-        $totalPayrollPayment = PayrollPayment::whereBetween('created_at', [
+        $totalPayrollPayment = PayrollPayment::whereBetween('payment_date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])->sum('amount');
@@ -1351,17 +1489,20 @@ class ReportController extends Controller
         ];
 
         // Calculate expenses by categories within the date range
-        $expenseCategories = ExpenseSlip::whereBetween('date', [
+         $expenseCategories = ExpenseSlip::whereBetween('date', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
-        ])
+            ])
+            ->with(['expenseItems', 'expenseCategory'])
             ->get()
             ->groupBy(function ($expenseSlip) {
                 return $expenseSlip->expenseCategory->name;
             })
             ->mapWithKeys(function ($expenseSlips, $category) {
                 return [$category => $expenseSlips->sum(function ($expenseSlip) {
-                    return $expenseSlip->expenseItems->sum('amount');
+                    return $expenseSlip->expenseItems->sum(function ($item) {
+                        return $item->amount * $item->quantity;
+                    });
                 })];
             });
 
