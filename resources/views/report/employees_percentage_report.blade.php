@@ -139,7 +139,8 @@
                                                 if (!empty($employee->laboratoryTests)) {
                                                     foreach ($employee->laboratoryTests as $lab_test) {
                                                         if ($lab_test->testName->main_dep_id == $dep->id) {
-                                                            $sum_total_lab += ($lab_test->price*(100-$lab_test->discount)/100);
+                                                            // $lab_test->price already contains the payable amount (after discount)
+                                                            $sum_total_lab += $lab_test->price;
                                                         }
                                                     }
                                                 }
@@ -151,7 +152,8 @@
                                                     
                                                 foreach ($ultrasound as $lab_test) {
                                                     if ($lab_test->testName->main_dep_id == $dep->id) {
-                                                        $sum_total_lab += ($lab_test->price*(100-$lab_test->discount)/100);
+                                                        // $lab_test->price already contains the payable amount (after discount)
+                                                        $sum_total_lab += $lab_test->price;
                                                     }
                                                 }
                                             }

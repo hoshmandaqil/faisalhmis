@@ -46,17 +46,38 @@ class LaboratoryPatientLabController extends Controller
         $result = $request->result;
         $discount = $request->lab_discounts;
         $payable_amount = $request->payable_amount;
+
+        // Get patient's discount type
+        $patient = Patient::find($patient_id);
+        $discountType = $patient->discount_type;
+
         foreach ($lab_ids as $key => $lab){
             $patientLab = new LaboratoryPatientLab();
             $patientLab->patient_id = $patient_id;
             $patientLab->lab_id = $lab;
-            $patientLab->price = $payable_amount[$key];
             $patientLab->result = $result[$key];
-            if (Patient::find($patient_id)->no_discount == 0) {
-                $patientLab->discount = $discount[$key];
+
+            // Apply automatic discount based on patient type
+            if ($discountType == 'student') {
+                // Students and Lectures: 10% discount
+                $patientLab->discount = 10; // Store as percentage
+                $discountAmount = $price[$key] * 0.10;
+                $patientLab->price = $price[$key] - $discountAmount;
+            } elseif ($discountType == 'staff') {
+                // Rokhan Group Staff: 20% discount
+                $patientLab->discount = 20; // Store as percentage
+                $discountAmount = $price[$key] * 0.20;
+                $patientLab->price = $price[$key] - $discountAmount;
             } else {
-                $patientLab->discount = 0;
+                // No automatic discount or manual discount
+                $patientLab->price = $payable_amount[$key];
+                if ($patient->no_discount == 0) {
+                    $patientLab->discount = $discount[$key];
+                } else {
+                    $patientLab->discount = 0;
+                }
             }
+
             if($request->hasFile('attachments')){
                 if (array_key_exists($key, $request->file('attachments'))){
                     $imageName = time().'_'.$request->file('attachments')[$key]->getClientOriginalName();

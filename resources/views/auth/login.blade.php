@@ -38,12 +38,11 @@
                 <div class="login-screen">
                     <div class="login-box">
                         <a href="#" class="login-logo">
-                            <span class="text-danger">Hamza</span><span class="text-warning">Medical</span><span class="text-success">Clinic</span><span class="text-info">
+                            <span class="text-danger">Bayazid</span><span class="text-warning">Rokhan</span><span class="text-success">Hospital</span>
 
                         </a>
                         <h5>Welcome back,<br />Please Login to your Account.</h5>
                         <div class="form-group">
-{{--                            <input type="text" class="form-control" placeholder="Email Address" />--}}
                             <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
 
                             @error('email')

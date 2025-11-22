@@ -141,7 +141,8 @@
                                             <button class="btn btn-sm btn-warning" data-toggle="modal"
                                                 data-target="#labModal" data-patient-id="{{ $patient->id }}"
                                                 data-patient-name="{{ $patient->patient_name }}"
-                                                data-no-discount="{{ $patient->no_discount }}">Set Lab
+                                                data-no-discount="{{ $patient->no_discount }}"
+                                                data-discount-type="{{ $patient->discount_type ?? '' }}">Set Lab
                                             </button>
                                         @endif
                                     @endif
@@ -434,9 +435,9 @@
                                 <div class="col-6 offset-3 text-center">
 
                                     <p class="title"
-                                        style="font-size: 1.3rem">Ministry of Health</p>
+                                        style="font-size: 1.3rem">Ministry of Public Health</p>
                                     <p class="title"
-                                        style="font-size: 1.2rem">Hamza Medical Clinic</p>
+                                        style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
                                     <p class="title"
                                         style="font-size: 1rem">Patient Laboratory</p>
 
@@ -467,10 +468,13 @@
                                         placeholder="Price"
                                         readonly>
                                     <input class="form-control col-md-2 lab-discount-input"
-                                        type="text"
+                                        type="number"
                                         name="discount[]"
                                         style="height: 38px !important;"
-                                        placeholder="Discount"
+                                        placeholder="Discount %"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
                                         >
                                     <input class="form-control col-md-2 test-total-display"
                                         type="text"
@@ -955,7 +959,7 @@
                                     @endforeach
             </select>
             <input type="text" class="form-control col-md-3 test-price-display" placeholder="Price" readonly style="height: 38px !important;">
-            <input type="text" class="form-control col-md-2 lab-discount-input" name="discount[]" placeholder="Discount" style="height: 38px !important;">
+            <input type="number" class="form-control col-md-2 lab-discount-input" name="discount[]" placeholder="Discount %" min="0" max="100" step="0.01" style="height: 38px !important;">
             <input type="text" class="form-control col-md-2 test-total-display" placeholder="Total" readonly style="height: 38px !important;">
             <input type="text" class="form-control col-md-4" name="remark[]" placeholder="Remark" style="height: 38px !important;">
 
@@ -1076,6 +1080,9 @@
             //Set no_disocunt to the patient value
             no_discount = button.data('no-discount');
 
+            // Set discount_type to the patient value
+            discount_type = button.data('discount-type') || '';
+
             var modal = $(this)
 
             // Set values in edit popup
@@ -1117,6 +1124,7 @@
         var remarkTitle = '';
         var labId;
         var no_discount = 0;
+        var discount_type = '';
         $('.dep_inputs').click(function() {
             if ($(this).is(':checked')) {
                 spanValue = parseInt(spanValue) + parseInt($(this).attr("lab-price"));
@@ -1184,6 +1192,21 @@
         $(document).on('change', '.labTestsSelect', function() {
             var test_price = $('option:selected', this).attr('test_price');
             $(this).parent('.input-group').children('input.test-price-display').val(test_price);
+
+            // Automatically set discount percentage based on patient discount type
+            var discountInput = $(this).closest('.input-group').find('.lab-discount-input');
+            var discountPercentage = 0;
+
+            if (discount_type === 'student') {
+                discountPercentage = 10; // 10% for students
+            } else if (discount_type === 'staff') {
+                discountPercentage = 20; // 20% for staff
+            }
+
+            if (discountPercentage > 0) {
+                discountInput.val(discountPercentage);
+            }
+
             calculateTestTotal($(this));
             setTotalPriceOfLab();
         });
@@ -1197,9 +1220,11 @@
             var selectedOption = selectElement.find('option:selected');
             var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
             var discountInput = selectElement.closest('.input-group').find('.lab-discount-input');
-            var discountAmount = parseFloat(discountInput.val()) || 0;
+            var discountPercentage = parseFloat(discountInput.val()) || 0;
             var totalDisplay = selectElement.closest('.input-group').find('.test-total-display');
 
+            // Calculate discount amount from percentage
+            var discountAmount = (testPrice * discountPercentage) / 100;
             var finalPrice = Math.max(0, testPrice - discountAmount);
             totalDisplay.val(finalPrice.toLocaleString());
         }
@@ -1209,12 +1234,12 @@
             var grandTotalAfterDiscount = 0;
             var grandTotalDiscount = 0;
 
-                        // Loop through all lab test rows (both selected and unselected)
-            $(".labTestsSelect").each(function(index) {
+            // Loop through all lab test rows - only select actual select elements within the modal
+            $("#labModal select.labTestsSelect").each(function(index) {
                 var selectedOption = $(this).find('option:selected');
                 var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
                 var discountInput = $(this).closest('.input-group').find('.lab-discount-input');
-                var discountAmount = parseFloat(discountInput.val()) || 0;
+                var discountPercentage = parseFloat(discountInput.val()) || 0;
 
                 // Only calculate if a test is selected
                 if (selectedOption.val() && selectedOption.val() !== '') {
@@ -1224,7 +1249,8 @@
                         grandTotalAfterDiscount += testPrice;
                         grandTotalDiscount += 0;
                     } else {
-                        // Treat discount as fixed amount, not percentage
+                        // Calculate discount amount from percentage
+                        var discountAmount = (testPrice * discountPercentage) / 100;
                         var finalPrice = Math.max(0, testPrice - discountAmount);
                         grandTotalAfterDiscount += finalPrice;
                         grandTotalDiscount += discountAmount;

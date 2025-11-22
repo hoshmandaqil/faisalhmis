@@ -15,7 +15,7 @@
 
                 <div class="col-6 offset-3 text-center">
                     <p class="title"
-                        style="font-size: 1.3rem">Ministry of Health</p>
+                        style="font-size: 1.3rem">Ministry of Public Health</p>
                     <p class="title"
                         style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
                     <p class="title"

@@ -66,8 +66,19 @@ class PatientController extends Controller
         $patient->blood_group = $request->blood_group;
         $patient->reg_date = $request->reg_date;
         $patient->doctor_id = $request->doctor_id;
-        $patient->OPD_fee = $request->default_discount == 0 ? 0 : $doctorOPDFee;
-        $patient->no_discount = $request->default_discount;
+
+        // Handle discount type (student or staff)
+        $patient->discount_type = $request->discount_type;
+
+        // Apply OPD discount: 50% for both student and staff
+        if (in_array($request->discount_type, ['student', 'staff'])) {
+            $patient->OPD_fee = $doctorOPDFee * 0.5; // 50% discount
+            $patient->no_discount = 0;
+        } else {
+            $patient->OPD_fee = $request->default_discount == 0 ? 0 : $doctorOPDFee;
+            $patient->no_discount = $request->default_discount;
+        }
+
         $patient->created_by = \Auth::user()->id;
         $patient->save();
 
@@ -125,7 +136,19 @@ class PatientController extends Controller
         $patient->blood_group = $request->blood_group;
         $patient->reg_date = $request->reg_date;
         $patient->doctor_id = $request->doctor_id;
-        $patient->OPD_fee = $doctorOPDFee;
+
+        // Handle discount type (student or staff)
+        $patient->discount_type = $request->discount_type;
+
+        // Apply OPD discount: 50% for both student and staff
+        if (in_array($request->discount_type, ['student', 'staff'])) {
+            $patient->OPD_fee = $doctorOPDFee * 0.5; // 50% discount
+            $patient->no_discount = 0;
+        } else {
+            $patient->OPD_fee = $doctorOPDFee;
+            $patient->no_discount = $request->default_discount || $patient->no_discount;
+        }
+
         $patient->blood_pressure = $request->blood_pressure;
         $patient->respiration_rate = $request->respiration_rate;
         $patient->pulse_rate = $request->pulse_rate;
@@ -135,7 +158,6 @@ class PatientController extends Controller
         $patient->height = $request->height;
         $patient->mental_state = $request->mental_state;
         $patient->medical_history = $request->medical_history;
-        $patient->no_discount = $request->default_discount || $patient->no_discount;
         $patient->updated_by = \Auth::user()->id;
         $patient->save();
         return  redirect()->back()->with('alert', 'The Patient Updated Successfully')->with('alert-type', 'alert-info');
@@ -241,7 +263,7 @@ class PatientController extends Controller
 
         $medicine_dosage = DB::table('medicine_dosages')->get();
 
-        
+
 
         return view(
             'patient.my_patients_medicines',
@@ -301,7 +323,7 @@ class PatientController extends Controller
     public function patient_invoice($id)
     {
         $patient = Patient::where('id', $id)
-            ->with('pharmacyMedicines', 'ipd', 'laboratoryTests.testName')->first();
+            ->with('pharmacyMedicines', 'ipd', 'ipds', 'laboratoryTests.testName', 'doctor')->first();
         $currentDate = now()->format('Y-m-d'); // Get current date in 'YYYY-MM-DD' format
         return view('patient.patient_invoice', compact('patient', 'currentDate'));
     }

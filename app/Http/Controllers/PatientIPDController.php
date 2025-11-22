@@ -41,17 +41,29 @@ class PatientIPDController extends Controller
     public function store(Request $request)
     {
         $bedDetails = Floor::where('id', $request->bed_id)->first();
+        $patient = Patient::find($request->patient_id);
+
         $patientIpd = new PatientIPD();
         $patientIpd->patient_id = $request->patient_id;
         $patientIpd->bed_id = $request->bed_id;
         $patientIpd->price = $bedDetails->price;
-        
-        if (Patient::find($request->patient_id)->no_discount == 0) {
-            $patientIpd->discount = $bedDetails->discount;
+
+        // Apply automatic discount based on patient type
+        if ($patient->discount_type == 'student') {
+            // Students and Lectures: 10% discount
+            $patientIpd->discount = 10;
+        } elseif ($patient->discount_type == 'staff') {
+            // Rokhan Group Staff: 50% discount
+            $patientIpd->discount = 50;
         } else {
-            $patientIpd->discount = 0;
+            // No automatic discount or manual discount
+            if ($patient->no_discount == 0) {
+                $patientIpd->discount = $bedDetails->discount;
+            } else {
+                $patientIpd->discount = 0;
+            }
         }
-        
+
         $patientIpd->created_by = \Auth::user()->id;
         $patientIpd->remark = $request->remark;
 

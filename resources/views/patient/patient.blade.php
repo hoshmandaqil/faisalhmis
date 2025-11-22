@@ -242,6 +242,14 @@
                         </div>
                         <div class="row">
                             <div class="form-group col-6">
+                                <label>Discount Type</label>
+                                <select class="form-control" name="discount_type">
+                                    <option value="">None</option>
+                                    <option value="student">Students and Lectures</option>
+                                    <option value="staff">Rokhan Group Staff</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
                                 <label>Default Discount</label>
                                 <select class="form-control" name="default_discount">
                                     <option value="1" selected>No</option>
@@ -376,6 +384,14 @@
                             <div class="form-group col-4">
                                 <label>Mental State</label>
                                 <input class="form-control" name="mental_state" type="text">
+                            </div>
+                            <div class="form-group col-4">
+                                <label>Discount Type</label>
+                                <select class="form-control" name="discount_type">
+                                    <option value="">None</option>
+                                    <option value="student">Students and Lectures</option>
+                                    <option value="staff">Rokhan Group Staff</option>
+                                </select>
                             </div>
                             <div class="form-group col-4">
                                 <label>Default Discount</label>

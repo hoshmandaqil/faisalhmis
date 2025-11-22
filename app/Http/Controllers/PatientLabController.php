@@ -126,7 +126,8 @@ class PatientLabController extends Controller
     {
         $patient_id = $_GET['patient_id'];
         $labs = PatientLab::where('patient_id', $patient_id)->with('patient', 'lab', 'lab.mainDepartment')->get();
-        return view('ajax.ajax_laboratory_set_lab', compact('labs', 'patient_id'));
+        $patient = Patient::find($patient_id);
+        return view('ajax.ajax_laboratory_set_lab', compact('labs', 'patient_id', 'patient'));
     }
 
     public function getPatientLabsForEdit($id)

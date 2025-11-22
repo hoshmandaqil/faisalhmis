@@ -95,7 +95,7 @@
 <body>
     <div id="print-it">
         <div class="text-c">
-            <div class="size-large">Ministry of Health</div>
+            <div class="size-large">Ministry of Public Health</div>
             <div class="size-large">Bayazid Rokhan Hospital</div>
             <div class="size-large">Finance Department</div>
             <div class="size-large">Patient Invoice</div>
@@ -127,10 +127,28 @@
                         <tr>
                             <td colspan="4" class="section-header">OPD Charges</td>
                         </tr>
+                        @php
+                            // Calculate OPD original price and discount
+                            $opdOriginalPrice = $patient->OPD_fee;
+                            $opdDiscount = 0;
+
+                            // If patient has discount_type (student or staff), OPD was already reduced by 50%
+                            // So we need to calculate the original price
+                            if (in_array($patient->discount_type, ['student', 'staff'])) {
+                                $opdOriginalPrice = $patient->OPD_fee * 2; // Original price before 50% discount
+                                $opdDiscount = $patient->OPD_fee; // The discount amount
+                            }
+
+                            // If no_discount is 0, the patient gets no OPD fee at all
+                            if ($patient->no_discount == 0 && !in_array($patient->discount_type, ['student', 'staff'])) {
+                                $opdOriginalPrice = $patient->doctor->OPD_fee ?? 0;
+                                $opdDiscount = $opdOriginalPrice;
+                            }
+                        @endphp
                         <tr>
                             <td class="text-c">OPD Fee</td>
-                            <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
-                            <td class="text-c">0 AF</td>
+                            <td class="text-c">{{ number_format($opdOriginalPrice) }} AF</td>
+                            <td class="text-c">{{ number_format($opdDiscount) }} AF</td>
                             <td class="text-c">{{ number_format($patient->OPD_fee) }} AF</td>
                         </tr>
 
@@ -206,14 +224,29 @@
                         <tr>
                             <td colspan="4" class="section-header">Pharmacy Charges</td>
                         </tr>
-                        @php $totalPharmacy = 0; @endphp
+                        @php
+                            $totalPharmacyOriginal = 0;
+                            $totalPharmacyDiscount = 0;
+                            $discountPercent = 0;
+
+                            // Apply 50% discount for student or staff
+                            if (in_array($patient->discount_type, ['student', 'staff'])) {
+                                $discountPercent = 50;
+                            }
+                        @endphp
                         @foreach ($patient->pharmacyMedicines as $medicine)
-                            @php $totalPharmacy += $medicine->quantity * $medicine->unit_price; @endphp
+                            @php
+                                $totalPharmacyOriginal += $medicine->quantity * $medicine->unit_price;
+                            @endphp
                         @endforeach
+                        @php
+                            $totalPharmacyDiscount = ($totalPharmacyOriginal * $discountPercent) / 100;
+                            $totalPharmacy = $totalPharmacyOriginal - $totalPharmacyDiscount;
+                        @endphp
                         <tr>
                             <td class="text-c">Pharmacy Charges</td>
-                            <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
-                            <td class="text-c">0 AF</td>
+                            <td class="text-c">{{ number_format($totalPharmacyOriginal) }} AF</td>
+                            <td class="text-c">{{ number_format($totalPharmacyDiscount) }} AF</td>
                             <td class="text-c">{{ number_format($totalPharmacy) }} AF</td>
                         </tr>
 
@@ -222,29 +255,53 @@
                             <td colspan="4" class="section-header">Lab Charges</td>
                         </tr>
                         @php
-                            $totalLab = 0;
+                            $totalLabOriginal = 0;
+                            $totalLabDiscount = 0;
                         @endphp
                         @foreach ($patient->laboratoryTests as $labTest)
-                            @php $totalLab += $labTest->price; @endphp
+                            @php
+                                // The price field contains the price AFTER discount
+                                // So we need to calculate the original price
+                                $labTestDiscountPercent = (float) ($labTest->discount ?? 0);
+                                $testPayable = $labTest->price; // This is already the discounted price
+
+                                // Calculate original price: original = payable / (1 - discount%)
+                                if ($labTestDiscountPercent > 0 && $labTestDiscountPercent < 100) {
+                                    $testOriginalPrice = $testPayable / (1 - ($labTestDiscountPercent / 100));
+                                } else if ($labTestDiscountPercent >= 100) {
+                                    $testOriginalPrice = 0; // If 100% discount, original doesn't matter
+                                } else {
+                                    $testOriginalPrice = $testPayable; // No discount
+                                }
+
+                                $testDiscount = $testOriginalPrice - $testPayable;
+                                $totalLabOriginal += $testOriginalPrice;
+                                $totalLabDiscount += $testDiscount;
+                            @endphp
                             <tr>
                                 <td class="text-c">{{ $labTest->testName->dep_name }}</td>
-                                <td class="text-c">{{ number_format($labTest->price) }} AF</td>
-                                <td class="text-c">0 AF</td>
-                                <td class="text-c">{{ number_format($labTest->price) }} AF</td>
+                                <td class="text-c">{{ number_format($testOriginalPrice) }} AF</td>
+                                <td class="text-c">{{ number_format($testDiscount) }} AF ({{ $labTestDiscountPercent }}%)</td>
+                                <td class="text-c">{{ number_format($testPayable) }} AF</td>
                             </tr>
                         @endforeach
+                        @php
+                            $totalLab = $totalLabOriginal - $totalLabDiscount;
+                        @endphp
 
                         {{-- Grand Total Section --}}
                         <tr>
                             <td colspan="4" class="section-header">Grand Total</td>
                         </tr>
                         @php
+                            $grandTotalOriginal = $opdOriginalPrice + ($totalIPD + $totalIPD_discount) + $totalPharmacyOriginal + $totalLabOriginal;
+                            $grandTotalDiscount = $opdDiscount + $totalIPD_discount + $totalPharmacyDiscount + $totalLabDiscount;
                             $grandTotal = $patient->OPD_fee + $totalIPD + $totalPharmacy + $totalLab;
                         @endphp
                         <tr>
                             <td class="size-medium text-bold text-c">Grand Total</td>
-                            <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
-                            <td class="size-medium text-bold text-c">0 AF</td>
+                            <td class="size-medium text-bold text-c">{{ number_format($grandTotalOriginal) }} AF</td>
+                            <td class="size-medium text-bold text-c">{{ number_format($grandTotalDiscount) }} AF</td>
                             <td class="size-medium text-bold text-c">{{ number_format($grandTotal) }} AF</td>
                         </tr>
                     </tbody>
