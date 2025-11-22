@@ -217,11 +217,20 @@
                             </tbody>
                         </table>
                     </div>
+                    @if ($totalPayrollPayment > 0)
                     <div class="card-footer">
                         <strong>Total: </strong>
-                        {{ number_format($expenseCategories->sum()) }}
+                        {{ number_format($expenseCategories->sum() + $totalPayrollPayment) }}
                         AFN
                     </div>
+                    @endif
+                    @if (!$totalPayrollPayment)
+                    <div class="card-footer">
+                        <strong>Total: </strong>
+                        {{ number_format($expenseCategories->sum() ) }}
+                        AFN
+                    </div>
+                    @endif
                 </div>
             </div>
             @if (false)
