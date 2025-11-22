@@ -124,42 +124,32 @@
                         @endphp
                         @foreach ($labs as $lab)
                             @php
-                                $depName = $lab->lab->dep_name ?? '-';
                                 $price = $lab->lab->price ?? 0;
-                                $discount = $lab->lab && $lab->lab->mainDepartment ? ($lab->lab->mainDepartment->discount ?? 0) : 0;
-                                $amount = $price; // QTY is always 1
-                                if ($patient->no_discount == 1) {
-                                    $discount = 0;
-                                    $discountAmount = 0;
-                                    $afterDiscount = $price;
-                                } else {
-                                    $discountAmount = $price * $discount / 100;
-                                    $afterDiscount = $price - $discountAmount;
-                                }
+                                $discountAmount = $patient->no_discount == 1 ? 0 : ($lab->discount ?? 0);
+                                $afterDiscount = $price - $discountAmount;
+
                                 $grandTotal += $price;
                                 $grandTotalDiscount += $discountAmount;
                                 $grandTotalAfterDiscount += $afterDiscount;
                             @endphp
                             <tr>
                                 <td>{{ ucfirst($lab->lab->dep_name) }}</td>
-                                <td>{{ round($lab->lab->price - ($lab->discount ?? 0)) }}</td>
+                                <td>{{ round($price) }}</td>
                                 <td>1</td>
-                                <td>{{ round($lab->lab->price - ($lab->discount ?? 0)) }}</td>
-                                <?php $grandTotal += $lab->lab->price - ($lab->discount ?? 0); ?>
-
+                                <td>{{ round($afterDiscount) }}</td>
                             </tr>
                         @endforeach
                         <tr>
                             <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="3"><b>Amount:</b></td>
-                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{$grandTotal}} AFN</td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{ round($grandTotal) }} AFN</td>
                         </tr>
                         <tr>
                             <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="3"><b>Discount:</b></td>
-                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{$patient->no_discount == 1 ? 0 : $grandTotalDiscount}} AFN</td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{ round($grandTotalDiscount) }} AFN</td>
                         </tr>
                         <tr>
                             <td style="border-top: 1px solid lightgray; font-weight:bold;" colspan="3"><b>Total After Discount:</b></td>
-                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{$patient->no_discount == 1 ? $grandTotal : $grandTotalAfterDiscount}} AFN</td>
+                            <td style="border-top: 1px solid lightgray; font-weight:bold;">{{ round($grandTotalAfterDiscount) }} AFN</td>
                         </tr>
                     </tbody>
                 </table>
@@ -229,7 +219,7 @@
         var selectedOption = selectElement.find('option:selected');
         var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
         var discountInput = selectElement.closest('.input-group').find('.lab-discount-input-edit');
-        var discountAmount = parseFloat(discountInput.val()) || 0;
+        var discountAmount = no_discount == 1 ? 0 : (parseFloat(discountInput.val()) || 0);
         var totalDisplay = selectElement.closest('.input-group').find('.test-total-display-edit');
 
         var finalPrice = Math.max(0, testPrice - discountAmount);
@@ -259,7 +249,7 @@
             if (testValue && testValue !== '' && testValue !== 'Please select' && testValue !== undefined) {
                 var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
                 var discountInput = $(this).closest('.input-group').find('.lab-discount-input-edit');
-                var discountAmount = parseFloat(discountInput.val()) || 0;
+                var discountAmount = no_discount == 1 ? 0 : (parseFloat(discountInput.val()) || 0);
 
                 console.log('Edit Row ' + index + ' - Price:', testPrice, 'Discount:', discountAmount);
 
