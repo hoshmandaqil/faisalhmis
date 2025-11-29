@@ -30,8 +30,16 @@
                                     $discountPercentage = 20; // 20% for staff
                                 }
                             }
-                            // Use auto discount if patient has discount type, otherwise use existing discount
-                            $discountPercentage = $discountPercentage > 0 ? $discountPercentage : ($lab->discount ?? 0);
+                            // If no student/staff discount, check if patient has default discount enabled
+                            if ($discountPercentage == 0) {
+                                if ($patient->no_discount == 0) {
+                                    // Use main lab department discount
+                                    $discountPercentage = $lab->lab->mainDepartment->discount ?? 0;
+                                } else {
+                                    // Use existing lab-specific discount
+                                    $discountPercentage = $lab->discount ?? 0;
+                                }
+                            }
                             $discountAmount = ($discountPercentage * $lab->lab->price) / 100;
                             $totalAfterDiscount = $lab->lab->price - $discountAmount;
                             ?>
@@ -83,10 +91,18 @@
                                 $discountPercentage = 20; // 20% for staff
                             }
                         }
-                        // Use auto discount if patient has discount type, otherwise use existing discount
-                        $discountPercentage = $discountPercentage > 0 ? $discountPercentage : ($lab->discount ?? 0);
-                        $discountAmount = ($discountPercentage * $lab->lab->price) / 100;
-                        $totalAfterDiscount = $lab->lab->price - $discountAmount;
+                        // If no student/staff discount, check if patient has default discount enabled
+                        if ($discountPercentage == 0) {
+                            if ($patient->no_discount == 0) {
+                                // Use main lab department discount
+                                $discountPercentage = $reassignLabs->lab->mainDepartment->discount ?? 0;
+                            } else {
+                                // Use existing lab-specific discount
+                                $discountPercentage = $reassignLabs->discount ?? 0;
+                            }
+                        }
+                        $discountAmount = ($discountPercentage * $reassignLabs->lab->price) / 100;
+                        $totalAfterDiscount = $reassignLabs->lab->price - $discountAmount;
                         ?>
                         <div class="form-inline" id="{{ $lab->id }}">
                             <input type="hidden" name="lab_id[]" value="{{ $lab->lab->id }}">

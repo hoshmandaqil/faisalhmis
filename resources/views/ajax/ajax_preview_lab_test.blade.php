@@ -30,39 +30,53 @@
                 <th width="50%" >Remark</th>
                 </thead>
                 <tbody>
-                <?php $grandTotal = 0; $totalDiscount = 0; $hasFile = false;?>
+                <?php $grandTotal = 0; $totalDiscount = 0; $grandTotalAfterDiscount = 0; $hasFile = false;?>
                 @foreach($labs as $lab)
-                    <tr>
-                        <td>{{ucfirst($lab->testName->dep_name)}}</td>
-                        <td>{{$lab->price}}</td>
-                        <td class="remark">{{$lab->result}}</td>
-                        <?php
-                        $grandTotal += $lab->price;
-                        $discountForTest = ($lab->discount * $lab->price)/100;
+                    <?php
+                        // Note: $lab->price is stored as the AFTER-DISCOUNT price in the database
+                        $priceAfterDiscount = $lab->price;
+                        $discountPercentage = $lab->discount ?? 0;
+
+                        // Calculate original price from the discounted price
+                        if ($discountPercentage > 0 && $discountPercentage < 100) {
+                            $originalPrice = $priceAfterDiscount / (1 - ($discountPercentage / 100));
+                        } else {
+                            $originalPrice = $priceAfterDiscount;
+                        }
+
+                        $discountForTest = $originalPrice - $priceAfterDiscount;
+
+                        $grandTotal += $originalPrice;
                         $totalDiscount += $discountForTest;
-                          if($lab->file != NULL){
+                        $grandTotalAfterDiscount += $priceAfterDiscount;
+
+                        if($lab->file != NULL){
                             $hasFile = true;
                         }
-                        ?>
+                    ?>
+                    <tr>
+                        <td>{{ucfirst($lab->testName->dep_name)}}</td>
+                        <td>{{round($priceAfterDiscount)}}</td>
+                        <td class="remark">{{$lab->result}}</td>
                     </tr>
                 @endforeach
                 <tr>
                     <td style="border-top: 1px solid lightgray">Total:</td>
-                    <td style="border-top: 1px solid lightgray">{{$grandTotal}}</td>
+                    <td style="border-top: 1px solid lightgray">{{round($grandTotal)}} AFN</td>
                     <td></td>
                     <td></td>
                 </tr>
                 <tr>
                     <td>Discount <br>
                         (تخفیف ویژه):</td>
-                    <td>{{$totalDiscount}}</td>
+                    <td>{{round($totalDiscount)}} AFN</td>
                     <td></td>
                     <td></td>
 
                 </tr>
                 <tr>
                     <td><b>Payable:</b></td>
-                    <td><b>{{$grandTotal - $totalDiscount}} AFN</b></td>
+                    <td><b>{{round($grandTotalAfterDiscount)}} AFN</b></td>
                     <td></td>
                     <td></td>
                 </tr>

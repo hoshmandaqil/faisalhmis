@@ -943,6 +943,10 @@
                 discountPercentage = 10; // 10% for students
             } else if (discount_type === 'staff') {
                 discountPercentage = 20; // 20% for staff
+            } else if (no_discount == 0) {
+                // Apply main lab department discount
+                var test_discount = $('option:selected', this).attr('test_discount');
+                discountPercentage = parseFloat(test_discount) || 0;
             }
 
             if (discountPercentage > 0) {

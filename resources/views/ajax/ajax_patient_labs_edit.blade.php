@@ -55,7 +55,7 @@
                             type="text"
                             style="height: 38px !important;"
                             placeholder="Total"
-                            value="{{ ($lab->lab->price - ($lab->discount ?? 0)) }}"
+                            value="{{ round($lab->lab->price - (($lab->lab->price * ($lab->discount ?? 0)) / 100)) }}"
                             readonly>
                         <input class="form-control col-md-4"
                             name="remark[]"
@@ -125,7 +125,9 @@
                         @foreach ($labs as $lab)
                             @php
                                 $price = $lab->lab->price ?? 0;
-                                $discountAmount = $patient->no_discount == 1 ? 0 : ($lab->discount ?? 0);
+                                $discountPercentage = $patient->no_discount == 1 ? 0 : ($lab->discount ?? 0);
+                                // Calculate actual discount amount from percentage
+                                $discountAmount = ($price * $discountPercentage) / 100;
                                 $afterDiscount = $price - $discountAmount;
 
                                 $grandTotal += $price;
@@ -137,6 +139,7 @@
                                 <td>{{ round($price) }}</td>
                                 <td>1</td>
                                 <td>{{ round($afterDiscount) }}</td>
+                                <td>{{ $discountPercentage }}%</td>
                             </tr>
                         @endforeach
                         <tr>
@@ -219,9 +222,11 @@
         var selectedOption = selectElement.find('option:selected');
         var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
         var discountInput = selectElement.closest('.input-group').find('.lab-discount-input-edit');
-        var discountAmount = no_discount == 1 ? 0 : (parseFloat(discountInput.val()) || 0);
+        var discountPercentage = no_discount == 1 ? 0 : (parseFloat(discountInput.val()) || 0);
         var totalDisplay = selectElement.closest('.input-group').find('.test-total-display-edit');
 
+        // Calculate discount amount from percentage
+        var discountAmount = (testPrice * discountPercentage) / 100;
         var finalPrice = Math.max(0, testPrice - discountAmount);
         totalDisplay.val(finalPrice.toLocaleString());
     }
@@ -249,9 +254,12 @@
             if (testValue && testValue !== '' && testValue !== 'Please select' && testValue !== undefined) {
                 var testPrice = parseFloat(selectedOption.attr('test_price')) || 0;
                 var discountInput = $(this).closest('.input-group').find('.lab-discount-input-edit');
-                var discountAmount = no_discount == 1 ? 0 : (parseFloat(discountInput.val()) || 0);
+                var discountPercentage = no_discount == 1 ? 0 : (parseFloat(discountInput.val()) || 0);
 
-                console.log('Edit Row ' + index + ' - Price:', testPrice, 'Discount:', discountAmount);
+                // Calculate discount amount from percentage
+                var discountAmount = (testPrice * discountPercentage) / 100;
+
+                console.log('Edit Row ' + index + ' - Price:', testPrice, 'Discount%:', discountPercentage, 'Discount Amount:', discountAmount);
 
                 // Ensure we have valid numbers
                 if (!isNaN(testPrice) && !isNaN(discountAmount)) {
