@@ -227,20 +227,24 @@
                         @php
                             $totalPharmacyOriginal = 0;
                             $totalPharmacyDiscount = 0;
-                            $discountPercent = 0;
-
-                            // Apply 50% discount for student or staff
-                            if (in_array($patient->discount_type, ['student', 'staff'])) {
-                                $discountPercent = 50;
-                            }
                         @endphp
                         @foreach ($patient->pharmacyMedicines as $medicine)
                             @php
-                                $totalPharmacyOriginal += $medicine->quantity * $medicine->unit_price;
+                                // Get the original sale price for this medicine
+                                $originalSalePrice = getMedicineSalePrice($medicine->medicine_id);
+                                // The unit_price stored is the final price after discount
+                                $finalUnitPrice = $medicine->unit_price;
+
+                                // Calculate original total and discount for this medicine
+                                $medicineOriginalTotal = $medicine->quantity * $originalSalePrice;
+                                $medicineFinalTotal = $medicine->quantity * $finalUnitPrice;
+                                $medicineDiscount = $medicineOriginalTotal - $medicineFinalTotal;
+
+                                $totalPharmacyOriginal += $medicineOriginalTotal;
+                                $totalPharmacyDiscount += $medicineDiscount;
                             @endphp
                         @endforeach
                         @php
-                            $totalPharmacyDiscount = ($totalPharmacyOriginal * $discountPercent) / 100;
                             $totalPharmacy = $totalPharmacyOriginal - $totalPharmacyDiscount;
                         @endphp
                         <tr>
