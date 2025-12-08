@@ -17,11 +17,7 @@ class PatientLabController extends Controller
     public function index()
     {
         $labPatients = Patient::wherehas('labs', function ($q){
-        })->with('labs', 'laboratoryTests', 'labs.lab.mainDepartment', 'doctor', 'createdBy')
-        ->withCount(['labs', 'laboratoryTests'])
-        ->orderByRaw('(labs_count - laboratory_tests_count) DESC')
-        ->orderBy('created_at', 'desc')
-        ->paginate(30);
+        })->with('labs', 'laboratoryTests', 'labs.lab.mainDepartment', 'doctor', 'createdBy')->latest()->paginate(30);
         return view('Laboratory.labratory_patients_lab', compact('labPatients'));
     }
 
@@ -152,11 +148,7 @@ class PatientLabController extends Controller
                 ->orwhere('patient_fname', 'Like', '%' . $patientSearchDetail. '%')
                 ->orwhere('patient_phone', 'Like', '%' . $patientSearchDetail. '%')
                 ->orwhere('patient_generated_id', 'Like', '%' . $patientSearchDetail. '%');
-        })->with('labs', 'laboratoryTests', 'labs.lab.mainDepartment', 'createdBy', 'doctor')
-        ->withCount(['labs', 'laboratoryTests'])
-        ->orderByRaw('(labs_count - laboratory_tests_count) DESC')
-        ->orderBy('created_at', 'desc')
-        ->paginate(100);
+        })->with('labs', 'laboratoryTests', 'labs.lab.mainDepartment', 'createdBy', 'doctor')->latest()->paginate(100);
         return view('Laboratory.labratory_patients_lab', compact('labPatients', 'patientSearchDetail'));
     }
 
