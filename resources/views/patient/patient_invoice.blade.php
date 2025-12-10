@@ -264,21 +264,16 @@
                         @endphp
                         @foreach ($patient->laboratoryTests as $labTest)
                             @php
-                                // The price field contains the price AFTER discount
-                                // So we need to calculate the original price
+                                // The price field now contains the original price
+                                $testOriginalPrice = (float) $labTest->price;
                                 $labTestDiscountPercent = (float) ($labTest->discount ?? 0);
-                                $testPayable = $labTest->price; // This is already the discounted price
-
-                                // Calculate original price: original = payable / (1 - discount%)
-                                if ($labTestDiscountPercent > 0 && $labTestDiscountPercent < 100) {
-                                    $testOriginalPrice = $testPayable / (1 - ($labTestDiscountPercent / 100));
-                                } else if ($labTestDiscountPercent >= 100) {
-                                    $testOriginalPrice = 0; // If 100% discount, original doesn't matter
-                                } else {
-                                    $testOriginalPrice = $testPayable; // No discount
-                                }
-
-                                $testDiscount = $testOriginalPrice - $testPayable;
+                                
+                                // Calculate discount amount from percentage
+                                $testDiscount = ($testOriginalPrice * $labTestDiscountPercent) / 100;
+                                
+                                // Calculate payable amount (original price - discount)
+                                $testPayable = $testOriginalPrice - $testDiscount;
+                                
                                 $totalLabOriginal += $testOriginalPrice;
                                 $totalLabDiscount += $testDiscount;
                             @endphp

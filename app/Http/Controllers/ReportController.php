@@ -434,8 +434,8 @@ class ReportController extends Controller
             $allMedicineProfitQuery = PatientPharmacyMedicine::select(DB::raw('SUM(quantity*unit_price) as medicineProfit'))->first();
             $allIncomes += $allMedicineProfitQuery->medicineProfit;
 
-            //Get sum laboratory
-            $allLabQuery = LaboratoryPatientLab::select(DB::raw('SUM(price-((discount * price)/100)) as labProfit'))->first();
+            //Get sum laboratory (gross income - original prices without discount)
+            $allLabQuery = LaboratoryPatientLab::select(DB::raw('SUM(price) as labProfit'))->first();
             $allIncomes += $allLabQuery->labProfit;
 
             // Get sum IPD income
@@ -577,7 +577,12 @@ class ReportController extends Controller
                         }
 
                         foreach ($laboratoryProfitQuery as $labProfit) {
-                            $totalProfitLaboratory += $labProfit->price; // Price already includes discount
+                            // Price now contains original price, calculate payable amount
+                            $originalPrice = (float) $labProfit->price;
+                            $discountPercent = (float) ($labProfit->discount ?? 0);
+                            $discountAmount = ($originalPrice * $discountPercent) / 100;
+                            $payableAmount = $originalPrice - $discountAmount;
+                            $totalProfitLaboratory += $payableAmount;
                             $data['Total Patients Per Day'][$test->dep_name][$dayDate][$labProfit->patient_id] = 1;
                         }
                         $data[$test->dep_name][$dayDate] = (int)$totalProfitLaboratory;
@@ -662,8 +667,8 @@ class ReportController extends Controller
             $allMedicineProfitQuery = PatientPharmacyMedicine::select(DB::raw('SUM(quantity*unit_price) as medicineProfit'))->first();
             $allIncomes += $allMedicineProfitQuery->medicineProfit;
 
-            //Get sum laboratory
-            $allLabQuery = LaboratoryPatientLab::select(DB::raw('SUM(price-((discount * price)/100)) as labProfit'))->first();
+            //Get sum laboratory (gross income - original prices without discount)
+            $allLabQuery = LaboratoryPatientLab::select(DB::raw('SUM(price) as labProfit'))->first();
             $allIncomes += $allLabQuery->labProfit;
 
             // Get sum IPD income
@@ -947,8 +952,8 @@ class ReportController extends Controller
                 ->whereDate('created_at', '<=', $to)
                 ->first()->medicineProfit;
 
-            // Sum Labratory
-            $sumLabratory = LaboratoryPatientLab::select(DB::raw('SUM(price-((discount * price)/100)) as labProfit'))
+            // Sum Labratory (gross income - original prices without discount)
+            $sumLabratory = LaboratoryPatientLab::select(DB::raw('SUM(price) as labProfit'))
                 ->whereDate('created_at', '>=', $from)
                 ->whereDate('created_at', '<=', $to)->first()->labProfit;
         }
@@ -1057,7 +1062,12 @@ class ReportController extends Controller
             $ipdProfitQuery = PatientIPD::where('discharge_date', $date)->where('status', 1)->select('price', 'discount', 'discharge_date', 'created_at')->get();
 
             foreach ($labQuery as $lab) {
-                $totalLab += $lab->price; // Price already includes discount
+                // Price now contains original price, calculate payable amount
+                $originalPrice = (float) $lab->price;
+                $discountPercent = (float) ($lab->discount ?? 0);
+                $discountAmount = ($originalPrice * $discountPercent) / 100;
+                $payableAmount = $originalPrice - $discountAmount;
+                $totalLab += $payableAmount;
             }
             foreach ($medicineSaleQuery as $medicine) {
                 $totalMedicineSale += $medicine->quantity * $medicine->unit_price;
@@ -1135,7 +1145,12 @@ class ReportController extends Controller
 
             // ✅ Calculate Lab income
             foreach ($labQuery as $lab) {
-                $totalLab += $lab->price; // Price already includes discount
+                // Price now contains original price, calculate payable amount
+                $originalPrice = (float) $lab->price;
+                $discountPercent = (float) ($lab->discount ?? 0);
+                $discountAmount = ($originalPrice * $discountPercent) / 100;
+                $payableAmount = $originalPrice - $discountAmount;
+                $totalLab += $payableAmount;
             }
 
             // ✅ Calculate Medicine income
@@ -1439,12 +1454,12 @@ class ReportController extends Controller
             ->sum(DB::raw('quantity * unit_price'));
         $totalIncome += $pharmacyIncome;
 
-        // Laboratory Income
+        // Laboratory Income (gross income - original prices without discount)
         $labIncome = LaboratoryPatientLab::whereBetween('created_at', [
             Carbon::parse($from)->startOfDay(),
             Carbon::parse($to)->endOfDay()
         ])
-            ->sum(DB::raw('price - (price * discount / 100)'));
+            ->sum('price');
         $totalIncome += $labIncome;
 
         // Miscellaneous Income

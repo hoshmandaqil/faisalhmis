@@ -87,7 +87,13 @@ class PayrollController extends Controller
                 });
 
                 $totalPrice = $testsForMainDepartment->sum(function ($test) use ($mainLabDepartmentDetails) {
-                    return $test->price - $mainLabDepartmentDetails->expense;
+                    // Price now contains original price, calculate payable amount first
+                    $originalPrice = (float) $test->price;
+                    $discountPercent = (float) ($test->discount ?? 0);
+                    $discountAmount = ($originalPrice * $discountPercent) / 100;
+                    $payableAmount = $originalPrice - $discountAmount;
+                    // Then subtract expense
+                    return $payableAmount - $mainLabDepartmentDetails->expense;
                 });
                 $payable = $totalPrice * ($mainLabDepartmentDetails->percentage / 100);
                 $tax = $payable * ($mainLabDepartmentDetails->tax / 100);

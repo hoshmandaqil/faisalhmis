@@ -33,18 +33,15 @@
                 <?php $grandTotal = 0; $totalDiscount = 0; $grandTotalAfterDiscount = 0; $hasFile = false;?>
                 @foreach($labs as $lab)
                     <?php
-                        // Note: $lab->price is stored as the AFTER-DISCOUNT price in the database
-                        $priceAfterDiscount = $lab->price;
-                        $discountPercentage = $lab->discount ?? 0;
+                        // The price field now contains the original price
+                        $originalPrice = (float) $lab->price;
+                        $discountPercentage = (float) ($lab->discount ?? 0);
 
-                        // Calculate original price from the discounted price
-                        if ($discountPercentage > 0 && $discountPercentage < 100) {
-                            $originalPrice = $priceAfterDiscount / (1 - ($discountPercentage / 100));
-                        } else {
-                            $originalPrice = $priceAfterDiscount;
-                        }
+                        // Calculate discount amount from percentage
+                        $discountForTest = ($originalPrice * $discountPercentage) / 100;
 
-                        $discountForTest = $originalPrice - $priceAfterDiscount;
+                        // Calculate payable amount (original price - discount)
+                        $priceAfterDiscount = $originalPrice - $discountForTest;
 
                         $grandTotal += $originalPrice;
                         $totalDiscount += $discountForTest;

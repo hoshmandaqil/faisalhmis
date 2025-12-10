@@ -84,7 +84,14 @@
                             <td>{{($patient->created_by != NULL) ? $patient->createdBy->name : 'Not Added'}}</td>
                             <td>
                             @foreach($patient->laboratoryTests as $labTest)
-                                <?php $grandTotal += $labTest->price?>
+                                <?php 
+                                    // Price now contains original price, calculate payable amount
+                                    $originalPrice = (float) $labTest->price;
+                                    $discountPercent = (float) ($labTest->discount ?? 0);
+                                    $discountAmount = ($originalPrice * $discountPercent) / 100;
+                                    $payableAmount = $originalPrice - $discountAmount;
+                                    $grandTotal += $payableAmount;
+                                ?>
                             @endforeach
                             {{$grandTotal}}
                             <td>

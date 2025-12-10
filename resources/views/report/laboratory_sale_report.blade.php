@@ -81,14 +81,13 @@
 
                                             @if($test->testName != NULL)
                                                 <tr class="lab_tests_tr">
-                                                    <td>  {{$test->testName->dep_name}} ({{$test->testName->price}})</td>
+                                                    <td>  {{$test->testName->dep_name}} ({{$test->price}})</td>
                                                     <?php
-                                                    $originalPrice = $test->testName->price;
+                                                    // Use stored original price from laboratory_patient_labs table
+                                                    $originalPrice = (float) $test->price;
                                                     $totalLabPrice += $originalPrice;
-                                                    $discountForTest = ($test->discount * $originalPrice)/100;
+                                                    $discountForTest = (($test->discount ?? 0) * $originalPrice) / 100;
                                                     $totalDiscount += $discountForTest;
-//                                                    DB::table('laboratory_patient_labs')->where('id', $test->id)
-//                                                        ->update(['discount' => $test->testName->mainDepartment->discount]);
                                                     ?>
                                                 </tr>
                                             @endif

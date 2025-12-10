@@ -61,16 +61,14 @@ class LaboratoryPatientLabController extends Controller
             if ($discountType == 'student') {
                 // Students and Lectures: 10% discount
                 $patientLab->discount = 10; // Store as percentage
-                $discountAmount = $price[$key] * 0.10;
-                $patientLab->price = $price[$key] - $discountAmount;
+                $patientLab->price = $price[$key]; // Store original price
             } elseif ($discountType == 'staff') {
                 // Rokhan Group Staff: 20% discount
                 $patientLab->discount = 20; // Store as percentage
-                $discountAmount = $price[$key] * 0.20;
-                $patientLab->price = $price[$key] - $discountAmount;
+                $patientLab->price = $price[$key]; // Store original price
             } else {
                 // No automatic discount or manual discount
-                $patientLab->price = $payable_amount[$key];
+                $patientLab->price = $price[$key]; // Store original price
                 if ($patient->no_discount == 0) {
                     $patientLab->discount = $discount[$key];
                 } else {
