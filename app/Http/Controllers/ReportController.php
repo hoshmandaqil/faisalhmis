@@ -248,15 +248,15 @@ class ReportController extends Controller
         $to = $_GET['to'] ?? '';
         $department_id = $_GET['department'] ?? '';
         $doctor_id = $_GET['doctor'] ?? '';
-    
+
         $labMainDepartments = MainLabDepartment::select('id', 'dep_name')->get();
         $labMainDepartmentName = MainLabDepartment::where('id', $department_id)->value('dep_name');
         $doctors = User::where('type', 3)->where('status', 1)->select('id', 'name')->get();
         $labSalePatients = [];
-    
+
         // ✅ Get half_data_mode from settings
         $halfDataMode = DB::table('settings')->value('half_data_mode');
-    
+
         if ($from != null && $to != null) {
             $labSalePatients = Patient::whereHas('laboratoryTests', function ($q) use ($from, $to) {
                 $q->whereDate('created_at', '>=', $from)
@@ -273,7 +273,7 @@ class ReportController extends Controller
                       ->whereDate('created_at', '<=', $to);
                 }
             ]);
-    
+
             if ($department_id) {
                 $labSalePatients = $labSalePatients->with([
                     'laboratoryTests' => function ($q) use ($from, $to) {
@@ -285,13 +285,13 @@ class ReportController extends Controller
                     }
                 ]);
             }
-    
+
             if ($doctor_id) {
                 $labSalePatients = $labSalePatients->where('doctor_id', $doctor_id);
             }
-    
+
             $labSalePatients = $labSalePatients->get();
-    
+
             // ✅ Apply half data mode: halve lab test prices
             if ($halfDataMode == 1) {
                 foreach ($labSalePatients as $patient) {
@@ -303,7 +303,7 @@ class ReportController extends Controller
                 }
             }
         }
-    
+
         return view('report.laboratory_sale_report', compact(
             'labSalePatients',
             'from',
@@ -577,7 +577,7 @@ class ReportController extends Controller
                         }
 
                         foreach ($laboratoryProfitQuery as $labProfit) {
-                            $totalProfitLaboratory += $labProfit->price - ($labProfit->discount * $labProfit->price) / 100;
+                            $totalProfitLaboratory += $labProfit->price; // Price already includes discount
                             $data['Total Patients Per Day'][$test->dep_name][$dayDate][$labProfit->patient_id] = 1;
                         }
                         $data[$test->dep_name][$dayDate] = (int)$totalProfitLaboratory;
@@ -998,22 +998,22 @@ class ReportController extends Controller
         $datesUntilToday = $this->getDatesUntilToday();
         $dailyPatientCountData = [];
         array_push($dailyPatientCountData, ['Day', 'Daily Patients']);
-    
+
         // ✅ Fetch setting once
         $halfDataMode = DB::table('settings')->value('half_data_mode');
-    
+
         foreach ($datesUntilToday as $date) {
             $dayDate = explode('-', $date)[2];
             $totalPatient = DB::table('patients')->whereDate('created_at', $date)->count();
-    
+
             // ✅ Apply half data mode if enabled
             if ($halfDataMode) {
                 $totalPatient = round($totalPatient / 2);
             }
-    
+
             array_push($dailyPatientCountData, [$dayDate, (int)$totalPatient]);
         }
-    
+
         return $dailyPatientCountData;
     }
 
@@ -1057,7 +1057,7 @@ class ReportController extends Controller
             $ipdProfitQuery = PatientIPD::where('discharge_date', $date)->where('status', 1)->select('price', 'discount', 'discharge_date', 'created_at')->get();
 
             foreach ($labQuery as $lab) {
-                $totalLab += $lab->price - ($lab->discount * $lab->price) / 100;
+                $totalLab += $lab->price; // Price already includes discount
             }
             foreach ($medicineSaleQuery as $medicine) {
                 $totalMedicineSale += $medicine->quantity * $medicine->unit_price;
@@ -1095,54 +1095,54 @@ class ReportController extends Controller
         $currentYear = date('Y');
         $monthlyPatientIncome = [];
         array_push($monthlyPatientIncome, ['Month', 'OPD Income', 'Medicine Income', 'Lab Income', 'IPD Income', 'Total Income']);
-    
+
         // ✅ Get the half data mode setting once
         $halfDataMode = DB::table('settings')->value('half_data_mode');
-    
+
         for ($m = 1; $m <= 12; $m++) {
             $totalLab = 0;
             $totalMedicineSale = 0;
             $totalIPDIncome = 0;
-    
+
             $monthName = date('M', mktime(0, 0, 0, $m, 10));
-    
+
             // ✅ OPD
             $opdQuery = DB::table('patients')
                 ->whereYear('reg_date', $currentYear)
                 ->whereMonth('reg_date', $m)
                 ->sum('OPD_fee');
-    
+
             // ✅ Lab
             $labQuery = DB::table('laboratory_patient_labs')
                 ->whereYear('created_at', $currentYear)
                 ->whereMonth('created_at', $m)
                 ->select('price', 'discount')
                 ->get();
-    
+
             // ✅ Medicine
             $medicineSaleQuery = DB::table('patient_pharmacy_medicines')
                 ->whereYear('created_at', $currentYear)
                 ->whereMonth('created_at', $m)
                 ->select('unit_price', 'quantity')
                 ->get();
-    
+
             // ✅ IPD
             $ipdProfitQuery = PatientIPD::whereYear('discharge_date', $currentYear)
                 ->whereMonth('discharge_date', $m)
                 ->where('status', 1)
                 ->select('price', 'discount', 'discharge_date', 'created_at')
                 ->get();
-    
+
             // ✅ Calculate Lab income
             foreach ($labQuery as $lab) {
-                $totalLab += $lab->price - ($lab->discount * $lab->price) / 100;
+                $totalLab += $lab->price; // Price already includes discount
             }
-    
+
             // ✅ Calculate Medicine income
             foreach ($medicineSaleQuery as $medicine) {
                 $totalMedicineSale += $medicine->quantity * $medicine->unit_price;
             }
-    
+
             // ✅ Calculate IPD income
             foreach ($ipdProfitQuery as $ipdProfit) {
                 $totalPrice = 0;
@@ -1150,19 +1150,19 @@ class ReportController extends Controller
                 $register_date = \Carbon\Carbon::parse(date('Y-m-d', strtotime($ipdProfit->created_at)));
                 $discharge_date = $ipdProfit->discharge_date;
                 $ipdDays = $register_date->diffInDays($discharge_date);
-    
+
                 for ($i = 1; $i <= $ipdDays; $i++) {
                     $totalPrice += $ipdProfit->price;
                     $discountForTest = ($ipdProfit->discount * $ipdProfit->price) / 100;
                     $totalDiscount += $discountForTest;
                 }
-    
+
                 $totalIPDIncome += $totalPrice - $totalDiscount;
             }
-    
+
             // ✅ Grand Total
             $grandTotalOfAll = $totalMedicineSale + $totalLab + $totalIPDIncome + $opdQuery;
-    
+
             // ✅ Apply half mode if enabled
             if ($halfDataMode) {
                 $opdQuery = round($opdQuery / 2);
@@ -1171,7 +1171,7 @@ class ReportController extends Controller
                 $totalIPDIncome = round($totalIPDIncome / 2);
                 $grandTotalOfAll = round($grandTotalOfAll / 2);
             }
-    
+
             // ✅ Push to array
             array_push($monthlyPatientIncome, [
                 $monthName,
@@ -1182,7 +1182,7 @@ class ReportController extends Controller
                 (int) round($grandTotalOfAll),
             ]);
         }
-    
+
         return $monthlyPatientIncome;
     }
 
