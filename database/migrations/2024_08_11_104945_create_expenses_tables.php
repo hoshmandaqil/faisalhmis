@@ -46,9 +46,7 @@ class CreateExpensesTables extends Migration
             $table->foreign('cashier')
                 ->references('id')
                 ->on('users');
-            $table->foreign('po_id')
-                ->references('id')
-                ->on('purchase_orders');
+            // Foreign key for po_id will be added in purchase_order migration after purchase_order table is created
         });
 
         Schema::create('expenses_items', function (Blueprint $table) {
