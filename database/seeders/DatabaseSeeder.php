@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Permission;
+use App\Models\UserPermission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +23,8 @@ class DatabaseSeeder extends Seeder
         $this->userSeed();
 
         $this->createPermissions($now);
+
+        $this->assignAllPermissionsToAdmin($now);
 
         $this->call(UserPermissionSeeder::class);
 
@@ -125,6 +129,33 @@ class DatabaseSeeder extends Seeder
                     'created_at' => $now,
                     'updated_at' => $now
                 ]);
+            }
+        }
+    }
+
+    function assignAllPermissionsToAdmin($now)
+    {
+        // Get admin user ID (user with type 1)
+        $adminUser = User::where('type', 1)->first();
+
+        if ($adminUser) {
+            // Get all permissions
+            $allPermissions = Permission::all();
+
+            // Prepare user permissions data
+            $userPermissions = [];
+            foreach ($allPermissions as $permission) {
+                $userPermissions[] = [
+                    'user_id' => $adminUser->id,
+                    'permission_id' => $permission->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            // Insert all permissions for admin
+            if (!empty($userPermissions)) {
+                UserPermission::insert($userPermissions);
             }
         }
     }
