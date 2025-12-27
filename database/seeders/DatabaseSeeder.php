@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
 
         $this->assignAllPermissionsToAdmin($now);
 
+        $this->call(SettingsSeeder::class);
+
         $this->call(UserPermissionSeeder::class);
 
         $this->call(MedicineDosageSeeder::class);
