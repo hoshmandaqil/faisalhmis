@@ -244,7 +244,7 @@
                         </div>
                         <div class="text-center mx-auto">
                             <h5 class="modal-title">Ministry of Public Health</h5>
-                            <h5 class="modal-title">Bayazid Rokhan Curative Hospital</h5>
+                            <h5 class="modal-title">Faisal Curative Hospital</h5>
                             <h5 class="modal-title">Finance Department</h5>
                             <h5 class="modal-title">Employee Payment Slip</h5>
                         </div>

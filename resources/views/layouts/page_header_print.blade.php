@@ -5,7 +5,7 @@
         </div>  --}}
         <div class="col-6 offset-3 text-center">
             <p class="title" style="font-size: 1.5rem">Ministry of Public Health</p>
-            <p class="title" style="font-size: 1.4rem">Bayazid Rokhan Hospital</p>
+            <p class="title" style="font-size: 1.4rem">Faisal Curative Hospital</p>
             <p class="title" style="font-size: 1.3rem">Finance Department</p>
             <p class="title" style="font-size: 1.3rem">{{ $reportName }}</p>
             <p class="title" style="font-size: 1.2rem">From: {{ $from }} - To: {{ $to }}</p>

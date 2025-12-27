@@ -485,7 +485,7 @@
                         </div>
                         <div class="text-center mx-auto">
                             <h5 class="modal-title">Ministry of Public Health</h5>
-                            <h5 class="modal-title">Bayazid Rokhan Curative Hospital</h5>
+                            <h5 class="modal-title">Faisal Curative Hospital</h5>
                             <h5 class="modal-title">Finance Department</h5>
                             <h5 class="modal-title">Purchase Order Voucher</h5>
                         </div>
@@ -616,7 +616,7 @@
 @section('scripts')
     <script src="{{ asset('assets/vendor/persianDatepicker/js/persianDatepicker.min.js') }}"></script>
     {{-- View Expense Files --}}
-   
+
     <script>
         $(document).ready(function() {
             // Add new PO item row

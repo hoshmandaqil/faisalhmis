@@ -96,7 +96,7 @@
     <div id="print-it">
         <div class="text-c">
             <div class="size-large">Ministry of Public Health</div>
-            <div class="size-large">Bayazid Rokhan Hospital</div>
+            <div class="size-large">Faisal Curative Hospital</div>
             <div class="size-large">Finance Department</div>
             <div class="size-large">Patient Invoice</div>
         </div>
@@ -267,13 +267,13 @@
                                 // The price field now contains the original price
                                 $testOriginalPrice = (float) $labTest->price;
                                 $labTestDiscountPercent = (float) ($labTest->discount ?? 0);
-                                
+
                                 // Calculate discount amount from percentage
                                 $testDiscount = ($testOriginalPrice * $labTestDiscountPercent) / 100;
-                                
+
                                 // Calculate payable amount (original price - discount)
                                 $testPayable = $testOriginalPrice - $testDiscount;
-                                
+
                                 $totalLabOriginal += $testOriginalPrice;
                                 $totalLabDiscount += $testDiscount;
                             @endphp

@@ -18,7 +18,7 @@
     <meta name="csrf-token"
         content="{{ csrf_token() }}">
     <!-- Title -->
-    <title>Bayazid Rokhan Pharmacy System</title>
+    <title>Faisal Curative Hospital Pharmacy System</title>
 
     <!-- *************
         ************ Common Css Files *************
@@ -64,7 +64,7 @@
     <!-- Loading starts -->
     {{-- @include('layouts.loading') --}}
     <!-- Loading ends -->
-    
+
     <div class="container">
         <!-- Header start -->
         @include('layouts.header')

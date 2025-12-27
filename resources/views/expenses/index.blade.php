@@ -623,7 +623,7 @@
                                        </td>
                                         <td class="text-center fw-bold">
                                             <h4>Ministry of Public Health</h4>
-                                            <h6>Bayazid Rokhan Curative Hospital KBL</h6>
+                                            <h6>Faisal Curative Hospital KBL</h6>
                                             <h6>Finance Department</h6>
                                             <h6>Expense Voucher</h6>
                                         </td>

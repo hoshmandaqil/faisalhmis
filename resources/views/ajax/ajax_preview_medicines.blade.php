@@ -23,7 +23,7 @@
                                     <td class="text-center center" colspan="100%">
                                         <img src="{{ asset('assets/img/logo/logo.png') }}" alt=""
                                             style="height: 80px" class="mb-4">
-                                        <h3 class="font-weight-bold">Bayazid Rokhan Hospital</h3>
+                                        <h3 class="font-weight-bold">Faisal Curative Hospital</h3>
                                         <h4>Pharmacy</h4>
                                     </td>
                                 </tr>

@@ -396,7 +396,7 @@
                                     <p class="title"
                                         style="font-size: 1.3rem">Ministry of Public Health</p>
                                     <p class="title"
-                                        style="font-size: 1.2rem">Bayazid Rokhan Hospital</p>
+                                        style="font-size: 1.2rem">Faisal Curative Hospital</p>
                                     <p class="title"
                                         style="font-size: 1rem">Patient Laboratory</p>
                                 </div>

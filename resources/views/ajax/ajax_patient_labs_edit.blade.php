@@ -98,7 +98,7 @@
                     <tr>
                         <td class="text-center center"
                             colspan="100%">
-                            <h3>Bayazid Rokhan Hospital</h3>
+                            <h3>Faisal Curative Hospital</h3>
                             <h4>Labratory</h4>
                         </td>
                     </tr>

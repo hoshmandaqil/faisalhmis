@@ -13,7 +13,7 @@
     <link rel="shortcut icon" href="{{asset('assets/img/fav.png')}}" />
 
     <!-- Title -->
-    <title>Bayazid Rokhan Hospital </title>
+    <title>Faisal Curative Hospital </title>
 
     <!-- *************
         ************ Common Css Files *************
@@ -37,11 +37,10 @@
             <div class="col-xl-5 col-lg-5 col-md-6 col-sm-12">
                 <div class="login-screen">
                     <div class="login-box">
-                        <a href="#" class="login-logo">
-                            <span class="text-danger">Bayazid</span><span class="text-warning">Rokhan</span><span class="text-success">Hospital</span>
-
+                        <a href="#" class="login-logo d-block text-center" style="word-wrap: break-word; white-space: normal; font-size: clamp(1.2rem, 4vw, 2rem);">
+                            <span class="text-danger d-inline-block">Faisal</span><span class="text-warning d-inline-block">Curative</span><span class="text-success d-inline-block">Hospital</span>
                         </a>
-                        <h5>Welcome back,<br />Please Login to your Account.</h5>
+                        <h5>Welcome back,Please Login to your Account.</h5>
                         <div class="form-group">
                             <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
 
